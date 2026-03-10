@@ -55,15 +55,30 @@ body {
         border-bottom: 2px solid var(--jayamali-dark-blue);
     }
 
-.d-flex .btn {
+.secSearch .btn {
     color: var(--jayamali-dark-blue);
     border-color: var(--jayamali-dark-blue);
 }
-    .d-flex .btn:hover {
-    background-color: var(--jayamali-dark-blue);
-    color: white;
+    .secSearch .btn:hover {
+        background-color: var(--jayamali-dark-blue);
+        color: white;
     }
 
-.bi:hover {
+.profile-icon .bi:hover {
     color: var(--jayamali-Dark-Green)
+}
+
+/*-------------------------Footer--------------------------*/
+
+.mainFooter .ftLink {
+    color: white;
+    transition: 0.2s;
+}
+
+    .mainFooter .ftLink:hover {
+        color: var(--jayamali-dark-blue);
+    }
+
+.ftDivOne {
+    background-image: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url("../images/Cover_Photo.png");
 }

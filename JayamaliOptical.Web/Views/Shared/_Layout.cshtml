@@ -62,11 +62,11 @@
                             <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
                     </ul>
-                    <form class="d-flex">
+                    <form class="secSearch d-flex">
                         <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
                         <button class="btn btn-outline-success" type="submit">Search</button>
                     </form>
-                    <a class="nav-link text-dark px-4" asp-controller="Shop" asp-action="Index">
+                    <a class="profile-icon text-dark px-4" asp-controller="Shop" asp-action="Index">
                         <i class="bi bi-person-circle fs-3"></i>
                     </a>
                 </div>
@@ -80,12 +80,50 @@
     </div>
 
     <footer class="border-top footer text-muted">
-        <div>
-
+        <div class="mainFooter text-light d-flex">
+            <div class="ftDivOne w-75">
+                <div class=" d-flex justify-content-around h-25 border-bottom shadow-lg">
+                    <ul class="list-unstyled">
+                        <li><a class="text-light text-decoration-none" asp-controller="Home" asp-action="Privacy">PRIVACY POLICY</a></li>
+                    </ul>
+                    <div class="d-flex gap-4">
+                        <p class="fw-bolder text-light fs-5">Get In TOUCH</p>
+                        <a class="ftLink fs-4" href="https://www.facebook.com/share/14X82QupZAM/?mibextid=wwXIfr" target="_blank"><i class="bi bi-facebook"></i></a>
+                        <a class="ftLink fs-4" href="https://wa.me/94776537611" target="_blank"><i class="bi bi-whatsapp"></i></a>
+                        <a class="ftLink fs-4" href="#" target="_blank"><i class="bi bi-tiktok"></i></a>
+                        <a class="ftLink fs-4" href="#" target="_blank"><i class="bi bi-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-around h-75 mt-3">
+                    <div class="d-flex flex-column align-items-center pt-3">
+                        <h5>ADDRESS</h5>
+                        <div class="lh-1">
+                            <p>No: 116, Kurunagala Road, Puttalam, Sri Lanka</p>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-column align-items-center pt-3">
+                        <h5>TELEPHONE</h5>
+                        <a class="ftLink lh-1 text-decoration-none" href="tel:+94776537611">077 653 7611</a>
+                        <a class="ftLink lh-1 text-decoration-none my-2" href="tel:+94767303410">076 7303410</a>
+                        <a class="ftLink lh-1 text-decoration-none" href="tel:+94322266965">032 226 6965</a>
+                    </div>
+                    <div class="d-flex flex-column align-items-center lh-1 pt-3">
+                        <h5>EMAIL</h5>
+                        <a class="ftLink text-decoration-none" href="mailto:jayamalioptical@gmail.com?subject=Inquiry from Website">jayamalioptical@gmail.com</a>
+                    </div>
+                </div>
+            </div>
+            <div class="w-25">
+                <div class="d-flex flex-column align-items-center">
+                    <div class="ratio ratio-16x9">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3950.7281669882877!2d79.83554597436441!3d8.026939291999712!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3afd160d002fb4fb%3A0x1b0eeb335a99a11!2sJayamali%20Optical!5e0!3m2!1sen!2slk!4v1773153008953!5m2!1sen!2slk" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="property">
-            <p>All copyrights reserved by Jayamali Optical - © 2026</p>
-            <p>Website Designed & Developed by <a href="https://www.linkedin.com/in/disura-sandaruwan-649a422b8/" target="_blank">Disura Sandaruwan</a></p>
+        <div class="bg-dark d-flex justify-content-around align-items-center text-white lh-sm" style="height: 30px; font-size: 0.8rem;">
+            <span>All copyrights reserved by Jayamali Optical - © 2026</span>
+            <span>Website Designed & Developed by <a href="https://www.linkedin.com/in/disura-sandaruwan-649a422b8/" target="_blank" class="text-white fw-bold text-decoration-none">Disura Sandaruwan</a></span>
         </div>
     </footer>
 
