@@ -1,3 +1,11 @@
+:root {
+    --jayamali-dark-blue: #1978bc;
+    --jayamali-light-blue: #26a4e0;
+    --jayamali-green: #6ea700;
+    --jayamali-Dark-Green: #36a853;
+    --jayamali-light-Green: #93d359;
+}
+
 html {
   font-size: 14px;
 }
@@ -28,4 +36,34 @@ body {
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
+}
+
+/*--------------------Navbar----------------------*/
+
+.nav-item {
+    margin: 0 10px;
+}
+
+.navbar-nav .nav-link {
+    color: black;
+    font-size: 1.1rem;
+    border-bottom: 2px solid transparent;
+    transition: 0.3s;
+}
+    .navbar-nav .nav-link:hover {
+        color: var(--jayamali-dark-blue);
+        border-bottom: 2px solid var(--jayamali-dark-blue);
+    }
+
+.d-flex .btn {
+    color: var(--jayamali-dark-blue);
+    border-color: var(--jayamali-dark-blue);
+}
+    .d-flex .btn:hover {
+    background-color: var(--jayamali-dark-blue);
+    color: white;
+    }
+
+.bi:hover {
+    color: var(--jayamali-Dark-Green)
 }
