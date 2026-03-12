@@ -64,7 +64,7 @@ html {
     color: var(--jayamali-Dark-Green)
 }
 
-/*-------------------------Home----------------------------*/
+/*----------------------Hero Section----------------------------*/
 
 @keyframes float {
     0% {
@@ -93,6 +93,10 @@ html {
     color: var(--jayamali-dark-blue);
     text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
+
+/*-----------------------Services Section------------------*/
+
+
 
 /*-------------------------Footer--------------------------*/
 
