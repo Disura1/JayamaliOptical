@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using JayamaliOptical.Web.Models;
 
 namespace JayamaliOptical.Web.Data
 {
@@ -10,9 +11,8 @@ namespace JayamaliOptical.Web.Data
         {
         }
 
-        // Add your DbSet properties here for your models
-        // Example:
-        // public DbSet<Product> Products { get; set; }
-        // public DbSet<Customer> Customers { get; set; }
+        // Add these DbSets
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<Product> Products { get; set; }
     }
 }
