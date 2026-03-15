@@ -39,7 +39,9 @@ namespace JayamaliOptical.Web.Models
 
         public int StockQuantity { get; set; }
 
-        public string? ImageUrl { get; set; }
+        // Photo properties
+        public string? ImageUrl1 { get; set; }  // First photo
+        public string? ImageUrl2 { get; set; }  // Second photo (for Spectacles & Sunglasses)
 
         public bool IsActive { get; set; } = true;
 

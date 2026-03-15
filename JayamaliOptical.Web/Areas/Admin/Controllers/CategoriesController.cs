@@ -33,44 +33,19 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
         // POST: Admin/Categories/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Category category)
+        public async Task<IActionResult> Create([Bind("Id,Name,Description,IsActive")] Category category)
         {
-            System.Diagnostics.Debug.WriteLine("=== CREATE POST CALLED ===");
-            System.Diagnostics.Debug.WriteLine($"Name: {category?.Name}");
-            System.Diagnostics.Debug.WriteLine($"Description: {category?.Description}");
-            System.Diagnostics.Debug.WriteLine($"IsActive: {category?.IsActive}");
-            System.Diagnostics.Debug.WriteLine($"ModelState.IsValid: {ModelState.IsValid}");
-
-            if (!ModelState.IsValid)
+            if (category == null)
             {
-                System.Diagnostics.Debug.WriteLine("ModelState errors:");
-                foreach (var key in ModelState.Keys)
-                {
-                    foreach (var error in ModelState[key].Errors)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"  {key}: {error.ErrorMessage}");
-                    }
-                }
+                return NotFound();
             }
 
-            try
+            if (ModelState.IsValid)
             {
-                if (ModelState.IsValid)
-                {
-                    System.Diagnostics.Debug.WriteLine("Adding category to database...");
-                    _context.Add(category);
-                    await _context.SaveChangesAsync();
-                    System.Diagnostics.Debug.WriteLine("Category saved successfully!");
-                    return RedirectToAction(nameof(Index));
-                }
+                _context.Add(category);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"ERROR: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"Stack: {ex.StackTrace}");
-            }
-
-            System.Diagnostics.Debug.WriteLine("Returning view with model...");
             return View(category);
         }
 
