@@ -56,6 +56,9 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
             ViewBag.PreSelectedCategory = true;
             ViewBag.SelectedCategoryId = product.CategoryId;
 
+            // Debug: Log the ProductType value
+            System.Diagnostics.Debug.WriteLine($"Creating product - Type: {product.ProductType}, CategoryId: {product.CategoryId}");
+
             // Handle photo uploads
             if (ImageFile1 != null)
             {
@@ -69,6 +72,13 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
 
             if (ModelState.IsValid)
             {
+                // For Spectacle (5) and Sunglasses (6), ProductType is required
+                if ((product.CategoryId == 5 || product.CategoryId == 6) && string.IsNullOrEmpty(product.ProductType))
+                {
+                    ModelState.AddModelError("ProductType", "Product Type is required for Spectacles and Sunglasses");
+                    return View(product);
+                }
+
                 _context.Add(product);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -140,6 +150,9 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
                 return NotFound();
             }
 
+            // Debug: Log the ProductType value
+            System.Diagnostics.Debug.WriteLine($"Editing product - Type: {product.ProductType}, CategoryId: {product.CategoryId}");
+
             // Validate: At least one photo must exist after changes
             bool hasPhoto1 = !string.IsNullOrEmpty(existingProduct.ImageUrl1) && !removePhoto1;
             bool hasPhoto2 = !string.IsNullOrEmpty(existingProduct.ImageUrl2) && !removePhoto2;
@@ -152,15 +165,22 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
                 ModelState.AddModelError("ImageFile1", "At least Photo 1 is required. Please upload a new photo or keep the existing one.");
             }
 
+            // For Spectacle (5) and Sunglasses (6), ProductType is required
+            if ((product.CategoryId == 5 || product.CategoryId == 6) && string.IsNullOrEmpty(product.ProductType))
+            {
+                ModelState.AddModelError("ProductType", "Product Type is required for Spectacles and Sunglasses");
+            }
+
             if (ModelState.IsValid)
             {
                 try
                 {
-                    // Update existing product properties
+                    // Update existing product properties - INCLUDE ProductType
                     existingProduct.Name = product.Name;
                     existingProduct.Description = product.Description;
                     existingProduct.Price = product.Price;
                     existingProduct.CategoryId = product.CategoryId;
+                    existingProduct.ProductType = product.ProductType;  // THIS IS IMPORTANT!
                     existingProduct.Brand = product.Brand;
                     existingProduct.FrameType = product.FrameType;
                     existingProduct.LensPower = product.LensPower;

@@ -61,6 +61,20 @@
                         </div>
                     </div>
 
+                    <div class="row" id="productTypeRow" style="display: @(Model.CategoryId == 5 || Model.CategoryId == 6 ? "block" : "none");">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Product Type</label>
+                                <select name="ProductType" id="ProductType" class="form-control">
+                                    <option value="">-- Select Type --</option>
+                                    <option value="Mens" selected="@(Model.ProductType == "Mens")">Men's</option>
+                                    <option value="Ladies" selected="@(Model.ProductType == "Ladies")">Ladies</option>
+                                    <option value="Kids" selected="@(Model.ProductType == "Kids")">Kids</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="row">
                         <div class="col-md-4">
                             <div class="form-group">

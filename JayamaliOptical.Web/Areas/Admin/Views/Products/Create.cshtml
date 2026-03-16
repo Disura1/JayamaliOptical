@@ -83,6 +83,20 @@
                         </div>
                     </div>
 
+                    <div class="row" id="productTypeRow" style="display: none;">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Product Type</label>
+                                <select name="ProductType" id="ProductType" class="form-control">
+                                    <option value="">-- Select Type --</option>
+                                    <option value="Mens">Men's</option>
+                                    <option value="Ladies">Ladies</option>
+                                    <option value="Kids">Kids</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="row">
                         <div class="col-md-4">
                             <div class="form-group">
@@ -157,28 +171,59 @@
 
 <script>
     function updatePhotoRequirements() {
-        var categoryId = document.getElementById('CategoryId').value;
+        var categoryId = document.getElementById('CategoryId') ? document.getElementById('CategoryId').value : '@selectedCategoryId';
         var photo2Group = document.getElementById('photo2Group');
         var photo2Input = document.getElementById('ImageFile2');
         var photo2Required = document.getElementById('photo2Required');
+        var productTypeRow = document.getElementById('productTypeRow');
+        var productTypeSelect = document.getElementById('ProductType');
 
-        // Categories: 1=Spectacle, 2=Sunglasses, 3=Contact Lens, 4=IOL Lens
-        if (categoryId == '1' || categoryId == '2') {
-            // Spectacle or Sunglasses - 2 photos required
-            photo2Group.style.display = 'block';
-            photo2Input.required = true;
-            photo2Required.textContent = '(Required)';
-            photo2Required.className = 'text-danger';
+        // Categories: 5=Spectacle, 6=Sunglasses, 3=Contact Lens, 4=IOL Lens
+        if (categoryId == '5' || categoryId == '6') {
+            // Spectacle or Sunglasses - 2 photos required, show Product Type
+            if (photo2Group) {
+                photo2Group.style.display = 'block';
+                photo2Input.required = true;
+                photo2Required.textContent = '(Required)';
+                photo2Required.className = 'text-danger';
+            }
+
+            // Show Product Type dropdown
+            if (productTypeRow) {
+                productTypeRow.style.display = 'block';
+            }
+            if (productTypeSelect) {
+                productTypeSelect.required = true;
+            }
         } else if (categoryId == '3' || categoryId == '4') {
-            // Contact Lens or IOL Lens - 1 photo required
-            photo2Group.style.display = 'block';
-            photo2Input.required = false;
-            photo2Required.textContent = '(Optional)';
-            photo2Required.className = 'text-muted';
+            // Contact Lens or IOL Lens - 1 photo required, hide Product Type
+            if (photo2Group) {
+                photo2Group.style.display = 'block';
+                photo2Input.required = false;
+                photo2Required.textContent = '(Optional)';
+                photo2Required.className = 'text-muted';
+            }
+
+            // Hide Product Type dropdown
+            if (productTypeRow) {
+                productTypeRow.style.display = 'none';
+            }
+            if (productTypeSelect) {
+                productTypeSelect.required = false;
+                productTypeSelect.value = '';
+            }
         } else {
-            // No category selected
-            photo2Group.style.display = 'none';
-            photo2Input.required = false;
+            // No category selected or other category
+            if (photo2Group) {
+                photo2Group.style.display = 'none';
+                photo2Input.required = false;
+            }
+            if (productTypeRow) {
+                productTypeRow.style.display = 'none';
+            }
+            if (productTypeSelect) {
+                productTypeSelect.required = false;
+            }
         }
     }
 
