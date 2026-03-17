@@ -1,0 +1,82 @@
+﻿@model JayamaliOptical.Web.Models.Order
+@{
+    ViewData["Title"] = "Order Confirmation";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-success">
+                <div class="card-body text-center p-5">
+                    <div class="mb-4">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
+                    </div>
+
+                    <h2 class="mb-3">Thank You for Your Order!</h2>
+                    <p class="lead mb-4">Your order has been placed successfully.</p>
+
+                    <div class="alert alert-light mb-4">
+                        <h5 class="mb-3">Order Details</h5>
+                        <div class="row text-start">
+                            <div class="col-md-6 mb-2">
+                                <strong>Order Number:</strong><br />
+                                <span class="text-primary fw-bold">@Model.OrderNumber</span>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <strong>Order Date:</strong><br />
+                                <span>@Model.OrderDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <strong>Total Amount:</strong><br />
+                                <span class="text-success fw-bold">Rs. @Model.TotalAmount.ToString("0.00")</span>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <strong>Status:</strong><br />
+                                <span class="badge bg-warning">@Model.Status</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">Customer Information</h6>
+                        </div>
+                        <div class="card-body text-start">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>Name:</strong></p>
+                                    <p>@Model.FirstName @Model.LastName</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>Email:</strong></p>
+                                    <p>@Model.Email</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>Phone:</strong></p>
+                                    <p>@Model.PhoneNumber</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>Address:</strong></p>
+                                    <p>@Model.Address, @Model.City, @Model.PostalCode</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a asp-controller="Products" asp-action="Index" class="btn btn-primary btn-lg">
+                            <i class="bi bi-bag me-2"></i>Continue Shopping
+                        </a>
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary btn-lg">
+                            <i class="bi bi-house me-2"></i>Back to Home
+                        </a>
+                    </div>
+
+                    <p class="text-muted mt-4 mb-0">
+                        <small>A confirmation email has been sent to @Model.Email</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
