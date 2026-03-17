@@ -46,12 +46,7 @@
                                 Services
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                <li><a class="dropdown-item" href="#">Eye Channeling</a></li>
-                                <li><a class="dropdown-item" href="#">HVF Testing</a></li>
-                                <li><a class="dropdown-item" href="#">OCT Testing</a></li>
-                                <li><a class="dropdown-item" href="#">Cataract Surgery</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="Index" asp-fragment="services">All Services</a></li>
+                                @await Component.InvokeAsync("ServicesMenu")
                             </ul>
                         </li>
                         <li class="nav-item">
@@ -130,6 +125,77 @@
         </div>
     </footer>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle service navigation links
+            const serviceNavLinks = document.querySelectorAll('.service-nav-link');
+
+            serviceNavLinks.forEach(function(link) {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    const serviceId = this.getAttribute('data-service-id');
+                    const serviceName = this.getAttribute('data-service-name');
+
+                    console.log('Navigation service clicked:', serviceId, serviceName);
+
+                    // Check if we're already on the homepage
+                    if (window.location.pathname === '/' || window.location.pathname === '/Home' || window.location.pathname === '/Home/Index') {
+                        // We're on homepage - scroll to services section and trigger button
+                        const servicesSection = document.getElementById('services');
+                        if (servicesSection) {
+                            servicesSection.scrollIntoView({ behavior: 'smooth' });
+
+                            // Wait for scroll then click the service button
+                            setTimeout(function() {
+                                const serviceButton = document.querySelector(`.service-btn[data-service-id="${serviceId}"]`);
+                                if (serviceButton) {
+                                    serviceButton.click();
+                                }
+                            }, 500);
+                        } else {
+                            // Services section not found - redirect to homepage with hash
+                            window.location.href = '/Home/Index#services';
+                        }
+                    } else {
+                        // We're on a different page - redirect to homepage with service ID
+                        window.location.href = '/Home/Index#services';
+
+                        // Store service ID in sessionStorage to trigger after page load
+                        sessionStorage.setItem('scrollToService', serviceId);
+                    }
+
+                    // Close dropdown
+                    const dropdown = this.closest('.dropdown');
+                    if (dropdown) {
+                        const bsDropdown = new bootstrap.Dropdown(dropdown.querySelector('.dropdown-toggle'));
+                        bsDropdown.hide();
+                    }
+                });
+            });
+
+            // Check if we need to auto-trigger a service on page load
+            const storedServiceId = sessionStorage.getItem('scrollToService');
+            if (storedServiceId) {
+                sessionStorage.removeItem('scrollToService');
+
+                // Wait for page to fully load
+                setTimeout(function() {
+                    const servicesSection = document.getElementById('services');
+                    if (servicesSection) {
+                        servicesSection.scrollIntoView({ behavior: 'smooth' });
+
+                        setTimeout(function() {
+                            const serviceButton = document.querySelector(`.service-btn[data-service-id="${storedServiceId}"]`);
+                            if (serviceButton) {
+                                serviceButton.click();
+                            }
+                        }, 500);
+                    }
+                }, 1000);
+            }
+        });
+    </script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
