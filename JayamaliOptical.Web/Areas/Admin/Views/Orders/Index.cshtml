@@ -1,0 +1,120 @@
+﻿@model IEnumerable<JayamaliOptical.Web.Models.Order>
+@{
+    ViewData["Title"] = "Orders";
+    var statusFilter = ViewBag.StatusFilter as string ?? "All";
+    var currentPage = ViewBag.CurrentPage as int? ?? 1;
+    var totalPages = ViewBag.TotalPages as int? ?? 1;
+    var statuses = ViewBag.Statuses as string[];
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Order Management</h3>
+                <div class="card-tools">
+                    <!-- Status Filter -->
+                    <div class="btn-group" role="group">
+                        @foreach (var status in (ViewBag.Statuses as string[]) ?? new string[0])
+                        {
+                            var isActive = (ViewBag.StatusFilter as string ?? "All") == status;
+                            <a href="/Admin/Orders?status=@status&page=1"
+                               class="btn btn-sm @(isActive ? "btn-primary" : "btn-outline-primary")">
+                                @status
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                @if (!Model.Any())
+                {
+                    <div class="text-center py-5">
+                        <i class="fas fa-box-open fa-4x text-muted mb-3"></i>
+                        <h4>No orders found</h4>
+                        <p class="text-muted">Orders will appear here when customers place them.</p>
+                    </div>
+                }
+                else
+                {
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Order #</th>
+                                <th>Customer</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Total</th>
+                                <th>Items</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var order in Model)
+                            {
+                                <tr>
+                                    <td><strong>@order.OrderNumber</strong></td>
+                                    <td>@order.FirstName @order.LastName</td>
+                                    <td>@order.Email</td>
+                                    <td>@order.PhoneNumber</td>
+                                    <td class="text-primary fw-bold">Rs. @order.TotalAmount.ToString("0.00")</td>
+                                    <td>@order.OrderItems.Count</td>
+                                    <td>@order.OrderDate.ToString("dd MMM yyyy")</td>
+                                    <td>
+                                        @{
+                                            var badgeClass = order.Status switch
+                                            {
+                                                                "Pending" => "bg-warning",
+                                                                "Confirmed" => "bg-info",
+                                                                "Processing" => "bg-primary",
+                                                                "Shipped" => "bg-success",
+                                                                "Delivered" => "bg-success",
+                                                                "Cancelled" => "bg-danger",
+                                                _ => "bg-secondary"
+                                            };
+                                        }
+                                        <span class="badge @badgeClass">@order.Status</span>
+                                    </td>
+                                    <td>
+                                        <a href="/Admin/Orders/Details/@order.Id" class="btn btn-info btn-sm" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="/Admin/Orders/UpdateStatus/@order.Id" class="btn btn-primary btn-sm" title="Update Status">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="/Admin/Orders/PrintInvoice/@order.Id" target="_blank" class="btn btn-success btn-sm" title="Print Invoice">
+                                            <i class="fas fa-print"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                    <!-- Pagination -->
+                    @if (ViewBag.TotalPages != null && (int)ViewBag.TotalPages > 1)
+                    {
+                        <nav aria-label="Order pagination">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item @((ViewBag.CurrentPage as int? ?? 1) <= 1 ? "disabled" : "")">
+                                    <a class="page-link" href="/Admin/Orders?status=@(ViewBag.StatusFilter as string ?? "All")&page=@((ViewBag.CurrentPage as int? ?? 1) - 1)">Previous</a>
+                                </li>
+                                @for (var i = 1; i <= (ViewBag.TotalPages as int? ?? 1); i++)
+                                {
+                                    <li class="page-item @((ViewBag.CurrentPage as int? ?? 1) == i ? "active" : "")">
+                                        <a class="page-link" href="/Admin/Orders?status=@(ViewBag.StatusFilter as string ?? "All")&page=@i">@i</a>
+                                    </li>
+                                }
+                                <li class="page-item @((ViewBag.CurrentPage as int? ?? 1) >= (ViewBag.TotalPages as int? ?? 1) ? "disabled" : "")">
+                                    <a class="page-link" href="/Admin/Orders?status=@(ViewBag.StatusFilter as string ?? "All")&page=@((ViewBag.CurrentPage as int? ?? 1) + 1)">Next</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>

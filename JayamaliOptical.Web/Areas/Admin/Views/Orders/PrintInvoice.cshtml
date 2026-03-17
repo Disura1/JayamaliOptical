@@ -1,0 +1,114 @@
+﻿@model JayamaliOptical.Web.Models.Order
+@{
+    Layout = null; // No layout for print
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Invoice - @Model.OrderNumber</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <style>
+        @@media print {
+            .no-print {
+                display: none;
+            }
+
+            body {
+                -webkit-print-color-adjust: exact;
+            }
+        }
+
+        .invoice-header {
+            border-bottom: 3px solid #0d6efd;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .invoice-title {
+            color: #0d6efd;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="no-print mb-3">
+            <button onclick="window.print()" class="btn btn-primary">
+                <i class="fas fa-print me-2"></i>Print Invoice
+            </button>
+            <a href="/Admin/Orders/Details/@Model.Id" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back
+            </a>
+        </div>
+
+        <div class="invoice-header">
+            <div class="row">
+                <div class="col-md-6">
+                    <h1 class="invoice-title">Jayamali Optical</h1>
+                    <p class="mb-0">Your Vision, Our Priority</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <h3>INVOICE</h3>
+                    <p class="mb-0"><strong>Order #:</strong> @Model.OrderNumber</p>
+                    <p class="mb-0"><strong>Date:</strong> @Model.OrderDate.ToString("dd MMM yyyy")</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h5>Bill To:</h5>
+                <p class="mb-1">@Model.FirstName @Model.LastName</p>
+                <p class="mb-1">@Model.Address</p>
+                <p class="mb-1">@Model.City, @Model.PostalCode</p>
+                <p class="mb-1">Email: @Model.Email</p>
+                <p class="mb-0">Phone: @Model.PhoneNumber</p>
+            </div>
+        </div>
+
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.OrderItems)
+                {
+                    <tr>
+                        <td>@item.ProductName</td>
+                        <td>Rs. @item.Price.ToString("0.00")</td>
+                        <td>@item.Quantity</td>
+                        <td>Rs. @item.Total.ToString("0.00")</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="3" class="text-end">Total Amount:</th>
+                    <th class="text-primary">Rs. @Model.TotalAmount.ToString("0.00")</th>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="row mt-5">
+            <div class="col-md-6">
+                <p><strong>Status:</strong> @Model.Status</p>
+                @if (!string.IsNullOrEmpty(Model.OrderNotes))
+                {
+                    <p><strong>Notes:</strong> @Model.OrderNotes</p>
+                }
+            </div>
+            <div class="col-md-6 text-end">
+                <p class="mb-0">Thank you for your business!</p>
+                <p class="mb-0">Jayamali Optical</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
