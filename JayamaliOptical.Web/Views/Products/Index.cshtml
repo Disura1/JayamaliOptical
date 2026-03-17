@@ -299,6 +299,13 @@
                         ${specsHtml ? `<hr /><h6 class="fw-bold mb-2">Specifications</h6>${specsHtml}` : ''}
 
                         <div class="mt-4">
+                            <form action="/Cart/AddToCart" method="post" class="d-inline mb-2">
+                                <input type="hidden" name="productId" value="${product.id}" />
+                                <input type="hidden" name="quantity" value="1" />
+                                <button type="submit" class="btn btn-primary btn-lg w-100">
+                                    <i class="fas fa-cart-plus me-2"></i>Add to Cart
+                                </button>
+                            </form>
                             <a href="/Contact" class="btn btn-success btn-lg w-100">
                                 <i class="fas fa-phone me-2"></i>Inquire Now
                             </a>

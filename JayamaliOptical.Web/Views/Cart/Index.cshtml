@@ -1,0 +1,97 @@
+﻿@model JayamaliOptical.Web.Models.ShoppingCart
+@{
+    ViewData["Title"] = "Shopping Cart";
+}
+
+<div class="container py-5">
+    <h2 class="mb-4"><i class="fas fa-shopping-cart me-2"></i>Shopping Cart</h2>
+
+    @if (Model.Items.Any())
+    {
+        <div class="row">
+            <!-- Cart Items -->
+            <div class="col-lg-8">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        @foreach (var item in Model.Items)
+                        {
+                            <div class="cart-item row align-items-center mb-3 pb-3 border-bottom">
+                                <div class="col-md-2">
+                                    @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                    {
+                                        <img src="@item.ImageUrl" alt="@item.ProductName" class="img-fluid rounded" style="max-height: 80px;" />
+                                    }
+                                    else
+                                    {
+                                        <div class="bg-secondary rounded d-flex align-items-center justify-content-center" style="height: 80px;">
+                                            <i class="fas fa-box text-white"></i>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="col-md-4">
+                                    <h6 class="mb-1">@item.ProductName</h6>
+                                    <small class="text-muted">@item.CategoryName</small>
+                                </div>
+                                <div class="col-md-2">
+                                    <strong>Rs. @item.Price.ToString("0.00")</strong>
+                                </div>
+                                <div class="col-md-2">
+                                    <form asp-action="UpdateQuantity" method="post" class="d-inline">
+                                        <input type="hidden" name="productId" value="@item.ProductId" />
+                                        <input type="number" name="quantity" value="@item.Quantity" min="1" max="10" class="form-control form-control-sm" onchange="this.form.submit()" />
+                                    </form>
+                                </div>
+                                <div class="col-md-2 text-end">
+                                    <strong>Rs. @((item.Price * item.Quantity).ToString("0.00"))</strong>
+                                    <form asp-action="RemoveFromCart" method="post" class="d-inline ms-2">
+                                        <input type="hidden" name="productId" value="@item.ProductId" />
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cart Summary -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Order Summary</h5>
+                        <hr />
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Total Items:</span>
+                            <strong>@Model.TotalItems</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>Subtotal:</span>
+                            <strong class="text-primary">Rs. @Model.TotalPrice.ToString("0.00")</strong>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <a asp-controller="Checkout" asp-action="Index" class="btn btn-success btn-lg">
+                                <i class="fas fa-check-circle me-2"></i>Proceed to Checkout
+                            </a>
+                            <a asp-controller="Products" asp-action="Index" class="btn btn-outline-primary">
+                                <i class="fas fa-arrow-left me-2"></i>Continue Shopping
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <i class="fas fa-shopping-cart fa-4x text-muted mb-3"></i>
+            <h4>Your cart is empty</h4>
+            <p class="text-muted mb-4">Looks like you haven't added any products yet.</p>
+            <a asp-controller="Products" asp-action="Index" class="btn btn-primary btn-lg">
+                <i class="fas fa-shopping-bag me-2"></i>Browse Products
+            </a>
+        </div>
+    }
+</div>
