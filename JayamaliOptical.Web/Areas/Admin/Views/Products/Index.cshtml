@@ -87,7 +87,16 @@
                                             </td>
                                         }
                                         <td>@item.Brand</td>
-                                        <td>Rs. @item.Price.ToString("0.00")</td>
+                                        <td>
+                                            @if (item.Price.HasValue)
+                                            {
+                                                @:Rs. @item.Price.Value.ToString("0.00")
+                                            }
+                                            else
+                                            {
+                                                @:-
+                                            }
+                                        </td>
                                         <td>@item.StockQuantity</td>
                                         <td>
                                             @if (!string.IsNullOrEmpty(item.ImageUrl1))

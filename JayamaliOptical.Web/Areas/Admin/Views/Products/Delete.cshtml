@@ -20,7 +20,14 @@
                     <dd class="col-sm-8">@Model.Category?.Name</dd>
 
                     <dt class="col-sm-4">Price:</dt>
-                    <dd class="col-sm-8">Rs. @Model.Price.ToString("0.00")</dd>
+                    @if (Model.Price.HasValue)
+                    {
+                        <dd class="col-sm-8">Rs. @Model.Price.Value.ToString("0.00")</dd>
+                    }
+                    else
+                    {
+                        <dd class="col-sm-8">-</dd>
+                    }
 
                     <dt class="col-sm-4">Stock:</dt>
                     <dd class="col-sm-8">@Model.StockQuantity</dd>

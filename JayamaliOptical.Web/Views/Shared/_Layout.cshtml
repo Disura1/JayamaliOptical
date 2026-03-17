@@ -29,16 +29,11 @@
                             <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle" href="#" id="productsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Products
                             </a>
-                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                <li><a class="dropdown-item" href="#">Spectacles</a></li>
-                                <li><a class="dropdown-item" href="#">Sunglasses</a></li>
-                                <li><a class="dropdown-item" href="#">Contact Lenses</a></li>
-                                <li><a class="dropdown-item" href="#">Intraocular Lenses (IOL)</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" asp-area="" asp-controller="Products" asp-action="Index">All Products</a></li>
+                            <ul class="dropdown-menu" aria-labelledby="productsDropdown">
+                                @await Component.InvokeAsync("CategoriesMenu")
                             </ul>
                         </li>
                         <li class="nav-item dropdown">
@@ -127,6 +122,39 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Handle category navigation links
+            const categoryNavLinks = document.querySelectorAll('.category-nav-link');
+
+            categoryNavLinks.forEach(function(link) {
+                link.addEventListener('click', function(e) {
+                    // Let the link work normally (navigate to filtered products page)
+                    // No need to preventDefault - just let it navigate
+                    console.log('Category clicked:', this.textContent);
+
+                    // Close dropdown after click
+                    const dropdown = this.closest('.dropdown');
+                    if (dropdown) {
+                        const bsDropdown = new bootstrap.Dropdown(dropdown.querySelector('.dropdown-toggle'));
+                        bsDropdown.hide();
+                    }
+                });
+            });
+
+            // Handle "All Products" link - ensure it clears any category filter
+            const allProductsLink = document.querySelector('.dropdown-item[href*="/Products/Index"]');
+            if (allProductsLink) {
+                allProductsLink.addEventListener('click', function() {
+                    console.log('All Products clicked');
+                    // Close dropdown
+                    const dropdown = this.closest('.dropdown');
+                    if (dropdown) {
+                        const bsDropdown = new bootstrap.Dropdown(dropdown.querySelector('.dropdown-toggle'));
+                        bsDropdown.hide();
+                    }
+                });
+            }
+
+
             // Handle service navigation links
             const serviceNavLinks = document.querySelectorAll('.service-nav-link');
 

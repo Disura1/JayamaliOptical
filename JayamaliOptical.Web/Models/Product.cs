@@ -19,7 +19,7 @@ namespace JayamaliOptical.Web.Models
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
-        public decimal Price { get; set; }
+        public decimal? Price { get; set; }  // Changed from decimal to decimal?
 
         // Foreign key to Category
         public int CategoryId { get; set; }
