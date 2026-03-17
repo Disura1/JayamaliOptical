@@ -1,0 +1,216 @@
+﻿@using JayamaliOptical.Web.Models
+@model JayamaliOptical.Web.Models.Service
+@{
+    ViewData["Title"] = "Create Service";
+}
+
+<div class="row">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Add New Service</h3>
+            </div>
+            <form action="/Admin/Services/Create" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Service Name</label>
+                                <input type="text" name="Name" class="form-control" required />
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Display Order</label>
+                                <input type="number" name="DisplayOrder" class="form-control" value="0" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea name="Description" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Price (Rs.)</label>
+                                <input type="number" name="Price" class="form-control" step="0.01" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Duration (Minutes)</label>
+                                <input type="number" name="DurationMinutes" class="form-control" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Service Image</label>
+                                <input type="file" name="ImageFile" class="form-control" accept="image/*" />
+                                <small class="text-muted">Upload a service image (recommended size: 400x300px)</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group form-check">
+                        <input type="checkbox" name="RequiresAppointment" value="true" class="form-check-input" />
+                        <input type="hidden" name="RequiresAppointment" value="false" />
+                        <label class="form-check-label">Requires Appointment</label>
+                    </div>
+
+                    <hr />
+                    <h5>Select Buttons for This Service</h5>
+                    <p class="text-muted">Choose up to 3 buttons that will appear with this service:</p>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th style="width: 50px;">Select</th>
+                                            <th>Button Text</th>
+                                            <th>Color</th>
+                                            <th>Icon</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var button in PredefinedButtons.Buttons)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <input type="checkbox"
+                                                           class="button-checkbox"
+                                                           data-button-id="@button.Id"
+                                                           data-button-text="@button.Text"
+                                                           data-button-url="@button.Url"
+                                                           data-button-class="@button.Class"
+                                                           data-button-icon="@button.Icon" />
+                                                </td>
+                                                <td><strong>@button.Text</strong></td>
+                                                <td><span class="badge @button.Class">@button.Class.Replace("btn-", "")</span></td>
+                                                <td><i class="@button.Icon"></i></td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="selectedButtonsInfo" class="alert alert-info mt-3" style="display: none;">
+                                <strong>Selected Buttons:</strong> <span id="selectedCount">0</span> of 3
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hidden fields to store selected buttons -->
+                    <input type="hidden" id="Button1Text" name="Button1Text" />
+                    <input type="hidden" id="Button1Url" name="Button1Url" />
+                    <input type="hidden" id="Button1Class" name="Button1Class" />
+
+                    <input type="hidden" id="Button2Text" name="Button2Text" />
+                    <input type="hidden" id="Button2Url" name="Button2Url" />
+                    <input type="hidden" id="Button2Class" name="Button2Class" />
+
+                    <input type="hidden" id="Button3Text" name="Button3Text" />
+                    <input type="hidden" id="Button3Url" name="Button3Url" />
+                    <input type="hidden" id="Button3Class" name="Button3Class" />
+
+                    <div class="form-group form-check mt-3">
+                        <input type="checkbox" name="IsActive" value="true" class="form-check-input" checked />
+                        <input type="hidden" name="IsActive" value="false" />
+                        <label class="form-check-label">Active</label>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <a href="/Admin/Services" class="btn btn-default">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @section Scripts {
+        <script>
+            $(document).ready(function() {
+                let selectedButtons = [];
+
+                $('.button-checkbox').on('change', function() {
+                    const buttonId = $(this).data('button-id');
+                    const buttonText = $(this).data('button-text');
+                    const buttonUrl = $(this).data('button-url');
+                    const buttonClass = $(this).data('button-class');
+                    const buttonIcon = $(this).data('button-icon');
+
+                    if ($(this).is(':checked')) {
+                        // Add to selected buttons
+                        if (selectedButtons.length >= 3) {
+                            alert('You can select maximum 3 buttons only!');
+                            $(this).prop('checked', false);
+                            return;
+                        }
+
+                        selectedButtons.push({
+                            id: buttonId,
+                            text: buttonText,
+                            url: buttonUrl,
+                            class: buttonClass,
+                            icon: buttonIcon
+                        });
+                    } else {
+                        // Remove from selected buttons
+                        selectedButtons = selectedButtons.filter(b => b.id !== buttonId);
+                    }
+
+                    // Update hidden fields
+                    updateHiddenFields();
+                    updateSelectedInfo();
+                });
+
+                function updateHiddenFields() {
+                    // Clear all fields first
+                    $('#Button1Text, #Button1Url, #Button1Class').val('');
+                    $('#Button2Text, #Button2Url, #Button2Class').val('');
+                    $('#Button3Text, #Button3Url, #Button3Class').val('');
+
+                    // Fill selected buttons
+                    selectedButtons.forEach((btn, index) => {
+                        const fieldNum = index + 1;
+                        $(`#Button${fieldNum}Text`).val(btn.text);
+                        $(`#Button${fieldNum}Url`).val(btn.url);
+                        $(`#Button${fieldNum}Class`).val(btn.class);
+                    });
+                }
+
+                function updateSelectedInfo() {
+                    const count = selectedButtons.length;
+                    $('#selectedCount').text(count);
+
+                    if (count > 0) {
+                        $('#selectedButtonsInfo').show();
+                        let buttonsHtml = '';
+                        selectedButtons.forEach(btn => {
+                            buttonsHtml += `<span class="badge ${btn.class} mr-2 mb-2"><i class="${btn.icon}"></i> ${btn.text}</span>`;
+                        });
+                        $('#selectedButtonsInfo').html(`<strong>Selected Buttons:</strong> ${count} of 3<br/>${buttonsHtml}`);
+                    } else {
+                        $('#selectedButtonsInfo').hide();
+                    }
+                }
+
+                // Form validation
+                $('form').on('submit', function(e) {
+                    if (selectedButtons.length === 0) {
+                        alert('Please select at least 1 button for this service.');
+                        e.preventDefault();
+                        return false;
+                    }
+                });
+            });
+        </script>
+    }
+</div>

@@ -14,5 +14,6 @@ namespace JayamaliOptical.Web.Data
         // Add these DbSets
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
+        public DbSet<JayamaliOptical.Web.Models.Service> Services { get; set; }
     }
 }

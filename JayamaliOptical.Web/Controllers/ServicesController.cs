@@ -12,17 +12,6 @@ namespace JayamaliOptical.Web.Controllers
 
         public IActionResult Details()
         {
-            var service = new Service
-            {
-                ServiceId = 1,
-                ServiceName = "Eye Channeling",
-                Description = "Consultation with an eye specialist to check vision problems and eye health.",
-                Price = 2500,
-                DurationMinutes = 30,
-                IsAvailable = true,
-            };
-            ViewData["Service"] = service;
-
             return View();
         }
     }
