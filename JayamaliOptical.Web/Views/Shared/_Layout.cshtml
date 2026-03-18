@@ -59,15 +59,98 @@
                         <button class="btn btn-outline-success" type="submit">Search</button>
                     </form>
                     @await Component.InvokeAsync("Cart")
+
                     <!-- Profile Icon -->
-                    <div class="profile-icon-wrapper mx-2">
-                        <a asp-area="Identity" asp-page="/Account/Manage/Index" class="profile-icon-link" title="Manage Account">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
-                                <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
-                                <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z" />
-                            </svg>
-                        </a>
-                    </div>
+                    @using Microsoft.AspNetCore.Identity
+                    @using JayamaliOptical.Web.Services
+                    @inject SignInManager<IdentityUser> SignInManager
+                    @inject UserManager<IdentityUser> UserManager
+                    @inject ICartService CartService
+
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        // Check if user is Admin
+                        var isAdmin = User.IsInRole("Admin");
+
+                        <div class="profile-icon-wrapper">
+                            <div class="dropdown">
+                                <a href="#" class="profile-icon-link dropdown-toggle" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                                        <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
+                                        <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z" />
+                                    </svg>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                                    <li><h6 class="dropdown-header">Hello, @User.Identity?.Name!</h6></li>
+                                    <li><hr class="dropdown-divider"></li>
+
+                                    @* Admin Panel Link (Only for Admins) *@
+                                    @if (isAdmin)
+                                    {
+                                        <li>
+                                            <a class="dropdown-item text-danger fw-bold" asp-area="Admin" asp-controller="Home" asp-action="Index">
+                                                <i class="bi bi-shield-lock me-2"></i>Admin Panel
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                    }
+
+                                    @* Regular User Links *@
+                                    <li>
+                                        <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">
+                                            <i class="bi bi-gear me-2"></i>My Account
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Orders" asp-action="MyOrders">
+                                            <i class="bi bi-bag me-2"></i>My Orders
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Bookings" asp-action="MyBookings">
+                                            <i class="bi bi-calendar-check me-2"></i>My Bookings
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form class="dropdown-item" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="/" method="post">
+                                            <button type="submit" class="btn btn-link p-0 text-danger">
+                                                <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        @* Not Logged In: Show Login/Register Options *@
+                        <div class="profile-icon-wrapper">
+                            <div class="dropdown">
+                                <a href="#" class="profile-icon-link dropdown-toggle" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                                        <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
+                                        <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z" />
+                                    </svg>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                                    <li><h6 class="dropdown-header">Welcome!</h6></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" href="/Identity/Account/Login">
+                                            <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="/Identity/Account/Register">
+                                            <i class="bi bi-person-plus me-2"></i>Register
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    }
                 </div>
             </div>
         </nav>

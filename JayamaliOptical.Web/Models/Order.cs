@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace JayamaliOptical.Web.Models
@@ -9,6 +10,10 @@ namespace JayamaliOptical.Web.Models
 
         // Order Number (Auto-generated)
         public string OrderNumber { get; set; } = string.Empty;
+
+        // User Information (for logged-in users)
+        public string? UserId { get; set; }  // Nullable for guest orders
+        public IdentityUser? User { get; set; }
 
         // Customer Information
         [Required(ErrorMessage = "First name is required")]

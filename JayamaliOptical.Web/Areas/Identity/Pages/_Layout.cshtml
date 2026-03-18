@@ -1,0 +1,104 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using JayamaliOptical.Web.Services
+@inject ICartService CartService
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Your head content -->
+</head>
+<body>
+    <!-- Navigation (same as your main layout) -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <img src="~/images/logo.png" alt="Jayamali Optical" height="50" />
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Products">Products</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Services">Services</a>
+                    </li>
+                    <!-- Cart Icon - USE ABSOLUTE URL -->
+                    <li class="nav-item">
+                        @{
+                            var cart = CartService?.GetCart();
+                        }
+                        <a class="nav-link position-relative" href="~/Cart">
+                            <i class="bi bi-cart3"></i>
+                            @if (cart != null && cart.TotalItems > 0)
+                            {
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    @cart.TotalItems
+                                </span>
+                            }
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>@using Microsoft.AspNetCore.Identity
+        @using JayamaliOptical.Web.Services
+        @inject ICartService CartService
+
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>@ViewData["Title"] - Jayamali Optical</title>
+            <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
+        </head>
+        <body>
+            <!-- Simple Navigation -->
+            <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4">
+                <div class="container">
+                    <a class="navbar-brand" href="/">
+                        <strong>JAYAMALI OPTICAL</strong>
+                    </a>
+                    <div class="navbar-nav ms-auto">
+                        <a class="nav-link" href="/">Home</a>
+                        <a class="nav-link" href="/Products">Products</a>
+                        <a class="nav-link" href="/Services">Services</a>
+                        <!-- Cart Icon - USE ABSOLUTE PATH -->
+                        <a class="nav-link position-relative" href="/Cart">
+                            <i class="bi bi-cart3"></i>
+                            @{
+                                var cart = CartService?.GetCart();
+                            }
+                            @if (cart != null && cart.TotalItems > 0)
+                            {
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    @cart.TotalItems
+                                </span>
+                            }
+                        </a>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="container">
+                @RenderBody()
+            </div>
+
+            <script src="~/lib/jquery/dist/jquery.min.js"></script>
+            <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+            @await RenderSectionAsync("Scripts", required: false)
+        </body>
+    </html>
+    </nav>
+
+    <div class="container mt-4">
+        @RenderBody()
+    </div>
+</body>
+</html>

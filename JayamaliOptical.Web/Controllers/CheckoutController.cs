@@ -3,6 +3,9 @@ using JayamaliOptical.Web.Models;
 using JayamaliOptical.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 
 namespace JayamaliOptical.Web.Controllers
 {
@@ -11,18 +14,21 @@ namespace JayamaliOptical.Web.Controllers
         private readonly ICartService _cartService;
         private readonly ApplicationDbContext _context;
         private readonly IEmailService _emailService;
-        private readonly IConfiguration _configuration;  // ADD THIS
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<CheckoutController> _logger;
 
         public CheckoutController(
             ICartService cartService,
             ApplicationDbContext context,
             IEmailService emailService,
-            IConfiguration configuration)  // ADD THIS
+            IConfiguration configuration,
+            ILogger<CheckoutController> logger)
         {
             _cartService = cartService;
             _context = context;
             _emailService = emailService;
-            _configuration = configuration;  // ADD THIS
+            _configuration = configuration;
+            _logger = logger; 
         }
 
         // GET: Checkout
@@ -57,17 +63,6 @@ namespace JayamaliOptical.Web.Controllers
 
             if (ModelState.IsValid)
             {
-                // === ADD DEBUG CODE HERE ===
-                var emailSettings = _configuration.GetSection("EmailSettings");
-                Console.WriteLine("=== Email Settings Debug ===");
-                Console.WriteLine($"SMTP Server: {emailSettings["SmtpServer"]}");
-                Console.WriteLine($"SMTP Port: {emailSettings["SmtpPort"]}");
-                Console.WriteLine($"Sender Email: {emailSettings["SenderEmail"]}");
-                Console.WriteLine($"Password Length: {emailSettings["SenderPassword"]?.Length ?? 0}");
-                Console.WriteLine($"Enable SSL: {emailSettings["EnableSsl"]}");
-                Console.WriteLine("===========================");
-                // === END DEBUG CODE ===
-
                 // Create order
                 var order = new Order
                 {
@@ -82,7 +77,8 @@ namespace JayamaliOptical.Web.Controllers
                     OrderNotes = model.OrderNotes,
                     TotalAmount = cart.TotalPrice,
                     OrderDate = DateTime.Now,
-                    Status = "Pending"
+                    Status = "Pending",
+                    UserId = User.FindFirstValue(ClaimTypes.NameIdentifier)  // ← ADD THIS
                 };
 
                 // Add order items
@@ -113,8 +109,7 @@ namespace JayamaliOptical.Web.Controllers
                 }
                 catch (Exception ex)
                 {
-                    // Log error but don't fail the order
-                    Console.WriteLine($"Email sending failed: {ex.Message}");
+                    _logger?.LogError(ex, "Email sending failed");
                 }
 
                 // Clear cart
@@ -124,7 +119,6 @@ namespace JayamaliOptical.Web.Controllers
                 return RedirectToAction("Confirmation", new { orderId = order.Id });
             }
 
-            // If validation fails, repopulate cart
             model.Cart = cart;
             return View(model);
         }

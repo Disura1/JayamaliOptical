@@ -44,7 +44,7 @@ namespace JayamaliOptical.Web.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("JayamaliOptical.Web.Models.Order", b =>
@@ -115,7 +115,7 @@ namespace JayamaliOptical.Web.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Orders", (string)null);
                 });
 
             modelBuilder.Entity("JayamaliOptical.Web.Models.OrderItem", b =>
@@ -148,7 +148,7 @@ namespace JayamaliOptical.Web.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("OrderItems");
+                    b.ToTable("OrderItems", (string)null);
                 });
 
             modelBuilder.Entity("JayamaliOptical.Web.Models.Product", b =>
@@ -209,7 +209,7 @@ namespace JayamaliOptical.Web.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("JayamaliOptical.Web.Models.Service", b =>
@@ -279,7 +279,7 @@ namespace JayamaliOptical.Web.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Services");
+                    b.ToTable("Services", (string)null);
                 });
 
             modelBuilder.Entity("JayamaliOptical.Web.Models.ServiceBooking", b =>
@@ -342,7 +342,7 @@ namespace JayamaliOptical.Web.Migrations
 
                     b.HasIndex("ServiceId");
 
-                    b.ToTable("ServiceBookings");
+                    b.ToTable("ServiceBookings", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

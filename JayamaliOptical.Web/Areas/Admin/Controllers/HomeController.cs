@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace JayamaliOptical.Web.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public class HomeController : Controller
     {
         private readonly ApplicationDbContext _context;

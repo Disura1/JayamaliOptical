@@ -7,7 +7,7 @@ using JayamaliOptical.Web.Models;
 namespace JayamaliOptical.Web.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public class CategoriesController : Controller
     {
         private readonly ApplicationDbContext _context;

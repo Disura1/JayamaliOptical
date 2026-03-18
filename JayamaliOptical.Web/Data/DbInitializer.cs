@@ -7,15 +7,18 @@ namespace JayamaliOptical.Web.Data
 {
     public static class DbInitializer
     {
-        public static async Task Initialize(ApplicationDbContext context, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
+        public static async Task Initialize(
+            ApplicationDbContext context,
+            UserManager<IdentityUser> userManager,
+            RoleManager<IdentityRole> roleManager)
         {
-            // Create Admin Role if not exists
+            // Create Admin role if not exists
             if (!await roleManager.RoleExistsAsync("Admin"))
             {
                 await roleManager.CreateAsync(new IdentityRole("Admin"));
             }
 
-            // Create Admin User if not exists
+            // Create admin user if not exists
             var adminEmail = "admin@jayamalioptical.com";
             var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
@@ -32,8 +35,15 @@ namespace JayamaliOptical.Web.Data
 
                 if (result.Succeeded)
                 {
+                    // Assign Admin role
                     await userManager.AddToRoleAsync(adminUser, "Admin");
                 }
+            }
+
+            // Create sample user role (optional)
+            if (!await roleManager.RoleExistsAsync("Customer"))
+            {
+                await roleManager.CreateAsync(new IdentityRole("Customer"));
             }
 
             // Create default optical categories

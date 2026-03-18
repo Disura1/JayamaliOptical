@@ -12,21 +12,37 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Add Identity (Alternative method)
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
-    options.SignIn.RequireConfirmedAccount = false)
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders();
+// ✅ Add Identity (USE ONLY THIS ONE)
+builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = false;
+    options.SignIn.RequireConfirmedEmail = false;
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequiredLength = 6;
+})
+.AddRoles<IdentityRole>()
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders();
 
 // Configure Identity Cookie Settings
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.Cookie.Name = "JayamaliOpticalAdmin";
-    options.LoginPath = "/Admin/Account/Login";
-    options.AccessDeniedPath = "/Admin/Account/AccessDenied";
-    options.LogoutPath = "/Admin/Account/Logout";
+    options.Cookie.Name = "JayamaliOpticalAuth";
+    options.LoginPath = "/Identity/Account/Login";
+    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+    options.LogoutPath = "/Identity/Account/Logout";  // ← CHANGE THIS
     options.Cookie.HttpOnly = true;
     options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+
+    // ✅ ADD THIS: Redirect to home after logout
+    options.Events.OnRedirectToLogout = context =>
+    {
+        context.Response.Redirect("/");
+        return Task.CompletedTask;
+    };
 });
 
 // Register Cart Service
@@ -76,6 +92,8 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
+
+app.MapRazorPages();
 
 // Create admin user on startup
 using (var scope = app.Services.CreateScope())
