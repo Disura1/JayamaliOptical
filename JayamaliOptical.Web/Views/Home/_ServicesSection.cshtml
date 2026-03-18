@@ -108,9 +108,21 @@
                                     <div id="serviceButtons" class="service-buttons">
                                         @if (!string.IsNullOrEmpty(defaultService?.Button1Text) ||
                                                                             !string.IsNullOrEmpty(defaultService?.Button2Text) ||
-                                                                            !string.IsNullOrEmpty(defaultService?.Button3Text))
+                                                                            !string.IsNullOrEmpty(defaultService?.Button3Text) ||
+                                                                            defaultService?.RequiresAppointment == true)
                                         {
+                                            <h5 class="mb-3">Take Action</h5>
                                             <div class="d-flex flex-wrap gap-3">
+                                                @* Booking Button (for services requiring appointment) *@
+                                                @if (defaultService?.RequiresAppointment == true)
+                                                {
+                                                    <a href="/Bookings/Create?serviceId=@defaultService.Id"
+                                                       class="btn btn-success btn-lg">
+                                                        <i class="fas fa-calendar-plus me-2"></i>Book Appointment
+                                                    </a>
+                                                }
+
+                                                @* Custom Button 1 *@
                                                 @if (!string.IsNullOrEmpty(defaultService.Button1Text))
                                                 {
                                                     <a href="@defaultService.Button1Url"
@@ -119,6 +131,7 @@
                                                     </a>
                                                 }
 
+                                                @* Custom Button 2 *@
                                                 @if (!string.IsNullOrEmpty(defaultService.Button2Text))
                                                 {
                                                     <a href="@defaultService.Button2Url"
@@ -127,6 +140,7 @@
                                                     </a>
                                                 }
 
+                                                @* Custom Button 3 *@
                                                 @if (!string.IsNullOrEmpty(defaultService.Button3Text))
                                                 {
                                                     <a href="@defaultService.Button3Url"
@@ -276,28 +290,49 @@
                             infoContainer.innerHTML = infoHtml;
 
                             // Update buttons
-                            const buttonsContainer = document.getElementById('serviceButtons');
-                            let buttonsHtml = '';
-                            if (data.button1Text || data.button2Text || data.button3Text) {
-                                buttonsHtml = '<h5 class="mb-3"></h5><div class="d-flex flex-wrap gap-2">';
-
-                                if (data.button1Text) {
-                                    var icon1 = data.button1Class.includes('success') ? 'calendar-plus' : data.button1Class.includes('info') ? 'info-circle' : 'arrow-right';
-                                    buttonsHtml += '<a href="' + data.button1Url + '" class="btn ' + data.button1Class + ' btn-lg fade-in"><i class="bi bi-' + icon1 + ' me-2"></i>' + data.button1Text + '</a>';
+                            var buttonsHtml = '';
+                            if (data.button1Text || data.button2Text || data.button3Text || data.requiresAppointment) {
+                                buttonsHtml = '<h5 class="mb-3">Take Action</h5><div class="d-flex flex-wrap gap-3">';
+                            
+                                // Booking Button (for services requiring appointment)
+                                if (data.requiresAppointment) {
+                                    buttonsHtml += `
+                                        <a href="/Bookings/Create?serviceId=${data.id}" class="btn btn-success btn-lg fade-in">
+                                            <i class="fas fa-calendar-plus me-2"></i>Book Appointment
+                                        </a>
+                                    `;
                                 }
-
+                            
+                                if (data.button1Text) {
+                                    var icon1 = data.button1Class.includes('success') ? 'calendar-plus' :
+                                               data.button1Class.includes('info') ? 'info-circle' : 'arrow-right';
+                                    buttonsHtml += `
+                                        <a href="${data.button1Url}" class="btn ${data.button1Class} btn-lg fade-in">
+                                            <i class="fas fa-${icon1} me-2"></i>${data.button1Text}
+                                        </a>
+                                    `;
+                                }
+                            
                                 if (data.button2Text) {
                                     var icon2 = data.button2Class.includes('info') ? 'phone' : 'arrow-right';
-                                    buttonsHtml += '<a href="' + data.button2Url + '" class="btn ' + data.button2Class + ' btn-lg fade-in"><i class="bi bi-' + icon2 + ' me-2"></i>' + data.button2Text + '</a>';
+                                    buttonsHtml += `
+                                        <a href="${data.button2Url}" class="btn ${data.button2Class} btn-lg fade-in">
+                                            <i class="fas fa-${icon2} me-2"></i>${data.button2Text}
+                                        </a>
+                                    `;
                                 }
-
+                            
                                 if (data.button3Text) {
-                                    buttonsHtml += '<a href="' + data.button3Url + '" class="btn ' + data.button3Class + ' btn-lg fade-in"><i class="bi bi-arrow-right me-2"></i>' + data.button3Text + '</a>';
+                                    buttonsHtml += `
+                                        <a href="${data.button3Url}" class="btn ${data.button3Class} btn-lg fade-in">
+                                            <i class="fas fa-arrow-right me-2"></i>${data.button3Text}
+                                        </a>
+                                    `;
                                 }
-
+                            
                                 buttonsHtml += '</div>';
                             }
-                            buttonsContainer.innerHTML = buttonsHtml;
+                            $('#serviceButtons').html(buttonsHtml);
 
                             // Remove loading state
                             serviceContent.style.opacity = '1';

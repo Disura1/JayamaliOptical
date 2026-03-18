@@ -6,14 +6,6 @@
         {
             new ServiceButtonTemplate
             {
-                Id = "book_appointment",
-                Text = "Book Appointment",
-                Url = "/Appointments/Create",
-                Class = "btn-success",
-                Icon = "fas fa-calendar-plus"
-            },
-            new ServiceButtonTemplate
-            {
                 Id = "contact_clinic",
                 Text = "Contact Clinic",
                 Url = "/Contact",

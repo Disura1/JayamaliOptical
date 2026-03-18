@@ -17,5 +17,6 @@ namespace JayamaliOptical.Web.Data
         public DbSet<JayamaliOptical.Web.Models.Service> Services { get; set; }
         public DbSet<JayamaliOptical.Web.Models.Order> Orders { get; set; }
         public DbSet<JayamaliOptical.Web.Models.OrderItem> OrderItems { get; set; }
+        public DbSet<JayamaliOptical.Web.Models.ServiceBooking> ServiceBookings { get; set; }
     }
 }

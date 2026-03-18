@@ -10,11 +10,19 @@ namespace JayamaliOptical.Web.Controllers
     {
         private readonly ICartService _cartService;
         private readonly ApplicationDbContext _context;
+        private readonly IEmailService _emailService;
+        private readonly IConfiguration _configuration;  // ADD THIS
 
-        public CheckoutController(ICartService cartService, ApplicationDbContext context)
+        public CheckoutController(
+            ICartService cartService,
+            ApplicationDbContext context,
+            IEmailService emailService,
+            IConfiguration configuration)  // ADD THIS
         {
             _cartService = cartService;
             _context = context;
+            _emailService = emailService;
+            _configuration = configuration;  // ADD THIS
         }
 
         // GET: Checkout
@@ -49,6 +57,17 @@ namespace JayamaliOptical.Web.Controllers
 
             if (ModelState.IsValid)
             {
+                // === ADD DEBUG CODE HERE ===
+                var emailSettings = _configuration.GetSection("EmailSettings");
+                Console.WriteLine("=== Email Settings Debug ===");
+                Console.WriteLine($"SMTP Server: {emailSettings["SmtpServer"]}");
+                Console.WriteLine($"SMTP Port: {emailSettings["SmtpPort"]}");
+                Console.WriteLine($"Sender Email: {emailSettings["SenderEmail"]}");
+                Console.WriteLine($"Password Length: {emailSettings["SenderPassword"]?.Length ?? 0}");
+                Console.WriteLine($"Enable SSL: {emailSettings["EnableSsl"]}");
+                Console.WriteLine("===========================");
+                // === END DEBUG CODE ===
+
                 // Create order
                 var order = new Order
                 {
@@ -81,6 +100,22 @@ namespace JayamaliOptical.Web.Controllers
                 // Save to database
                 _context.Orders.Add(order);
                 await _context.SaveChangesAsync();
+
+                // Send confirmation email
+                try
+                {
+                    await _emailService.SendOrderConfirmationAsync(
+                        model.Email,
+                        $"{model.FirstName} {model.LastName}",
+                        order.OrderNumber,
+                        order.TotalAmount
+                    );
+                }
+                catch (Exception ex)
+                {
+                    // Log error but don't fail the order
+                    Console.WriteLine($"Email sending failed: {ex.Message}");
+                }
 
                 // Clear cart
                 _cartService.ClearCart();
@@ -119,5 +154,7 @@ namespace JayamaliOptical.Web.Controllers
         {
             return "ORD-" + DateTime.Now.ToString("yyyyMMddHHmmss") + "-" + new Random().Next(1000, 9999);
         }
+
+
     }
 }
