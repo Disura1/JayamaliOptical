@@ -102,13 +102,8 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" asp-controller="Orders" asp-action="MyOrders">
-                                            <i class="bi bi-bag me-2"></i>My Orders
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Bookings" asp-action="MyBookings">
-                                            <i class="bi bi-calendar-check me-2"></i>My Bookings
+                                        <a class="dropdown-item" asp-controller="Dashboard" asp-action="Index">
+                                            <i class="bi bi-speedometer2 me-1"></i>Dashboard
                                         </a>
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
@@ -311,6 +306,26 @@
                         }, 500);
                     }
                 }, 1000);
+            }
+        });
+
+        // Fix relative URLs in Identity pages
+        document.addEventListener('click', function(e) {
+            var link = e.target.closest('a[href]');
+            if (link && link.href.startsWith(window.location.origin + '/Identity/')) {
+                // Check if it's a navigation link (not an Identity link)
+                if (link.href.includes('/Cart') || link.href.includes('/Dashboard') ||
+                    link.href.includes('/Products') || link.href.includes('/Services') ||
+                    link.href.includes('/Home')) {
+                    // Remove /Identity prefix
+                    var newHref = link.href.replace('/Identity', '');
+                    if (e.ctrlKey || e.metaKey) {
+                        window.open(newHref, '_blank');
+                    } else {
+                        window.location.href = newHref;
+                    }
+                    e.preventDefault();
+                }
             }
         });
     </script>

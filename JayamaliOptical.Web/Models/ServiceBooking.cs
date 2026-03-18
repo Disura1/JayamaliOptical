@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace JayamaliOptical.Web.Models
@@ -13,6 +14,10 @@ namespace JayamaliOptical.Web.Models
         // Service Information
         public int ServiceId { get; set; }
         public Service? Service { get; set; }
+
+        // User Information (for logged-in users)
+        public string? UserId { get; set; }  // Nullable for guest bookings
+        public IdentityUser? User { get; set; }
 
         // Customer Information
         [Required(ErrorMessage = "First name is required")]

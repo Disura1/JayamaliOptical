@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;  // ADD THIS
 using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 
 namespace JayamaliOptical.Web.Controllers
 {
@@ -86,13 +87,14 @@ namespace JayamaliOptical.Web.Controllers
                     AppointmentTime = appointmentTime,
                     Notes = model.Notes,
                     BookingDate = DateTime.Now,
-                    Status = "Pending"
+                    Status = "Pending",
+                    UserId = User.FindFirstValue(ClaimTypes.NameIdentifier)  // ← ADD THIS
                 };
 
                 _context.ServiceBookings.Add(booking);
                 await _context.SaveChangesAsync();
 
-                // === SEND EMAIL ONLY ONCE ===
+                // Send booking confirmation email
                 try
                 {
                     var service = await _context.Services.FindAsync(booking.ServiceId);
@@ -109,9 +111,7 @@ namespace JayamaliOptical.Web.Controllers
                 catch (Exception ex)
                 {
                     _logger?.LogError(ex, "Email sending failed");
-                    // Don't fail the booking if email fails
                 }
-                // === END EMAIL CODE ===
 
                 return RedirectToAction("Confirmation", new { bookingId = booking.Id });
             }
