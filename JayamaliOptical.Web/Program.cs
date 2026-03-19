@@ -61,6 +61,9 @@ builder.Services.AddSession(options =>
 // Register Email Service
 builder.Services.AddScoped<IEmailService, EmailService>();
 
+// Register Prescription Service
+builder.Services.AddScoped<IPrescriptionService, PrescriptionService>();
+
 var app = builder.Build();
 
 // Enable Session
