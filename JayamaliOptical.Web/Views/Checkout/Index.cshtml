@@ -3,11 +3,65 @@
     ViewData["Title"] = "Checkout";
 }
 
+@* Debug: Check if user is logged in *@
+@if (User?.Identity?.IsAuthenticated == true)
+{
+    <script>
+        console.log("User is logged in: @User.Identity.Name");
+        // Auto-show form for logged-in users
+        document.addEventListener('DOMContentLoaded', function() {
+            var checkoutForm = document.getElementById('checkoutForm');
+            if (checkoutForm) {
+                checkoutForm.style.display = 'flex';
+                console.log("Form shown for logged-in user");
+            }
+        });
+    </script>
+}
+
 <div class="container py-5">
     <h2 class="mb-4"><i class="bi bi-credit-card me-2"></i>Checkout</h2>
 
-    <form asp-action="Index" method="post">
-        <div class="row">
+    @* Checkout Mode Selection - Only show for guests *@
+    @if (!User.Identity.IsAuthenticated)
+    {
+        <div class="row mb-4" id="checkoutModeSelection">
+            <div class="col-12">
+                <div class="card border-primary">
+                    <div class="card-body text-center">
+                        <h5 class="card-title"><i class="bi bi-person-check me-2"></i>Choose How to Checkout</h5>
+                        <p class="card-text text-muted">You can complete your order as a guest or login for a faster experience.</p>
+
+                        <div class="d-flex flex-wrap justify-content-center gap-3">
+                            <!-- Guest Checkout Button -->
+                            <button type="button" class="btn btn-outline-primary btn-lg" onclick="showGuestForm()">
+                                <i class="bi bi-person me-2"></i>Continue as Guest
+                            </button>
+
+                            <!-- Login Button -->
+                            <a asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="/Checkout" class="btn btn-primary btn-lg">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Login for Faster Checkout
+                            </a>
+                        </div>
+
+                        <div class="mt-3 text-start" style="max-width: 500px; margin: 0 auto;">
+                            <h6 class="text-primary">Benefits of logging in:</h6>
+                            <ul class="small text-muted mb-0">
+                                <li>✓ Track your order status easily</li>
+                                <li>✓ Save prescriptions for future orders</li>
+                                <li>✓ Faster checkout next time</li>
+                                <li>✓ View order and booking history</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @* Main Checkout Form - Hidden for guests until they choose *@
+    <div class="row" id="checkoutForm" style="@(User?.Identity?.IsAuthenticated == true ? "" : "display: none;")">
+        <form asp-action="Index" method="post">
             <!-- Customer Information -->
             <div class="col-lg-8">
                 <div class="card shadow-sm mb-4">
@@ -128,12 +182,48 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    @if (User?.Identity?.IsAuthenticated != true)
+    {
+        <script>
+            function showGuestForm() {
+                var modeCard = document.getElementById('checkoutModeSelection');
+                if (modeCard) modeCard.style.display = 'none';
+
+                var checkoutForm = document.getElementById('checkoutForm');
+                if (checkoutForm) checkoutForm.style.display = 'flex';
+            }
+
+            // Show form if there are validation errors
+            @if (!ViewData.ModelState.IsValid)
+            {
+                    <text>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        showGuestForm();
+                    });
+                    </text>
+            }
+        </script>
+    }
+    else
+    {
+        <script>
+            // Auto-show form for logged-in users
+            document.addEventListener('DOMContentLoaded', function() {
+                var checkoutForm = document.getElementById('checkoutForm');
+                if (checkoutForm) {
+                    checkoutForm.style.display = 'flex';
+                    console.log("Form auto-shown for logged-in user");
+                }
+            });
+        </script>
     }
 }
