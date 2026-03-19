@@ -1,0 +1,120 @@
+﻿@model JayamaliOptical.Web.Models.PrescriptionViewModel
+@{
+    ViewData["Title"] = "Edit Prescription";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-pencil me-2"></i>Edit Prescription</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                        <input type="hidden" asp-for="Id" />
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <!-- Basic Info -->
+                        <h5 class="mb-3">Basic Information</h5>
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label asp-for="Name" class="form-label">Prescription Name <span class="text-danger">*</span></label>
+                                <input asp-for="Name" class="form-control" placeholder="e.g., My Regular Glasses" />
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="form-check mt-4">
+                                    <input asp-for="IsDefault" class="form-check-input" />
+                                    <label asp-for="IsDefault" class="form-check-label">Set as Default</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label asp-for="Description" class="form-label">Notes (Optional)</label>
+                            <textarea asp-for="Description" class="form-control" rows="2" placeholder="Any additional notes..."></textarea>
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <!-- Right Eye -->
+                        <h5 class="mb-3 text-primary"><i class="bi bi-eye me-2"></i>Right Eye (OD)</h5>
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label asp-for="RightEyeSphere" class="form-label">Sphere (SPH)</label>
+                                <input asp-for="RightEyeSphere" class="form-control" placeholder="-0.00" />
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label asp-for="RightEyeCylinder" class="form-label">Cylinder (CYL)</label>
+                                <input asp-for="RightEyeCylinder" class="form-control" placeholder="-0.00" />
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label asp-for="RightEyeAxis" class="form-label">Axis</label>
+                                <input asp-for="RightEyeAxis" class="form-control" placeholder="0-180" />
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label asp-for="RightEyeAdd" class="form-label">Add</label>
+                                <input asp-for="RightEyeAdd" class="form-control" placeholder="+0.00" />
+                            </div>
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <!-- Left Eye -->
+                        <h5 class="mb-3 text-primary"><i class="bi bi-eye me-2"></i>Left Eye (OS)</h5>
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label asp-for="LeftEyeSphere" class="form-label">Sphere (SPH)</label>
+                                <input asp-for="LeftEyeSphere" class="form-control" placeholder="-0.00" />
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label asp-for="LeftEyeCylinder" class="form-label">Cylinder (CYL)</label>
+                                <input asp-for="LeftEyeCylinder" class="form-control" placeholder="-0.00" />
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label asp-for="LeftEyeAxis" class="form-label">Axis</label>
+                                <input asp-for="LeftEyeAxis" class="form-control" placeholder="0-180" />
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label asp-for="LeftEyeAdd" class="form-label">Add</label>
+                                <input asp-for="LeftEyeAdd" class="form-control" placeholder="+0.00" />
+                            </div>
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <!-- PD -->
+                        <div class="mb-4">
+                            <label asp-for="PupillaryDistance" class="form-label">Pupillary Distance (PD)</label>
+                            <input asp-for="PupillaryDistance" class="form-control" placeholder="e.g., 63mm" />
+                            <small class="text-muted">Distance between your pupils in millimeters</small>
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <!-- File Upload -->
+                        <div class="mb-4">
+                            <label asp-for="PrescriptionFile" class="form-label">Upload New Image (Optional)</label>
+                            <input asp-for="PrescriptionFile" class="form-control" accept="image/*,.pdf" />
+                            <small class="text-muted">Leave empty to keep existing image. Upload a new one to replace it.</small>
+                            <span asp-validation-for="PrescriptionFile" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-2"></i>Update Prescription
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

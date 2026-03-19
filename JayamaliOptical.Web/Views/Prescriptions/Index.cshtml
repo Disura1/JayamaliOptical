@@ -1,0 +1,99 @@
+﻿@model IEnumerable<JayamaliOptical.Web.Models.Prescription>
+@{
+    ViewData["Title"] = "My Prescriptions";
+}
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-file-earmark-medical me-2"></i>My Prescriptions</h2>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>Add New Prescription
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="card shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-file-earmark-medical text-muted" style="font-size: 4rem;"></i>
+                <h5 class="mt-3">No Prescriptions Saved</h5>
+                <p class="text-muted">Save your prescription for faster checkout next time.</p>
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Add Your First Prescription
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var prescription in Model)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card shadow-sm h-100 @(prescription.IsDefault ? "border-primary border-2" : "")">
+                        @if (prescription.IsDefault)
+                        {
+                            <div class="card-header bg-primary text-white">
+                                <small><i class="bi bi-star-fill me-1"></i>Default Prescription</small>
+                            </div>
+                        }
+                        <div class="card-body">
+                            <h5 class="card-title">@prescription.Name</h5>
+                            @if (!string.IsNullOrEmpty(prescription.Description))
+                            {
+                                <p class="card-text text-muted small">@prescription.Description</p>
+                            }
+
+                            <div class="mb-2">
+                                <small class="text-muted"><i class="bi bi-eye me-1"></i>Right Eye (OD):</small><br />
+                                <small>SPH: @prescription.RightEyeSphere | CYL: @prescription.RightEyeCylinder | AXIS: @prescription.RightEyeAxis</small>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted"><i class="bi bi-eye me-1"></i>Left Eye (OS):</small><br />
+                                <small>SPH: @prescription.LeftEyeSphere | CYL: @prescription.LeftEyeCylinder | AXIS: @prescription.LeftEyeAxis</small>
+                            </div>
+                            @if (!string.IsNullOrEmpty(prescription.PupillaryDistance))
+                            {
+                                <div class="mb-2">
+                                    <small class="text-muted"><i class="bi bi-rulers me-1"></i>PD:</small> @prescription.PupillaryDistance
+                                </div>
+                            }
+                            <small class="text-muted d-block mt-2">
+                                <i class="bi bi-calendar me-1"></i>@prescription.CreatedDate.ToString("dd MMM yyyy")
+                            </small>
+                        </div>
+                        <div class="card-footer bg-white">
+                            <div class="d-flex justify-content-between">
+                                <a asp-action="Details" asp-route-id="@prescription.Id" class="btn btn-sm btn-outline-info">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@prescription.Id" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                @if (!prescription.IsDefault)
+                                {
+                                    <form asp-action="SetDefault" asp-route-id="@prescription.Id" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-warning" title="Set as Default">
+                                            <i class="bi bi-star"></i>
+                                        </button>
+                                    </form>
+                                }
+                                <a asp-action="Delete" asp-route-id="@prescription.Id" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
