@@ -20,6 +20,11 @@ namespace JayamaliOptical.Web.Controllers
         public async Task<IActionResult> Index()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             var prescriptions = await _prescriptionService.GetUserPrescriptionsAsync(userId);
             return View(prescriptions);
         }
@@ -38,6 +43,10 @@ namespace JayamaliOptical.Web.Controllers
             if (ModelState.IsValid)
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return RedirectToAction("Login", "Account");
+                }
 
                 var prescription = new Prescription
                 {
@@ -76,6 +85,11 @@ namespace JayamaliOptical.Web.Controllers
             if (id == null) return NotFound();
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             var prescription = await _prescriptionService.GetPrescriptionAsync(id.Value, userId);
 
             if (prescription == null) return NotFound();
@@ -110,6 +124,10 @@ namespace JayamaliOptical.Web.Controllers
             if (ModelState.IsValid)
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return RedirectToAction("Login", "Account");
+                }
 
                 var prescription = await _prescriptionService.GetPrescriptionAsync(id, userId);
                 if (prescription == null) return NotFound();
@@ -146,6 +164,11 @@ namespace JayamaliOptical.Web.Controllers
             if (id == null) return NotFound();
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             var prescription = await _prescriptionService.GetPrescriptionAsync(id.Value, userId);
 
             if (prescription == null) return NotFound();
@@ -159,6 +182,11 @@ namespace JayamaliOptical.Web.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             var result = await _prescriptionService.DeletePrescriptionAsync(id, userId);
 
             if (result)
@@ -175,6 +203,11 @@ namespace JayamaliOptical.Web.Controllers
         public async Task<IActionResult> SetDefault(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             var result = await _prescriptionService.SetDefaultPrescriptionAsync(id, userId);
 
             if (result)
@@ -191,6 +224,11 @@ namespace JayamaliOptical.Web.Controllers
             if (id == null) return NotFound();
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             var prescription = await _prescriptionService.GetPrescriptionAsync(id.Value, userId);
 
             if (prescription == null) return NotFound();

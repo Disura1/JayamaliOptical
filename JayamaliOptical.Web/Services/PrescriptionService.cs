@@ -30,6 +30,12 @@ namespace JayamaliOptical.Web.Services
 
         public async Task<List<Prescription>> GetUserPrescriptionsAsync(string userId)
         {
+            // ✅ FIX: Return empty list if userId is null/empty
+            if (string.IsNullOrEmpty(userId))
+            {
+                return new List<Prescription>();
+            }
+
             return await _context.Prescriptions
                 .Where(p => p.UserId == userId)
                 .OrderByDescending(p => p.IsDefault)
@@ -39,6 +45,12 @@ namespace JayamaliOptical.Web.Services
 
         public async Task<Prescription?> GetPrescriptionAsync(int id, string userId)
         {
+            // ✅ FIX: Return null if userId is null/empty
+            if (string.IsNullOrEmpty(userId))
+            {
+                return null;
+            }
+
             return await _context.Prescriptions
                 .FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
         }
@@ -144,6 +156,12 @@ namespace JayamaliOptical.Web.Services
 
         public async Task<bool> DeletePrescriptionAsync(int id, string userId)
         {
+            // ✅ FIX: Return false if userId is null/empty
+            if (string.IsNullOrEmpty(userId))
+            {
+                return false;
+            }
+
             var prescription = await _context.Prescriptions
                 .FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
 
@@ -166,6 +184,12 @@ namespace JayamaliOptical.Web.Services
 
         public async Task<bool> SetDefaultPrescriptionAsync(int id, string userId)
         {
+            // ✅ FIX: Return false if userId is null/empty
+            if (string.IsNullOrEmpty(userId))
+            {
+                return false;
+            }
+
             // Remove default from all user prescriptions
             var userPrescriptions = await _context.Prescriptions
                 .Where(p => p.UserId == userId)
