@@ -18,6 +18,7 @@ namespace JayamaliOptical.Web.Controllers
         private readonly IConfiguration _configuration;
         private readonly ILogger<CheckoutController> _logger;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly IWebHostEnvironment _environment;
 
         public CheckoutController(
             ICartService cartService,
@@ -25,7 +26,8 @@ namespace JayamaliOptical.Web.Controllers
             IEmailService emailService,
             IConfiguration configuration,
             ILogger<CheckoutController> logger,
-            UserManager<IdentityUser> userManager)
+            UserManager<IdentityUser> userManager,
+            IWebHostEnvironment environment)
         {
             _cartService = cartService;
             _context = context;
@@ -33,6 +35,7 @@ namespace JayamaliOptical.Web.Controllers
             _configuration = configuration;
             _logger = logger;
             _userManager = userManager;
+            _environment = environment;
         }
 
         // GET: Checkout
@@ -40,7 +43,7 @@ namespace JayamaliOptical.Web.Controllers
         {
             var cart = _cartService.GetCart();
 
-            if (!cart.Items.Any())
+            if (cart.Items.Count == 0)
             {
                 return RedirectToAction("Index", "Cart");
             }
@@ -50,26 +53,56 @@ namespace JayamaliOptical.Web.Controllers
                 Cart = cart
             };
 
+            // Check if cart contains prescription-required products
+            model.CartRequiresPrescription = false;
+            if (cart.Items != null)
+            {
+                foreach (var item in cart.Items)
+                {
+                    if (item.RequiresPrescription)
+                    {
+                        model.CartRequiresPrescription = true;
+                        break;
+                    }
+                }
+            }
+
+            // Load prescriptions if needed and user is logged in
+            if (model.CartRequiresPrescription)
+            {
+                if (User.Identity?.IsAuthenticated == true)
+                {
+                    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                    if (!string.IsNullOrEmpty(userId))
+                    {
+                        // Load user's prescriptions
+                        model.UserPrescriptions = await _context.Prescriptions
+                            .Where(p => p.UserId == userId)
+                            .OrderByDescending(p => p.IsDefault)
+                            .ThenByDescending(p => p.CreatedDate)
+                            .ToListAsync();
+
+                        // Auto-select default or first prescription
+                        if (model.UserPrescriptions.Count > 0)
+                        {
+                            var defaultRx = model.UserPrescriptions.FirstOrDefault(p => p.IsDefault);
+                            model.SelectedPrescriptionId = defaultRx?.Id ?? model.UserPrescriptions[0].Id;
+                        }
+                    }
+                }
+            }
+
             // Auto-fill info for logged-in users
             if (User.Identity?.IsAuthenticated == true)
             {
                 var user = await _userManager.GetUserAsync(User);
                 if (user != null)
                 {
-                    // FIX: Safe null handling for UserName
-                    var userName = user.UserName;
-                    if (!string.IsNullOrEmpty(userName))
-                    {
-                        var nameParts = userName.Split('@')[0].Split(' ');
-                        model.FirstName = nameParts.FirstOrDefault()?.Capitalized() ?? string.Empty;
-                    }
-
+                    model.FirstName = user.UserName?.Split(' ')[0] ?? string.Empty;
                     model.Email = user.Email ?? string.Empty;
                 }
             }
-
-            // Load saved profile for auto-fill (works for both guests and logged-in users)
-            await LoadUserProfileAsync(model);
 
             return View(model);
         }
@@ -81,9 +114,81 @@ namespace JayamaliOptical.Web.Controllers
         {
             var cart = _cartService.GetCart();
 
-            if (!cart.Items.Any())
+            if (cart.Items.Count == 0)
             {
                 return RedirectToAction("Index", "Cart");
+            }
+
+            // Check if prescription is required
+            bool cartRequiresPrescription = false;
+            if (cart.Items != null)
+            {
+                foreach (var item in cart.Items)
+                {
+                    if (item.RequiresPrescription)
+                    {
+                        cartRequiresPrescription = true;
+                        break;
+                    }
+                }
+            }
+
+            // If prescription required, validate it
+            if (cartRequiresPrescription)
+            {
+                bool hasPrescription = false;
+                string prescriptionError = "";
+
+                // Check if user selected a saved prescription
+                if (model.SelectedPrescriptionId.HasValue && User.Identity?.IsAuthenticated == true)
+                {
+                    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    var prescription = await _context.Prescriptions
+                        .FirstOrDefaultAsync(p => p.Id == model.SelectedPrescriptionId.Value && p.UserId == userId);
+
+                    if (prescription != null)
+                    {
+                        hasPrescription = true;
+                        // Update last used date
+                        prescription.LastUsedDate = DateTime.Now;
+                        await _context.SaveChangesAsync();
+                        _logger?.LogInformation("Using saved prescription ID: {PrescriptionId}", prescription.Id);
+                    }
+                }
+
+                // Check if user uploaded a new prescription
+                if (model.UploadPrescriptionFile != null && model.UploadPrescriptionFile.Length > 0)
+                {
+                    hasPrescription = true;
+                    _logger?.LogInformation("Using uploaded prescription file: {FileName}", model.UploadPrescriptionFile.FileName);
+                }
+
+                // Debug logging
+                _logger?.LogInformation("Prescription Check - SelectedId: {SelectedId}, UploadedFile: {HasFile}, HasPrescription: {HasRx}",
+                    model.SelectedPrescriptionId,
+                    model.UploadPrescriptionFile != null,
+                    hasPrescription);
+
+                // If no prescription provided, BLOCK checkout
+                if (!hasPrescription)
+                {
+                    prescriptionError = "⚠️ Prescription Required: Please select a saved prescription OR upload a new one below.";
+                    ModelState.AddModelError("", prescriptionError);
+
+                    // Reload prescriptions for dropdown
+                    if (User.Identity?.IsAuthenticated == true)
+                    {
+                        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                        model.UserPrescriptions = await _context.Prescriptions
+                            .Where(p => p.UserId == userId)
+                            .OrderByDescending(p => p.IsDefault)
+                            .ToListAsync();
+                    }
+
+                    model.Cart = cart;
+                    model.CartRequiresPrescription = true;
+                    return View(model); // ← This prevents the order from being placed
+                }
             }
 
             if (ModelState.IsValid)
@@ -272,7 +377,7 @@ namespace JayamaliOptical.Web.Controllers
         }
 
         // Generate unique order number
-        private string GenerateOrderNumber()
+        private static string GenerateOrderNumber()  // ← Added 'static'
         {
             return "ORD-" + DateTime.Now.ToString("yyyyMMddHHmmss") + "-" + new Random().Next(1000, 9999);
         }

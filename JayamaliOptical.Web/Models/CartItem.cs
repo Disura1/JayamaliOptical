@@ -8,6 +8,7 @@
         public int Quantity { get; set; } = 1;
         public string? ImageUrl { get; set; }
         public string? CategoryName { get; set; }
+        public bool RequiresPrescription { get; set; } = false;
     }
 
     public class ShoppingCart

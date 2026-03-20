@@ -129,32 +129,33 @@ namespace JayamaliOptical.Web.Services
             }
         }
 
-        private string GenerateOrderEmailBody(string customerName, string orderNumber, decimal totalAmount)
+        private static string GenerateOrderEmailBody(string customerName, string orderNumber, decimal totalAmount)
         {
+            // Fixed: Return the HTML string directly, no 'body' variable needed
             return $@"
-                <html>
-                <body style='font-family: Arial, sans-serif;'>
-                    <h2 style='color: #0d6efd;'>Thank You for Your Order!</h2>
-                    <p>Dear {customerName},</p>
-                    <p>Your order has been placed successfully.</p>
-                    <div style='background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;'>
-                        <h3>Order Details</h3>
-                        <p><strong>Order Number:</strong> {orderNumber}</p>
-                        <p><strong>Total Amount:</strong> Rs. {totalAmount.ToString("0.00")}</p>
-                        <p><strong>Status:</strong> Pending Confirmation</p>
-                    </div>
-                    <p>We will contact you shortly to confirm your order.</p>
-                    <p>Thank you for choosing Jayamali Optical!</p>
-                </body>
-                </html>
-            ";
+        <html>
+        <body style='font-family: Arial, sans-serif;'>
+            <h2 style='color: #0d6efd;'>Thank You for Your Order!</h2>
+            <p>Dear {customerName},</p>
+            <p>Your order has been placed successfully.</p>
+            <div style='background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;'>
+                <h3>Order Details</h3>
+                <p><strong>Order Number:</strong> {orderNumber}</p>
+                <p><strong>Total Amount:</strong> Rs. {totalAmount.ToString("0.00")}</p>
+                <p><strong>Status:</strong> Pending Confirmation</p>
+            </div>
+            <p>We will contact you shortly to confirm your order.</p>
+            <p>Thank you for choosing Jayamali Optical!</p>
+        </body>
+        </html>
+    ";
         }
 
-        private string GenerateBookingEmailBody(string customerName, string bookingNumber, string serviceName, DateTime appointmentDate, TimeSpan appointmentTime)
+        private static string GenerateBookingEmailBody(string customerName, string bookingNumber, string serviceName, DateTime appointmentDate, TimeSpan appointmentTime)
         {
-            // Convert TimeSpan to readable time format
+            // Convert TimeSpan to readable time
             var dateTime = DateTime.Today.Add(appointmentTime);
-            var formattedTime = dateTime.ToString("hh:mm tt"); // e.g., "02:30 PM"
+            var formattedTime = dateTime.ToString("hh:mm tt");
 
             return $@"
         <html>

@@ -41,7 +41,8 @@ namespace JayamaliOptical.Web.Controllers
                 Price = product.Price ?? 0,
                 Quantity = quantity,
                 ImageUrl = product.ImageUrl1,
-                CategoryName = product.Category?.Name
+                CategoryName = product.Category?.Name,
+                RequiresPrescription = product.RequiresPrescription
             };
 
             _cartService.AddToCart(cartItem);

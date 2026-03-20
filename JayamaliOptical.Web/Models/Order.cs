@@ -112,5 +112,13 @@ namespace JayamaliOptical.Web.Models
         // Read-only properties
         public ShoppingCart Cart { get; set; } = new ShoppingCart();
         public decimal TotalAmount => Cart.TotalPrice;
+
+        // ADD THESE: Prescription handling
+        public bool CartRequiresPrescription { get; set; } = false;
+        public int? SelectedPrescriptionId { get; set; } = null;
+        public IFormFile? UploadPrescriptionFile { get; set; }
+
+        // List of user's prescriptions (for dropdown)
+        public List<Prescription>? UserPrescriptions { get; set; }
     }
 }

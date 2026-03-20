@@ -22,6 +22,20 @@
 <div class="container py-5">
     <h2 class="mb-4"><i class="bi bi-credit-card me-2"></i>Checkout</h2>
 
+    @* Validation Summary *@
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger">
+            <h5><i class="bi bi-exclamation-triangle me-2"></i>Please fix the following errors:</h5>
+            <ul class="mb-0">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
+
     @* Checkout Mode Selection - Only show for guests *@
     @if (!User.Identity.IsAuthenticated)
     {
@@ -61,7 +75,7 @@
 
     @* Main Checkout Form - Hidden for guests until they choose *@
     <div class="row" id="checkoutForm" style="@(User?.Identity?.IsAuthenticated == true ? "" : "display: none;")">
-        <form asp-action="Index" method="post">
+        <form asp-action="Index" method="post" enctype="multipart/form-data">
             <!-- Customer Information -->
             <div class="col-lg-8">
                 <div class="card shadow-sm mb-4">
@@ -95,6 +109,71 @@
                         </div>
                     </div>
                 </div>
+
+                @* Prescription Section - Show only if cart requires prescription *@
+                @if (Model.CartRequiresPrescription)
+                {
+                    <div class="card shadow-sm mb-4 border-warning">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0"><i class="bi bi-file-earmark-medical me-2"></i>Prescription Required</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-3">Your order contains products that require a valid prescription. Please select one of the options below:</p>
+
+                            @* Option 1: Select Saved Prescription *@
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Option 1: Select Saved Prescription</label>
+                                @if (Model.UserPrescriptions != null && Model.UserPrescriptions.Count > 0)
+                                {
+                                    <select asp-for="SelectedPrescriptionId" class="form-control">
+                                        <option value="">-- Select a Prescription --</option>
+                                        @foreach (var rx in Model.UserPrescriptions)
+                                        {
+                                            <option value="@rx.Id" selected="@(rx.IsDefault)">
+                                                @rx.Name @(rx.IsDefault ? "(Default)" : "") - @rx.CreatedDate.ToString("dd MMM yyyy")
+                                            </option>
+                                        }
+                                    </select>
+                                    <small class="text-muted">
+                                        <a asp-controller="Prescriptions" asp-action="Index" target="_blank">Manage your prescriptions</a>
+                                    </small>
+                                }
+                                else if (User.Identity?.IsAuthenticated == true)
+                                {
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        You don't have any saved prescriptions yet.
+                                        <a asp-controller="Prescriptions" asp-action="Create" target="_blank">Add one now</a> or use Option 2 below.
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        <a asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="/Checkout">Login</a> to select saved prescriptions, or use Option 2 below.
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="text-center my-3">
+                                <span class="text-muted">— OR —</span>
+                            </div>
+
+                            @* Option 2: Upload Prescription *@
+                            <div class="mb-3">
+                                <label asp-for="UploadPrescriptionFile" class="form-label fw-bold">Option 2: Upload Prescription Now</label>
+                                <input asp-for="UploadPrescriptionFile" class="form-control" accept="image/*,.pdf" />
+                                <small class="text-muted">Upload a clear photo or PDF of your prescription (JPG, PNG, PDF)</small>
+                                <span asp-validation-for="UploadPrescriptionFile" class="text-danger"></span>
+                            </div>
+
+                            <div class="alert alert-warning mb-0">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                <strong>Note:</strong> Orders with prescription products will be processed after we verify your prescription. You'll receive a confirmation email once verified.
+                            </div>
+                        </div>
+                    </div>
+                }
 
                 <!-- Billing Address -->
                 <div class="card shadow-sm mb-4">
@@ -222,6 +301,23 @@
                 if (checkoutForm) {
                     checkoutForm.style.display = 'flex';
                     console.log("Form auto-shown for logged-in user");
+                }
+            });
+        </script>
+    }
+
+    @if (Model.CartRequiresPrescription)
+    {
+        <script>
+            document.querySelector('form').addEventListener('submit', function(e) {
+                var selectedPrescription = document.querySelector('[name="SelectedPrescriptionId"]').value;
+                var uploadedFile = document.querySelector('[name="UploadPrescriptionFile"]').value;
+
+                // Check if either option is selected
+                if (!selectedPrescription && !uploadedFile) {
+                    e.preventDefault();
+                    alert('⚠️ Prescription Required: Please select a saved prescription OR upload a new one before placing your order.');
+                    return false;
                 }
             });
         </script>
