@@ -56,8 +56,8 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
             ViewBag.PreSelectedCategory = true;
             ViewBag.SelectedCategoryId = product.CategoryId;
 
-            // Debug: Log the ProductType value
-            System.Diagnostics.Debug.WriteLine($"Creating product - Type: {product.ProductType}, CategoryId: {product.CategoryId}");
+            // Debug: Log values
+            System.Diagnostics.Debug.WriteLine($"Creating product - RequiresPrescription: {product.RequiresPrescription}, CategoryId: {product.CategoryId}");
 
             // Handle photo uploads
             if (ImageFile1 != null)
@@ -187,6 +187,9 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
                     existingProduct.IOLType = product.IOLType;
                     existingProduct.StockQuantity = product.StockQuantity;
                     existingProduct.IsActive = product.IsActive;
+
+                    // ✅ ADD THIS LINE: Update RequiresPrescription
+                    existingProduct.RequiresPrescription = product.RequiresPrescription;
 
                     // Handle photo removal
                     if (removePhoto1)

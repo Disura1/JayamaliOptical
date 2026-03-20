@@ -159,6 +159,16 @@
                     </div>
 
                     <div class="form-group form-check mt-3">
+                        <input type="checkbox" name="RequiresPrescription" value="true" class="form-check-input" id="RequiresPrescription" @(Model.RequiresPrescription ? "checked" : "") />
+                        <input type="hidden" name="RequiresPrescription" value="false" />
+                        <label class="form-check-label" for="RequiresPrescription">
+                            <i class="bi bi-file-earmark-medical me-2"></i>
+                            <strong>Requires Prescription</strong>
+                            <small class="text-muted d-block">Check if this product requires a valid prescription (e.g., Spectacles, Contact Lenses, IOL Lens)</small>
+                        </label>
+                    </div>
+
+                    <div class="form-group form-check mt-3">
                         <input type="checkbox" name="IsActive" value="true" class="form-check-input" @(Model.IsActive ? "checked" : "") />
                         <input type="hidden" name="IsActive" value="false" />
                         <label class="form-check-label">Active</label>

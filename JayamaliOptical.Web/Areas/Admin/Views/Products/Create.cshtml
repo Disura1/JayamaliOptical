@@ -155,6 +155,16 @@
                     </div>
 
                     <div class="form-group form-check mt-3">
+                        <input type="checkbox" name="RequiresPrescription" value="true" class="form-check-input" id="RequiresPrescription" />
+                        <input type="hidden" name="RequiresPrescription" value="false" />
+                        <label class="form-check-label" for="RequiresPrescription">
+                            <i class="bi bi-file-earmark-medical me-2"></i>
+                            <strong>Requires Prescription</strong>
+                            <small class="text-muted d-block">Check if this product requires a valid prescription (e.g., Spectacles, Contact Lenses, IOL Lens)</small>
+                        </label>
+                    </div>
+
+                    <div class="form-group form-check mt-3">
                         <input type="checkbox" name="IsActive" value="true" class="form-check-input" checked />
                         <input type="hidden" name="IsActive" value="false" />
                         <label class="form-check-label">Active</label>
@@ -232,6 +242,31 @@
         var categoryId = '@selectedCategoryId';
         if (categoryId && categoryId !== '') {
             updatePhotoRequirements();
+        }
+    });
+
+    // Auto-check "Requires Prescription" for certain categories
+    document.addEventListener('DOMContentLoaded', function() {
+        var categorySelect = document.getElementById('CategoryId');
+        var prescriptionCheckbox = document.getElementById('RequiresPrescription');
+
+        if (categorySelect && prescriptionCheckbox) {
+            function updatePrescriptionCheckbox() {
+                var categoryId = categorySelect.value;
+                // Auto-check for prescription-required categories
+                if (categoryId == '5' || categoryId == '3' || categoryId == '4') {
+                    prescriptionCheckbox.checked = true;
+                } else {
+                    prescriptionCheckbox.checked = false;
+                }
+            }
+
+            categorySelect.addEventListener('change', updatePrescriptionCheckbox);
+
+            // Run on page load if category is pre-selected
+            if (categorySelect.value) {
+                updatePrescriptionCheckbox();
+            }
         }
     });
 </script>
