@@ -248,71 +248,87 @@
         }
 
         function displayProductDetails(product) {
-            const modalContent = document.getElementById('modalContent');
+        const modalContent = document.getElementById('modalContent');
 
-            let productTypeBadge = '';
-            if (product.productType) {
-                const typeClass = product.productType === 'Mens' ? 'bg-primary' :
-                                 product.productType === 'Ladies' ? 'bg-danger' : 'bg-info';
-                productTypeBadge = `<span class="badge ${typeClass} mb-2">${product.productType}</span>`;
-            }
+        let productTypeBadge = '';
+        if (product.productType) {
+            const typeClass = product.productType === 'Mens' ? 'bg-primary' :
+                             product.productType === 'Ladies' ? 'bg-danger' : 'bg-info';
+            productTypeBadge = `<span class="badge ${typeClass} mb-2">${product.productType}</span>`;
+        }
 
-            let imagesHtml = '';
-            if (product.imageUrl1) {
-                imagesHtml += `<img src="${product.imageUrl1}" class="img-fluid rounded mb-3" alt="${product.name}" />`;
-            }
-            if (product.imageUrl2) {
-                imagesHtml += `<img src="${product.imageUrl2}" class="img-fluid rounded mb-3" alt="${product.name}" />`;
-            }
-
-            let specsHtml = '';
-            if (product.frameType) {
-                specsHtml += `<div class="mb-2"><strong>Frame Type:</strong> ${product.frameType}</div>`;
-            }
-            if (product.lensPower) {
-                specsHtml += `<div class="mb-2"><strong>Lens Power:</strong> ${product.lensPower}</div>`;
-            }
-            if (product.iolType) {
-                specsHtml += `<div class="mb-2"><strong>IOL Type:</strong> ${product.iolType}</div>`;
-            }
-
-            // FIX: Handle null price safely
-            const priceDisplay = product.price ? parseFloat(product.price).toFixed(2) : '0.00';
-
-            modalContent.innerHTML = `
-                <div class="row">
-                    <div class="col-md-6">
-                        ${imagesHtml}
-                    </div>
-                    <div class="col-md-6">
-                        <h4 class="fw-bold mb-2">${product.name}</h4>
-                        ${productTypeBadge}
-                        <p class="text-muted mb-3">${product.category || ''}</p>
-
-                        <h3 class="text-primary fw-bold mb-3">Rs. ${priceDisplay}</h3>
-
-                        <p class="mb-3">${product.description || ''}</p>
-
-                        ${product.brand ? `<p class="mb-2"><strong>Brand:</strong> ${product.brand}</p>` : ''}
-                        ${product.stockQuantity !== null ? `<p class="mb-2"><strong>Stock:</strong> ${product.stockQuantity > 0 ? product.stockQuantity + ' available' : '<span class="text-danger">Out of stock</span>'}</p>` : ''}
-
-                        ${specsHtml ? `<hr /><h6 class="fw-bold mb-2">Specifications</h6>${specsHtml}` : ''}
-
-                        <div class="mt-4">
-                            <form action="/Cart/AddToCart" method="post" class="d-inline mb-2">
-                                <input type="hidden" name="productId" value="${product.id}" />
-                                <input type="hidden" name="quantity" value="1" />
-                                <button type="submit" class="btn btn-primary btn-lg w-100">
-                                    <i class="fas fa-cart-plus me-2"></i>Add to Cart
-                                </button>
-                            </form>
-                            <a href="/Contact" class="btn btn-success btn-lg w-100">
-                                <i class="fas fa-phone me-2"></i>Inquire Now
-                            </a>
-                        </div>
+        // ✅ ADD THIS: Prescription Required Badge
+        let prescriptionBadge = '';
+        if (product.requiresPrescription) {
+            prescriptionBadge = `
+                <div class="alert alert-warning d-flex align-items-center mb-3" role="alert">
+                    <i class="bi bi-file-earmark-medical me-2 fs-5"></i>
+                    <div>
+                        <strong>Prescription Required</strong><br/>
+                        <small class="text-muted">This product requires a valid prescription for purchase.</small>
                     </div>
                 </div>
             `;
         }
+
+        let imagesHtml = '';
+        if (product.imageUrl1) {
+            imagesHtml += `<img src="${product.imageUrl1}" class="img-fluid rounded mb-3" alt="${product.name}" />`;
+        }
+        if (product.imageUrl2) {
+            imagesHtml += `<img src="${product.imageUrl2}" class="img-fluid rounded mb-3" alt="${product.name}" />`;
+        }
+
+        let specsHtml = '';
+        if (product.frameType) {
+            specsHtml += `<div class="mb-2"><strong>Frame Type:</strong> ${product.frameType}</div>`;
+        }
+        if (product.lensPower) {
+            specsHtml += `<div class="mb-2"><strong>Lens Power:</strong> ${product.lensPower}</div>`;
+        }
+        if (product.iolType) {
+            specsHtml += `<div class="mb-2"><strong>IOL Type:</strong> ${product.iolType}</div>`;
+        }
+
+        // FIX: Handle null price safely
+        const priceDisplay = product.price ? parseFloat(product.price).toFixed(2) : '0.00';
+
+        modalContent.innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    ${imagesHtml}
+                </div>
+                <div class="col-md-6">
+                    <h4 class="fw-bold mb-2">${product.name}</h4>
+                    ${productTypeBadge}
+                    <p class="text-muted mb-3">${product.category || ''}</p>
+
+                    <h3 class="text-primary fw-bold mb-3">Rs. ${priceDisplay}</h3>
+
+                    ${prescriptionBadge}  @* ← ADD THIS LINE *@
+
+                    <p class="mb-3">${product.description || ''}</p>
+
+                    ${product.brand ? `<p class="mb-2"><strong>Brand:</strong> ${product.brand}</p>` : ''}
+                    ${product.stockQuantity !== null ? `<p class="mb-2"><strong>Stock:</strong> ${product.stockQuantity > 0 ? product.stockQuantity + ' available' : '<span class="text-danger">Out of stock</span>'}</p>` : ''}
+
+                    ${specsHtml ? `<hr /><h6 class="fw-bold mb-2">Specifications</h6>${specsHtml}` : ''}
+
+                    <div class="mt-4">
+                        <form action="/Cart/AddToCart" method="post" class="d-inline mb-2">
+                            <input type="hidden" name="productId" value="${product.id}" />
+                            <input type="hidden" name="quantity" value="1" />
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                <i class="fas fa-cart-plus me-2"></i>Add to Cart
+                            </button>
+                        </form>
+                        <a href="/Contact" class="btn btn-success btn-lg w-100">
+                            <i class="fas fa-phone me-2"></i>Inquire Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
     });
 </script>

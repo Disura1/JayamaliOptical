@@ -62,7 +62,8 @@ namespace JayamaliOptical.Web.Controllers
                 productType = product.ProductType,
                 imageUrl1 = product.ImageUrl1,
                 imageUrl2 = product.ImageUrl2,
-                isActive = product.IsActive
+                isActive = product.IsActive,
+                requiresPrescription = product.RequiresPrescription
             });
         }
     }
