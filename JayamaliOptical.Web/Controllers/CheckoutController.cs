@@ -4,8 +4,6 @@ using JayamaliOptical.Web.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 
 namespace JayamaliOptical.Web.Controllers
@@ -42,58 +40,32 @@ namespace JayamaliOptical.Web.Controllers
         public async Task<IActionResult> Index()
         {
             var cart = _cartService.GetCart();
-
             if (cart.Items.Count == 0)
-            {
                 return RedirectToAction("Index", "Cart");
-            }
 
-            var model = new CheckoutViewModel
-            {
-                Cart = cart
-            };
+            var model = new CheckoutViewModel { Cart = cart };
 
-            // Check if cart contains prescription-required products
-            model.CartRequiresPrescription = false;
-            if (cart.Items != null)
+            model.CartRequiresPrescription = cart.Items?.Any(i => i.RequiresPrescription) ?? false;
+
+            if (model.CartRequiresPrescription && User.Identity?.IsAuthenticated == true)
             {
-                foreach (var item in cart.Items)
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (!string.IsNullOrEmpty(userId))
                 {
-                    if (item.RequiresPrescription)
+                    model.UserPrescriptions = await _context.Prescriptions
+                        .Where(p => p.UserId == userId)
+                        .OrderByDescending(p => p.IsDefault)
+                        .ThenByDescending(p => p.CreatedDate)
+                        .ToListAsync();
+
+                    if (model.UserPrescriptions.Count > 0)
                     {
-                        model.CartRequiresPrescription = true;
-                        break;
+                        var defaultRx = model.UserPrescriptions.FirstOrDefault(p => p.IsDefault);
+                        model.SelectedPrescriptionId = defaultRx?.Id ?? model.UserPrescriptions[0].Id;
                     }
                 }
             }
 
-            // Load prescriptions if needed and user is logged in
-            if (model.CartRequiresPrescription)
-            {
-                if (User.Identity?.IsAuthenticated == true)
-                {
-                    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-                    if (!string.IsNullOrEmpty(userId))
-                    {
-                        // Load user's prescriptions
-                        model.UserPrescriptions = await _context.Prescriptions
-                            .Where(p => p.UserId == userId)
-                            .OrderByDescending(p => p.IsDefault)
-                            .ThenByDescending(p => p.CreatedDate)
-                            .ToListAsync();
-
-                        // Auto-select default or first prescription
-                        if (model.UserPrescriptions.Count > 0)
-                        {
-                            var defaultRx = model.UserPrescriptions.FirstOrDefault(p => p.IsDefault);
-                            model.SelectedPrescriptionId = defaultRx?.Id ?? model.UserPrescriptions[0].Id;
-                        }
-                    }
-                }
-            }
-
-            // Auto-fill info for logged-in users
             if (User.Identity?.IsAuthenticated == true)
             {
                 var user = await _userManager.GetUserAsync(User);
@@ -113,33 +85,15 @@ namespace JayamaliOptical.Web.Controllers
         public async Task<IActionResult> Index(CheckoutViewModel model)
         {
             var cart = _cartService.GetCart();
-
             if (cart.Items.Count == 0)
-            {
                 return RedirectToAction("Index", "Cart");
-            }
 
-            // Check if prescription is required
-            bool cartRequiresPrescription = false;
-            if (cart.Items != null)
-            {
-                foreach (var item in cart.Items)
-                {
-                    if (item.RequiresPrescription)
-                    {
-                        cartRequiresPrescription = true;
-                        break;
-                    }
-                }
-            }
+            bool cartRequiresPrescription = cart.Items?.Any(i => i.RequiresPrescription) ?? false;
 
-            // If prescription required, validate it
             if (cartRequiresPrescription)
             {
                 bool hasPrescription = false;
-                string prescriptionError = "";
 
-                // Check if user selected a saved prescription
                 if (model.SelectedPrescriptionId.HasValue && User.Identity?.IsAuthenticated == true)
                 {
                     var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -149,33 +103,18 @@ namespace JayamaliOptical.Web.Controllers
                     if (prescription != null)
                     {
                         hasPrescription = true;
-                        // Update last used date
                         prescription.LastUsedDate = DateTime.Now;
                         await _context.SaveChangesAsync();
-                        _logger?.LogInformation("Using saved prescription ID: {PrescriptionId}", prescription.Id);
                     }
                 }
 
-                // Check if user uploaded a new prescription
                 if (model.UploadPrescriptionFile != null && model.UploadPrescriptionFile.Length > 0)
-                {
                     hasPrescription = true;
-                    _logger?.LogInformation("Using uploaded prescription file: {FileName}", model.UploadPrescriptionFile.FileName);
-                }
 
-                // Debug logging
-                _logger?.LogInformation("Prescription Check - SelectedId: {SelectedId}, UploadedFile: {HasFile}, HasPrescription: {HasRx}",
-                    model.SelectedPrescriptionId,
-                    model.UploadPrescriptionFile != null,
-                    hasPrescription);
-
-                // If no prescription provided, BLOCK checkout
                 if (!hasPrescription)
                 {
-                    prescriptionError = "⚠️ Prescription Required: Please select a saved prescription OR upload a new one below.";
-                    ModelState.AddModelError("", prescriptionError);
+                    ModelState.AddModelError("", "⚠️ Prescription Required: Please select a saved prescription OR upload a new one.");
 
-                    // Reload prescriptions for dropdown
                     if (User.Identity?.IsAuthenticated == true)
                     {
                         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -187,13 +126,12 @@ namespace JayamaliOptical.Web.Controllers
 
                     model.Cart = cart;
                     model.CartRequiresPrescription = true;
-                    return View(model); // ← This prevents the order from being placed
+                    return View(model);
                 }
             }
 
             if (ModelState.IsValid)
             {
-                // Create order
                 var order = new Order
                 {
                     OrderNumber = GenerateOrderNumber(),
@@ -211,7 +149,30 @@ namespace JayamaliOptical.Web.Controllers
                     UserId = User.FindFirstValue(ClaimTypes.NameIdentifier)
                 };
 
-                // Add order items
+                // Save prescription — Option 1: saved prescription
+                if (cartRequiresPrescription && model.SelectedPrescriptionId.HasValue)
+                {
+                    order.PrescriptionId = model.SelectedPrescriptionId.Value;
+                }
+
+                // Save prescription — Option 2: uploaded file
+                if (cartRequiresPrescription && model.UploadPrescriptionFile != null && model.UploadPrescriptionFile.Length > 0)
+                {
+                    var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "prescriptions");
+                    Directory.CreateDirectory(uploadsFolder);
+
+                    var uniqueFileName = Guid.NewGuid().ToString() + "_" + model.UploadPrescriptionFile.FileName;
+                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await model.UploadPrescriptionFile.CopyToAsync(fileStream);
+                    }
+
+                    order.PrescriptionImagePath = "/uploads/prescriptions/" + uniqueFileName;
+                    order.PrescriptionFileName = model.UploadPrescriptionFile.FileName;
+                }
+
                 foreach (var item in cart.Items)
                 {
                     order.OrderItems.Add(new OrderItem
@@ -223,33 +184,25 @@ namespace JayamaliOptical.Web.Controllers
                     });
                 }
 
-                // Save to database
                 _context.Orders.Add(order);
                 await _context.SaveChangesAsync();
 
-                // === SAVE USER PROFILE FOR FUTURE CHECKOUTS ===
                 await SaveUserProfileAsync(model, order.UserId);
-                // === END SAVE PROFILE ===
 
-                // Send confirmation email
                 try
                 {
                     await _emailService.SendOrderConfirmationAsync(
                         model.Email,
                         $"{model.FirstName} {model.LastName}",
                         order.OrderNumber,
-                        order.TotalAmount
-                    );
+                        order.TotalAmount);
                 }
                 catch (Exception ex)
                 {
                     _logger?.LogError(ex, "Email sending failed");
                 }
 
-                // Clear cart
                 _cartService.ClearCart();
-
-                // Redirect to confirmation
                 return RedirectToAction("Confirmation", new { orderId = order.Id });
             }
 
@@ -260,77 +213,28 @@ namespace JayamaliOptical.Web.Controllers
         // GET: Checkout/Confirmation/5
         public async Task<IActionResult> Confirmation(int? orderId)
         {
-            if (orderId == null)
-            {
-                return NotFound();
-            }
+            if (orderId == null) return NotFound();
 
             var order = await _context.Orders
                 .Include(o => o.OrderItems)
                 .FirstOrDefaultAsync(o => o.Id == orderId);
 
-            if (order == null)
-            {
-                return NotFound();
-            }
+            if (order == null) return NotFound();
 
             return View(order);
         }
 
-        // Load saved profile data to auto-fill checkout form
-        private async Task LoadUserProfileAsync(CheckoutViewModel model)
-        {
-            string? emailToCheck = null;
-
-            // Priority 1: Use email from logged-in user
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                emailToCheck = User.FindFirstValue(ClaimTypes.Email);
-            }
-            // Priority 2: Use email from session (for returning guests)
-            else
-            {
-                emailToCheck = HttpContext.Session.GetString("GuestEmail");
-            }
-
-            if (!string.IsNullOrEmpty(emailToCheck))
-            {
-                var profile = await _context.UserProfiles
-                    .Where(p => p.Email.ToLower() == emailToCheck.ToLower())
-                    .OrderByDescending(p => p.LastUsedDate)
-                    .FirstOrDefaultAsync();
-
-                if (profile != null)
-                {
-                    model.FirstName = profile.FirstName;
-                    model.LastName = profile.LastName;
-                    model.Email = profile.Email;
-                    model.PhoneNumber = profile.PhoneNumber;
-                    model.Address = profile.Address;
-                    model.City = profile.City;
-                    model.PostalCode = profile.PostalCode;
-                }
-            }
-        }
-
-        // Save or update user profile for faster future checkouts
         private async Task SaveUserProfileAsync(CheckoutViewModel model, string? userId)
         {
-            if (string.IsNullOrEmpty(model.Email))
-            {
-                _logger?.LogWarning("Cannot save profile: Email is empty");
-                return;
-            }
+            if (string.IsNullOrEmpty(model.Email)) return;
 
             try
             {
-                // Try to find existing profile by email
                 var profile = await _context.UserProfiles
                     .FirstOrDefaultAsync(p => p.Email.ToLower() == model.Email.ToLower());
 
                 if (profile != null)
                 {
-                    // Update existing profile
                     profile.FirstName = model.FirstName;
                     profile.LastName = model.LastName;
                     profile.PhoneNumber = model.PhoneNumber;
@@ -339,16 +243,11 @@ namespace JayamaliOptical.Web.Controllers
                     profile.PostalCode = model.PostalCode;
                     profile.LastUsedDate = DateTime.Now;
                     profile.UsageCount++;
-
-                    // If user just logged in, link the profile to their account
                     if (!string.IsNullOrEmpty(userId) && string.IsNullOrEmpty(profile.UserId))
-                    {
                         profile.UserId = userId;
-                    }
                 }
                 else
                 {
-                    // Create new profile
                     profile = new UserProfile
                     {
                         UserId = userId,
@@ -368,7 +267,6 @@ namespace JayamaliOptical.Web.Controllers
                 }
 
                 await _context.SaveChangesAsync();
-                _logger?.LogInformation("User profile saved for email: {Email}", model.Email);
             }
             catch (Exception ex)
             {
@@ -376,21 +274,17 @@ namespace JayamaliOptical.Web.Controllers
             }
         }
 
-        // Generate unique order number
-        private static string GenerateOrderNumber()  // ← Added 'static'
+        private static string GenerateOrderNumber()
         {
             return "ORD-" + DateTime.Now.ToString("yyyyMMddHHmmss") + "-" + new Random().Next(1000, 9999);
         }
     }
 
-    // Helper extension method
     public static class StringExtensions
     {
         public static string Capitalized(this string input)
         {
-            if (string.IsNullOrEmpty(input))
-                return input;
-
+            if (string.IsNullOrEmpty(input)) return input;
             return char.ToUpper(input[0]) + input.Substring(1).ToLower();
         }
     }

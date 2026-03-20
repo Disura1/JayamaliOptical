@@ -8,14 +8,11 @@ namespace JayamaliOptical.Web.Models
     {
         public int Id { get; set; }
 
-        // Order Number (Auto-generated)
         public string OrderNumber { get; set; } = string.Empty;
 
-        // User Information (for logged-in users)
-        public string? UserId { get; set; }  // Nullable for guest orders
+        public string? UserId { get; set; }
         public IdentityUser? User { get; set; }
 
-        // Customer Information
         [Required(ErrorMessage = "First name is required")]
         [StringLength(100)]
         public string FirstName { get; set; } = string.Empty;
@@ -34,7 +31,6 @@ namespace JayamaliOptical.Web.Models
         [StringLength(20)]
         public string PhoneNumber { get; set; } = string.Empty;
 
-        // Billing Address
         [Required(ErrorMessage = "Address is required")]
         [StringLength(500)]
         public string Address { get; set; } = string.Empty;
@@ -47,20 +43,27 @@ namespace JayamaliOptical.Web.Models
         [StringLength(20)]
         public string PostalCode { get; set; } = string.Empty;
 
-        // Order Details
         public decimal TotalAmount { get; set; }
 
         public string? OrderNotes { get; set; }
 
-        // Order Status
-        public string Status { get; set; } = "Pending"; // Pending, Confirmed, Processing, Shipped, Delivered, Cancelled
+        public string Status { get; set; } = "Pending";
 
-        // Timestamps
         public DateTime OrderDate { get; set; } = DateTime.Now;
         public DateTime? ShippedDate { get; set; }
         public DateTime? DeliveredDate { get; set; }
 
-        // Navigation Properties
+        // Prescription — Option 1: saved prescription FK
+        [ForeignKey("Prescription")]
+        public int? PrescriptionId { get; set; }
+        public Prescription? Prescription { get; set; }
+
+        // Prescription — Option 2: uploaded image
+        [StringLength(500)]
+        public string? PrescriptionImagePath { get; set; }
+        [StringLength(255)]
+        public string? PrescriptionFileName { get; set; }
+
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
     }
 
@@ -81,7 +84,6 @@ namespace JayamaliOptical.Web.Models
 
     public class CheckoutViewModel
     {
-        // Customer Info
         [Required(ErrorMessage = "First name is required")]
         public string FirstName { get; set; } = string.Empty;
 
@@ -96,7 +98,6 @@ namespace JayamaliOptical.Web.Models
         [Phone]
         public string PhoneNumber { get; set; } = string.Empty;
 
-        // Address
         [Required(ErrorMessage = "Address is required")]
         public string Address { get; set; } = string.Empty;
 
@@ -106,19 +107,15 @@ namespace JayamaliOptical.Web.Models
         [Required(ErrorMessage = "Postal code is required")]
         public string PostalCode { get; set; } = string.Empty;
 
-        // Additional
         public string? OrderNotes { get; set; }
 
-        // Read-only properties
         public ShoppingCart Cart { get; set; } = new ShoppingCart();
         public decimal TotalAmount => Cart.TotalPrice;
 
-        // ADD THESE: Prescription handling
         public bool CartRequiresPrescription { get; set; } = false;
         public int? SelectedPrescriptionId { get; set; } = null;
         public IFormFile? UploadPrescriptionFile { get; set; }
 
-        // List of user's prescriptions (for dropdown)
         public List<Prescription>? UserPrescriptions { get; set; }
     }
 }
