@@ -37,6 +37,17 @@ namespace JayamaliOptical.Web.Controllers
                 .Where(b => b.IsActive)
                 .OrderBy(b => b.DisplayOrder)
                 .ToListAsync();
+            ViewBag.Reviews = await _context.Reviews
+                .Where(r => r.IsApproved)
+                .OrderByDescending(r => r.IsFeatured)
+                .ThenByDescending(r => r.SubmittedAt)
+                .Take(20)
+                .ToListAsync();
+
+            ViewBag.ReviewCount = await _context.Reviews.CountAsync(r => r.IsApproved);
+            ViewBag.AverageRating = await _context.Reviews.Where(r => r.IsApproved).AnyAsync()
+                ? Math.Round(await _context.Reviews.Where(r => r.IsApproved).AverageAsync(r => (double)r.Rating), 1)
+                : 0.0;
             return View();
         }
 
@@ -114,6 +125,37 @@ namespace JayamaliOptical.Web.Controllers
                 button3Url = service.Button3Url,
                 button3Class = service.Button3Class
             });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SubmitReview(
+        string name, string? location, int rating,
+        string comment, string? serviceType)
+        {
+            if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(comment)
+                || rating < 1 || rating > 5)
+            {
+                TempData["ReviewError"] = "Please fill in all required fields.";
+                return Redirect("/#reviews");
+            }
+
+            var review = new Review
+            {
+                Name = name.Trim(),
+                Location = location?.Trim(),
+                Rating = rating,
+                Comment = comment.Trim(),
+                ServiceType = serviceType?.Trim(),
+                IsApproved = false,
+                IsFeatured = false,
+                SubmittedAt = DateTime.Now
+            };
+            _context.Reviews.Add(review);
+            await _context.SaveChangesAsync();
+
+            TempData["ReviewSuccess"] = "Thank you for your review! It will appear after approval.";
+            return Redirect("/#reviews");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
