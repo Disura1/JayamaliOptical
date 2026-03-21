@@ -22,5 +22,6 @@ namespace JayamaliOptical.Web.Data
         public DbSet<JayamaliOptical.Web.Models.Prescription> Prescriptions { get; set; }
         public DbSet<JayamaliOptical.Web.Models.SiteSettings> SiteSettings { get; set; }
         public DbSet<JayamaliOptical.Web.Models.ContactMessage> ContactMessages { get; set; }
+        public DbSet<JayamaliOptical.Web.Models.OfferSlide> OfferSlides { get; set; }
     }
 }

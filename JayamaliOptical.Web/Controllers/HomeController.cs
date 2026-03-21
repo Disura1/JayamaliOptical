@@ -29,6 +29,10 @@ namespace JayamaliOptical.Web.Controllers
                 .Where(s => s.IsActive && s.DisplayOrder == 1).FirstOrDefaultAsync()
                 ?? await _context.Services.Where(s => s.IsActive).OrderBy(s => s.DisplayOrder).FirstOrDefaultAsync();
             ViewBag.Settings = await GetSettingsAsync();
+            ViewBag.OfferSlides = await _context.OfferSlides
+                .Where(o => o.IsActive)
+                .OrderBy(o => o.DisplayOrder)
+                .ToListAsync();
             return View();
         }
 

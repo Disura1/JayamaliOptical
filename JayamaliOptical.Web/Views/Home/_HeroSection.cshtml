@@ -1,39 +1,328 @@
-﻿<section class="d-flex pb-3">
-    <div class="w-50 d-flex flex-column align-items-center">
-        <div class="hero-animation">
+﻿@using JayamaliOptical.Web.Models
+@{
+    var slides = ViewBag.OfferSlides as List<OfferSlide> ?? new List<OfferSlide>();
+    // Fallback to static images if no DB slides exist yet
+    bool useStatic = !slides.Any();
+}
+
+<style>
+    /* ── Hero Layout ── */
+    .hero-section {
+        display: flex;
+        align-items: center;
+        padding: 20px 40px 30px;
+        gap: 40px;
+        background: linear-gradient(135deg, #f8fbff 0%, #eef4ff 100%);
+        min-height: 480px;
+    }
+
+    /* ── Left Side ── */
+    .hero-left {
+        flex: 0 0 45%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    /* ── Offer Carousel ── */
+    .offer-carousel-wrapper {
+        flex: 0 0 55%;
+        position: relative;
+    }
+
+    .offer-carousel {
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(25,120,188,0.18);
+        position: relative;
+    }
+
+        .offer-carousel .carousel-item img {
+            height: 340px;
+            width: 100%;
+            object-fit: cover;
+            border-radius: 20px;
+        }
+
+        /* Glowing border animation */
+        .offer-carousel::before {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, #1978bc, #26a4e0, #6ea700, #1978bc);
+            background-size: 300% 300%;
+            animation: gradientBorder 4s ease infinite;
+            z-index: -1;
+        }
+
+    @@keyframes gradientBorder {
+        0% {
+            background-position: 0% 50%;
+        }
+
+        50% {
+            background-position: 100% 50%;
+        }
+
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+
+    /* Slide counter pill */
+    .slide-counter {
+        position: absolute;
+        bottom: 16px;
+        right: 16px;
+        background: rgba(0,0,0,0.55);
+        color: white;
+        border-radius: 50px;
+        padding: 4px 14px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        z-index: 10;
+        backdrop-filter: blur(4px);
+    }
+
+    /* Custom indicators */
+    .offer-indicators {
+        position: absolute;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 8px;
+        z-index: 10;
+    }
+
+        .offer-indicators button {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255,255,255,0.5);
+            padding: 0;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+            .offer-indicators button.active {
+                background: white;
+                width: 24px;
+                border-radius: 4px;
+            }
+
+    /* Carousel nav arrows */
+    .offer-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 38px;
+        height: 38px;
+        background: rgba(255,255,255,0.9);
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #1978bc;
+        font-size: 1rem;
+        cursor: pointer;
+        z-index: 10;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transition: all 0.2s;
+    }
+
+        .offer-nav:hover {
+            background: #1978bc;
+            color: white;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+    .offer-nav-prev {
+        left: 12px;
+    }
+
+    .offer-nav-next {
+        right: 12px;
+    }
+
+    /* Caption overlay */
+    .slide-caption {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(transparent, rgba(0,0,0,0.65));
+        color: white;
+        padding: 40px 20px 16px;
+        border-radius: 0 0 20px 20px;
+        font-size: 0.95rem;
+        font-weight: 600;
+    }
+
+    /* Offer badge */
+    .offer-badge {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        background: linear-gradient(135deg, #e65c00, #f9d423);
+        color: white;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        padding: 5px 12px;
+        border-radius: 50px;
+        z-index: 10;
+        box-shadow: 0 4px 12px rgba(230,92,0,0.4);
+        animation: pulseBadge 2s ease-in-out infinite;
+    }
+
+    @@keyframes pulseBadge {
+        0%, 100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.06);
+        }
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .hero-section {
+            flex-direction: column;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .hero-left, .offer-carousel-wrapper {
+            flex: 0 0 100%;
+            width: 100%;
+        }
+
+        .offer-carousel .carousel-item img {
+            height: 220px;
+        }
+    }
+</style>
+
+<section class="hero-section">
+
+    @* ── Left: Welcome ── *@
+    <div class="hero-left">
+        <div class="hero-animation mb-2">
             <img src="~/images/Specs-Animation.png" class="floating-specs" alt="Floating Specs" />
         </div>
-        <h1 class="lh-1 text-capitalize hero-welcome-text">Welcome to</h1>
-        <h1 class="lh-1 hero-welcome-text">Jayamali Optical</h1>
-        <h5>Your trusted destination for eye care!</h5>
-        <a asp-controller="Products" asp-action="Index" class="btn btn-primary mt-4">
-            <i class="bi bi-bag me-2"></i>Shop Now
-        </a>
+        <h1 class="lh-1 text-capitalize hero-welcome-text mb-1">Welcome to</h1>
+        <h1 class="lh-1 hero-welcome-text mb-2">Jayamali Optical</h1>
+        <h5 class="text-muted fw-normal mb-4">Your trusted destination for eye care!</h5>
+        <div class="d-flex gap-3 flex-wrap justify-content-center">
+            <a asp-controller="Products" asp-action="Index" class="btn btn-primary btn-lg px-4 rounded-pill">
+                <i class="bi bi-bag me-2"></i>Shop Now
+            </a>
+            <a asp-controller="Home" asp-action="ContactUs" class="btn btn-outline-primary btn-lg px-4 rounded-pill">
+                <i class="bi bi-calendar-check me-2"></i>Book Appointment
+            </a>
+        </div>
     </div>
-    <div id="carouselExampleIndicators" class="carousel slide w-50 mt-4 me-4 rounded-4 border border-1 border-black shadow-lg" data-bs-ride="carousel">
-        <div class="carousel-indicators">
-            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1" aria-label="Slide 2"></button>
-            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2" aria-label="Slide 3"></button>
+
+    @* ── Right: Offer Carousel ── *@
+    <div class="offer-carousel-wrapper">
+
+        <span class="offer-badge"><i class="bi bi-stars me-1"></i>Special Offers</span>
+
+        <div id="offerCarousel" class="offer-carousel carousel slide" data-bs-ride="carousel" data-bs-interval="4000">
+
+            <div class="carousel-inner">
+                @if (useStatic)
+                {
+                    @* Fallback static slides *@
+                    <div class="carousel-item active">
+                        <img src="~/images/Offers/Offer01.jpg" alt="Offer 1" />
+                    </div>
+                    <div class="carousel-item">
+                        <img src="~/images/Offers/Offer02.jpg" alt="Offer 2" />
+                    </div>
+                    <div class="carousel-item">
+                        <img src="~/images/Offers/Offer03.jpg" alt="Offer 3" />
+                    </div>
+                }
+                else
+                {
+                    @for (int i = 0; i < slides.Count; i++)
+                    {
+                        var slide = slides[i];
+                        <div class="carousel-item @(i == 0 ? "active" : "")">
+                            @if (!string.IsNullOrEmpty(slide.LinkUrl))
+                            {
+                                <a href="@slide.LinkUrl">
+                                    <img src="@slide.ImagePath" alt="@(slide.Caption ?? "Offer")" />
+                                </a>
+                            }
+                            else
+                            {
+                                <img src="@slide.ImagePath" alt="@(slide.Caption ?? "Offer")" />
+                            }
+                            @if (!string.IsNullOrEmpty(slide.Caption))
+                            {
+                                <div class="slide-caption">@slide.Caption</div>
+                            }
+                        </div>
+                    }
+                }
+            </div>
+
+            @* Custom nav buttons *@
+            <button class="offer-nav offer-nav-prev" type="button"
+                    data-bs-target="#offerCarousel" data-bs-slide="prev">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+            <button class="offer-nav offer-nav-next" type="button"
+                    data-bs-target="#offerCarousel" data-bs-slide="next">
+                <i class="bi bi-chevron-right"></i>
+            </button>
+
+            @* Custom dot indicators *@
+            <div class="offer-indicators">
+                @{
+                    int count = useStatic ? 3 : slides.Count;
+                }
+                @for (int i = 0; i < count; i++)
+                {
+                    <button type="button"
+                            data-bs-target="#offerCarousel"
+                            data-bs-slide-to="@i"
+                            class="@(i == 0 ? "active" : "")"
+                            aria-label="Slide @(i + 1)"></button>
+                }
+            </div>
+
+            @* Slide counter *@
+            <div class="slide-counter" id="slideCounter">1 / @count</div>
         </div>
-        <div class="carousel-inner">
-            <div class="carousel-item active">
-                <img src="~/images/Offers/Offer01.jpg" class="d-block w-100 rounded-4" alt="Offer01">
-            </div>
-            <div class="carousel-item">
-                <img src="~/images/Offers/Offer02.jpg" class="d-block w-100 rounded-4" alt="Offer02">
-            </div>
-            <div class="carousel-item">
-                <img src="~/images/Offers/Offer03.jpg" class="d-block w-100 rounded-4" alt="Offer03">
-            </div>
-        </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
-        </button>
     </div>
 </section>
+
+<script>
+    // Update counter and dots on slide change
+    document.addEventListener('DOMContentLoaded', function () {
+        var carousel = document.getElementById('offerCarousel');
+        if (!carousel) return;
+
+        var total = carousel.querySelectorAll('.carousel-item').length;
+        var counter = document.getElementById('slideCounter');
+        var dots = carousel.querySelectorAll('.offer-indicators button');
+
+        carousel.addEventListener('slid.bs.carousel', function (e) {
+            var idx = e.to + 1;
+            if (counter) counter.textContent = idx + ' / ' + total;
+            dots.forEach(function (d, i) {
+                d.classList.toggle('active', i === e.to);
+            });
+        });
+    });
+</script>
