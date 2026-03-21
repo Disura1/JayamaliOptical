@@ -14,14 +14,27 @@ namespace JayamaliOptical.Web.Controllers
             _context = context;
         }
 
-        // GET: Products
-        public async Task<IActionResult> Index(int? categoryId)
+        public async Task<IActionResult> Index(int? categoryId, string? search)
         {
-            var products = _context.Products.Include(p => p.Category).AsQueryable();
+            var products = _context.Products
+                .Include(p => p.Category)
+                .Where(p => p.IsActive)
+                .AsQueryable();
 
+            // Category filter
             if (categoryId.HasValue)
-            {
                 products = products.Where(p => p.CategoryId == categoryId.Value);
+
+            // Search filter
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var s = search.Trim().ToLower();
+                products = products.Where(p =>
+                    p.Name.ToLower().Contains(s) ||
+                    (p.Description != null && p.Description.ToLower().Contains(s)) ||
+                    (p.Brand != null && p.Brand.ToLower().Contains(s)) ||
+                    (p.Category != null && p.Category.Name.ToLower().Contains(s))
+                );
             }
 
             ViewBag.Categories = await _context.Categories
@@ -30,11 +43,11 @@ namespace JayamaliOptical.Web.Controllers
                 .ToListAsync();
 
             ViewBag.SelectedCategoryId = categoryId;
+            ViewBag.SearchTerm = search;
 
             return View(await products.OrderBy(p => p.Name).ToListAsync());
         }
 
-        // GET: Products/Details/5 (Returns JSON for modal)
         [HttpGet]
         public async Task<IActionResult> GetProductDetails(int id)
         {
@@ -42,10 +55,7 @@ namespace JayamaliOptical.Web.Controllers
                 .Include(p => p.Category)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
-            if (product == null)
-            {
-                return NotFound();
-            }
+            if (product == null) return NotFound();
 
             return Json(new
             {

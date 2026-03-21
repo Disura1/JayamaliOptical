@@ -31,86 +31,201 @@
             </div>
         </div>
 
+        @{
+            var searchTerm = ViewBag.SearchTerm as string;
+        }
+        @if (!string.IsNullOrEmpty(searchTerm))
+        {
+            <div class="d-flex align-items-center justify-content-between mb-3 px-1">
+                <div>
+                    <i class="bi bi-search me-2 text-primary"></i>
+                    Showing results for <strong>"@searchTerm"</strong>
+                    — @Model.Count() product(s) found
+                </div>
+                <a href="/Products/Index" class="btn btn-sm btn-outline-secondary rounded-pill">
+                    <i class="bi bi-x me-1"></i>Clear Search
+                </a>
+            </div>
+        }
+
         <!-- Products Grid -->
         @if (!Model.Any())
         {
             <div class="text-center py-5">
-                <i class="fas fa-box-open fa-4x text-muted mb-3"></i>
-                <h4>No products found</h4>
-                <p class="text-muted">Check back soon for new arrivals!</p>
+                <i class="bi bi-search text-muted mb-3" style="font-size:4rem;"></i>
+                <h4>
+                    @if (!string.IsNullOrEmpty(searchTerm))
+                    {
+                        <text>No results for "@searchTerm"</text>
+                    }
+                    else
+                    {
+                        <text>No products found</text>
+                    }
+                </h4>
+                <p class="text-muted">
+                    @if (!string.IsNullOrEmpty(searchTerm))
+                    {
+                        <text>Try a different search term or browse by category.</text>
+                    }
+                    else
+                    {
+                        <text>Check back soon for new arrivals!</text>
+                    }
+                </p>
+                @if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    <a href="/Products/Index" class="btn btn-primary rounded-pill px-4">
+                        <i class="bi bi-arrow-left me-2"></i>View All Products
+                    </a>
+                }
             </div>
         }
         else
         {
-            <!-- Group products by category -->
-            @foreach (var category in (categories ?? new List<JayamaliOptical.Web.Models.Category>()).Where(c => Model.Any(p => p.CategoryId == c.Id)))
+            @* When searching — show a flat grid, no category grouping *@
+            @if (!string.IsNullOrEmpty(searchTerm))
             {
-                var categoryProducts = Model.Where(p => p.CategoryId == category.Id).ToList();
+                <div class="row">
+                    @foreach (var product in Model)
+                    {
+                        <div class="col-md-6 col-lg-4 col-xl-3 mb-4">
+                            <div class="product-card card h-100 shadow-sm product-item"
+                                 data-product-id="@product.Id"
+                                 style="cursor:pointer;">
 
-                <div class="category-section mb-5">
-                    <h3 class="category-title mb-4 pb-2 border-bottom">
-                        <i class="fas fa-@(category.Name == "Spectacle" ? "glasses" : category.Name == "Sunglasses" ? "sunglasses" : category.Name == "Contact Lens" ? "eye" : "lens") me-2"></i>
-                        @category.Name
-                    </h3>
+                                @if (!string.IsNullOrEmpty(product.ImageUrl1))
+                                {
+                                    <img src="@product.ImageUrl1"
+                                         class="card-img-top product-img"
+                                         alt="@product.Name"
+                                         style="height:250px; object-fit:cover;" />
+                                }
+                                else
+                                {
+                                    <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center"
+                                         style="height:250px;">
+                                        <i class="bi bi-eyeglasses fa-4x text-white" style="font-size:3rem;"></i>
+                                    </div>
+                                }
 
-                    <div class="row">
-                        @foreach (var product in categoryProducts)
-                        {
-                            <div class="col-md-6 col-lg-4 col-xl-3 mb-4">
-                                <div class="product-card card h-100 shadow-sm product-item"
-                                     data-product-id="@product.Id"
-                                     style="cursor: pointer;">
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title fw-bold">@product.Name</h5>
 
-                                    <!-- Product Image -->
-                                    @if (!string.IsNullOrEmpty(product.ImageUrl1))
+                                    @if (!string.IsNullOrEmpty(product.Brand))
                                     {
-                                        <img src="@product.ImageUrl1"
-                                             class="card-img-top product-img"
-                                             alt="@product.Name"
-                                             style="height: 250px; object-fit: cover;">
-                                    }
-                                    else
-                                    {
-                                        <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center"
-                                             style="height: 250px;">
-                                            <i class="fas fa-@(category.Name == "Spectacle" ? "glasses" : category.Name == "Sunglasses" ? "sunglasses" : category.Name == "Contact Lens" ? "eye" : "lens") fa-4x text-white"></i>
-                                        </div>
-                                    }
-
-                                    <!-- Product Info -->
-                                    <div class="card-body d-flex flex-column">
-                                        <h5 class="card-title fw-bold">@product.Name</h5>
-
-                                        @if (!string.IsNullOrEmpty(product.Brand))
-                                        {
-                                            <p class="text-muted mb-2">
-                                                <i class="fas fa-tag me-1"></i>@product.Brand
-                                            </p>
-                                        }
-
-                                        <p class="card-text text-muted small flex-grow-1">
-                                            @(product.Description?.Length > 80 ? product.Description.Substring(0, 80) + "..." : product.Description)
+                                        <p class="text-muted mb-2">
+                                            <i class="bi bi-tag me-1"></i>@product.Brand
                                         </p>
+                                    }
 
-                                        <div class="product-footer mt-3">
-                                            @if (product.Price.HasValue)
-                                            {
-                                                <h6 class="text-primary fw-bold mb-2">
-                                                    Rs. @product.Price.Value.ToString("0.00")
-                                                </h6>
-                                            }
+                                    @if (product.Category != null)
+                                    {
+                                        <span class="badge bg-primary bg-opacity-10 text-primary mb-2 w-auto d-inline-block">
+                                            @product.Category.Name
+                                        </span>
+                                    }
 
-                                            <button class="btn btn-primary w-100 view-product-btn"
-                                                    data-product-id="@product.Id">
-                                                <i class="fas fa-eye me-2"></i>View Details
-                                            </button>
-                                        </div>
+                                    <p class="card-text text-muted small flex-grow-1">
+                                        @(product.Description?.Length > 80
+                                                                    ? product.Description.Substring(0, 80) + "..."
+                                                                    : product.Description)
+                                    </p>
+
+                                    <div class="product-footer mt-3">
+                                        @if (product.Price.HasValue)
+                                        {
+                                            <h6 class="text-primary fw-bold mb-2">
+                                                Rs. @product.Price.Value.ToString("0.00")
+                                            </h6>
+                                        }
+                                        <button class="btn btn-primary w-100 view-product-btn"
+                                                data-product-id="@product.Id">
+                                            <i class="bi bi-eye me-2"></i>View Details
+                                        </button>
                                     </div>
                                 </div>
                             </div>
-                        }
-                    </div>
+                        </div>
+                    }
                 </div>
+            }
+            else
+            {
+                @* Normal browsing — group by category as before *@
+                @foreach (var category in (categories ?? new List<JayamaliOptical.Web.Models.Category>())
+                        .Where(c => Model.Any(p => p.CategoryId == c.Id)))
+                {
+                    var categoryProducts = Model.Where(p => p.CategoryId == category.Id).ToList();
+
+                    <div class="category-section mb-5">
+                        <h3 class="category-title mb-4 pb-2 border-bottom">
+                            <i class="fas fa-@(category.Name == "Spectacle" ? "glasses" :
+                                                                      category.Name == "Sunglasses" ? "sunglasses" :
+                                                                      category.Name == "Contact Lens" ? "eye" : "lens") me-2"></i>
+                            @category.Name
+                        </h3>
+
+                        <div class="row">
+                            @foreach (var product in categoryProducts)
+                            {
+                                <div class="col-md-6 col-lg-4 col-xl-3 mb-4">
+                                    <div class="product-card card h-100 shadow-sm product-item"
+                                         data-product-id="@product.Id"
+                                         style="cursor:pointer;">
+
+                                        @if (!string.IsNullOrEmpty(product.ImageUrl1))
+                                        {
+                                            <img src="@product.ImageUrl1"
+                                                 class="card-img-top product-img"
+                                                 alt="@product.Name"
+                                                 style="height:250px; object-fit:cover;" />
+                                        }
+                                        else
+                                        {
+                                            <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center"
+                                                 style="height:250px;">
+                                                <i class="fas fa-@(category.Name == "Spectacle" ? "glasses" :
+                                                                                                              category.Name == "Sunglasses" ? "sunglasses" :
+                                                                                                              category.Name == "Contact Lens" ? "eye" : "lens") fa-4x text-white"></i>
+                                            </div>
+                                        }
+
+                                        <div class="card-body d-flex flex-column">
+                                            <h5 class="card-title fw-bold">@product.Name</h5>
+
+                                            @if (!string.IsNullOrEmpty(product.Brand))
+                                            {
+                                                <p class="text-muted mb-2">
+                                                    <i class="fas fa-tag me-1"></i>@product.Brand
+                                                </p>
+                                            }
+
+                                            <p class="card-text text-muted small flex-grow-1">
+                                                @(product.Description?.Length > 80
+                                                                                ? product.Description.Substring(0, 80) + "..."
+                                                                                : product.Description)
+                                            </p>
+
+                                            <div class="product-footer mt-3">
+                                                @if (product.Price.HasValue)
+                                                {
+                                                    <h6 class="text-primary fw-bold mb-2">
+                                                        Rs. @product.Price.Value.ToString("0.00")
+                                                    </h6>
+                                                }
+                                                <button class="btn btn-primary w-100 view-product-btn"
+                                                        data-product-id="@product.Id">
+                                                    <i class="fas fa-eye me-2"></i>View Details
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
             }
         }
     </div>
