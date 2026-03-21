@@ -534,6 +534,59 @@ html {
     margin-top: 10px;
 }
 
+/* Featured Slider Nav */
+.featured-nav-btn {
+    width: 44px;
+    height: 44px;
+    top: 45%;
+    background: transparent;
+}
+
+.featured-nav-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: white;
+    border-radius: 50%;
+    color: #1978bc;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transition: all 0.2s;
+}
+
+.featured-nav-btn:hover .featured-nav-icon {
+    background: #1978bc;
+    color: white;
+}
+
+/* Featured Dots */
+.featured-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 28px;
+    position: static;
+}
+
+.featured-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: none;
+    background: #ccd9e8;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+    .featured-dot.active {
+        background: #1978bc;
+        width: 24px;
+        border-radius: 4px;
+    }
+
 @media (max-width: 768px) {
     .featured-grid {
         grid-template-columns: repeat(2, 1fr);
