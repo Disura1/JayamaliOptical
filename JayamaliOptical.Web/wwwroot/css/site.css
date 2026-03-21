@@ -36,21 +36,6 @@ html {
 
 /*--------------------Navbar----------------------*/
 
-.nav-item {
-    margin: 0 10px;
-}
-
-.navbar-nav .nav-link {
-    color: black;
-    font-size: 1.1rem;
-    border-bottom: 2px solid transparent;
-    transition: 0.3s;
-}
-    .navbar-nav .nav-link:hover {
-        color: var(--jayamali-dark-blue);
-        border-bottom: 2px solid var(--jayamali-dark-blue);
-    }
-
 .secSearch .btn {
     color: var(--jayamali-dark-blue);
     border-color: var(--jayamali-dark-blue);
@@ -165,6 +150,92 @@ html {
 .profile-icon-wrapper .dropdown-toggle::after {
     display: none !important;
 }
+
+/*--------------------Navbar Links----------------------*/
+
+.nav-item {
+    margin: 0 10px;
+}
+
+/* All nav items need relative positioning for ::after pseudo-elements */
+.navbar-nav .nav-item {
+    position: relative;
+}
+
+/* Base link style — NO border-bottom at all (prevents layout shift/vibration) */
+.navbar-nav .nav-link {
+    color: black;
+    font-size: 1.1rem;
+    position: relative;
+    transition: color 0.3s;
+    /* padding-bottom gives space for the underline bar */
+    padding-bottom: 6px;
+}
+
+    /* Base ::after — invisible underline placeholder (prevents layout shift) */
+    .navbar-nav .nav-link::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        width: 0;
+        height: 3px;
+        background: linear-gradient(to right, var(--jayamali-dark-blue), var(--jayamali-light-blue));
+        border-radius: 3px 3px 0 0;
+        transition: width 0.25s ease, left 0.25s ease;
+        /* This overrides Bootstrap's caret completely */
+        border-top: none;
+        border-right: none;
+        border-bottom: none;
+        border-left: none;
+        vertical-align: 0;
+        margin-left: 0;
+    }
+
+    /* Hover — expand underline from center */
+    .navbar-nav .nav-link:hover {
+        color: var(--jayamali-dark-blue);
+    }
+
+        .navbar-nav .nav-link:hover::after {
+            left: 10%;
+            width: 80%;
+        }
+
+    /* ── Active state ── */
+    .navbar-nav .nav-link.nav-active {
+        color: var(--jayamali-dark-blue) !important;
+        font-weight: 700;
+    }
+
+        .navbar-nav .nav-link.nav-active::after {
+            left: 10%;
+            width: 80%;
+        }
+
+        /* ── Active dot above link ── */
+        .navbar-nav .nav-link.nav-active::before {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 5px;
+            height: 5px;
+            background: var(--jayamali-dark-blue);
+            border-radius: 50%;
+        }
+
+/* ── Search button ── */
+.secSearch .btn {
+    color: var(--jayamali-dark-blue);
+    border-color: var(--jayamali-dark-blue);
+}
+
+    .secSearch .btn:hover {
+        background-color: var(--jayamali-dark-blue);
+        color: white;
+    }
 
 /*----------------------Hero Section----------------------------*/
 

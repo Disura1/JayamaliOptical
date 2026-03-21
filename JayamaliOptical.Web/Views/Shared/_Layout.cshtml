@@ -33,12 +33,29 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    @{
+                        var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+                        var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+
+                        bool isHome = currentController == "Home" && currentAction == "Index";
+                        bool isProducts = currentController == "Products";
+                        bool isServices = currentController == "Home" && currentAction == "Index"; // services on homepage
+                        bool isContact = currentController == "Home" && currentAction == "ContactUs";
+                        bool isAbout = currentController == "Home" && currentAction == "AboutUs";
+                        bool isPrivacy = currentController == "Home" && currentAction == "Privacy";
+                    }
+
                     <ul class="navbar-nav flex-grow-1 justify-content-center">
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link @(isHome ? "nav-active" : "")"
+                               asp-area="" asp-controller="Home" asp-action="Index">
+                                Home
+                            </a>
                         </li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="productsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle @(isProducts ? "nav-active" : "")"
+                               href="#" id="productsDropdown" role="button"
+                               data-bs-toggle="dropdown" aria-expanded="false">
                                 Products
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="productsDropdown">
@@ -46,7 +63,9 @@
                             </ul>
                         </li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle"
+                               href="#" id="navbarDropdown" role="button"
+                               data-bs-toggle="dropdown" aria-expanded="false">
                                 Services
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
@@ -54,13 +73,22 @@
                             </ul>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="ContactUs">Contact Us</a>
+                            <a class="nav-link @(isContact ? "nav-active" : "")"
+                               asp-area="" asp-controller="Home" asp-action="ContactUs">
+                                Contact Us
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="AboutUs">About Us</a>
+                            <a class="nav-link @(isAbout ? "nav-active" : "")"
+                               asp-area="" asp-controller="Home" asp-action="AboutUs">
+                                About Us
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link @(isPrivacy ? "nav-active" : "")"
+                               asp-area="" asp-controller="Home" asp-action="Privacy">
+                                Privacy
+                            </a>
                         </li>
                     </ul>
                     <form class="secSearch d-flex">
