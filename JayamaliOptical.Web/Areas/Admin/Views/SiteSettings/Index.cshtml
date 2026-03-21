@@ -48,6 +48,80 @@
                 </div>
             </div>
 
+            @* Opening Hours *@
+            <div class="card mb-4">
+                <div class="card-header" style="background: linear-gradient(135deg,#1978bc,#26a4e0);">
+                    <h5 class="mb-0 text-white"><i class="fas fa-clock me-2"></i>Opening Hours</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-bordered mb-0" style="font-size:0.92rem;">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width:130px;">Day</th>
+                                <th>Open</th>
+                                <th>Close</th>
+                                <th class="text-center" style="width:90px;">Closed</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                var hourRows = new[]
+                                {
+                                                        ("Monday",         "MonOpen", "MonClose", "MonClosed", Model.MonOpen, Model.MonClose, Model.MonClosed),
+                                                        ("Tuesday",        "TueOpen", "TueClose", "TueClosed", Model.TueOpen, Model.TueClose, Model.TueClosed),
+                                                        ("Wednesday",      "WedOpen", "WedClose", "WedClosed", Model.WedOpen, Model.WedClose, Model.WedClosed),
+                                                        ("Thursday",       "ThuOpen", "ThuClose", "ThuClosed", Model.ThuOpen, Model.ThuClose, Model.ThuClosed),
+                                                        ("Friday",         "FriOpen", "FriClose", "FriClosed", Model.FriOpen, Model.FriClose, Model.FriClosed),
+                                                        ("Saturday",       "SatOpen", "SatClose", "SatClosed", Model.SatOpen, Model.SatClose, Model.SatClosed),
+                                                        ("Sunday",         "SunOpen", "SunClose", "SunClosed", Model.SunOpen, Model.SunClose, Model.SunClosed),
+                                                        ("Public Holidays","HolOpen", "HolClose", "HolClosed", Model.HolOpen, Model.HolClose, Model.HolClosed),
+                                                        };
+                            }
+                            @foreach (var row in hourRows)
+                            {
+                                var (label, openName, closeName, closedName, openVal, closeVal, isClosed) = row;
+                                <tr id="row-@openName" class="@(isClosed ? "table-danger" : "")">
+                                    <td class="fw-semibold align-middle">@label</td>
+                                    <td>
+                                        @* Always submit — just style as greyed when closed *@
+                                        <input type="time"
+                                               name="@openName"
+                                               id="@openName"
+                                               value="@openVal"
+                                               class="form-control form-control-sm @(isClosed ? "opacity-50" : "")" />
+                                    </td>
+                                    <td>
+                                        <input type="time"
+                                               name="@closeName"
+                                               id="@closeName"
+                                               value="@closeVal"
+                                               class="form-control form-control-sm @(isClosed ? "opacity-50" : "")" />
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        @* Single checkbox — controller reads "true" string to detect checked *@
+                                        <div class="form-check form-switch d-flex justify-content-center mb-0">
+                                            <input class="form-check-input"
+                                                   type="checkbox"
+                                                   name="@closedName"
+                                                   value="true"
+                                                   id="chk-@closedName"
+                                                   @(isClosed ? "checked" : "")
+                                                   onchange="toggleRow(this, '@openName', '@closeName')" />
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer bg-light">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Toggle <strong>Closed</strong> to mark a day as closed. The live Open/Closed badge updates automatically on the website.
+                    </small>
+                </div>
+            </div>
+
             @* Social Media *@
             <div class="card mb-4">
                 <div class="card-header bg-info text-white">
@@ -168,9 +242,27 @@
 
 @section Scripts {
     <script>
+         function toggleRow(checkbox, openId, closeId) {
+            var row = document.getElementById('row-' + openId);
+            var openInput  = document.getElementById(openId);
+            var closeInput = document.getElementById(closeId);
+
+            if (checkbox.checked) {
+                row.classList.add('table-danger');
+                openInput.classList.add('opacity-50');
+                closeInput.classList.add('opacity-50');
+            } else {
+                row.classList.remove('table-danger');
+                openInput.classList.remove('opacity-50');
+                closeInput.classList.remove('opacity-50');
+            }
+        }
+
+
         function updateCount(el, countId) {
             document.getElementById(countId).textContent = el.value.length;
         }
+
         // Init counts on load
         document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('textarea[maxlength]').forEach(function(ta) {
