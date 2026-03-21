@@ -20,12 +20,12 @@ namespace JayamaliOptical.Web.Controllers
             ApplicationDbContext context,
             IEmailService emailService,
             IConfiguration configuration,  // ADD THIS
-            ILogger<BookingsController> logger = null)
+            ILogger<BookingsController>? logger = null)
         {
             _context = context;
             _emailService = emailService;
-            _configuration = configuration;  // ADD THIS
-            _logger = logger;
+            _configuration = configuration;
+            _logger = logger!;
         }
 
         // GET: Bookings/Create/5

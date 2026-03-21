@@ -166,7 +166,7 @@ namespace JayamaliOptical.Web.Controllers
 
                     using (var fileStream = new FileStream(filePath, FileMode.Create))
                     {
-                        await model.UploadPrescriptionFile.CopyToAsync(fileStream);
+                        await model.UploadPrescriptionFile!.CopyToAsync(fileStream);
                     }
 
                     order.PrescriptionImagePath = "/uploads/prescriptions/" + uniqueFileName;

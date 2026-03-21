@@ -72,7 +72,7 @@
                                         <div class="fp-body">
                                             @if (p.Category != null)
                                             {
-                                                <div class="fp-category">@p.Category.Name</div>
+                                                <div class="fp-category">@p.Category?.Name</div>
                                             }
                                             <div class="fp-name">@p.Name</div>
                                             @if (!string.IsNullOrEmpty(p.Brand))

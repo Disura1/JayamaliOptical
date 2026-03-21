@@ -123,28 +123,28 @@
                                                 }
 
                                                 @* Custom Button 1 *@
-                                                @if (!string.IsNullOrEmpty(defaultService.Button1Text))
+                                                @if (!string.IsNullOrEmpty(defaultService?.Button1Text))
                                                 {
-                                                    <a href="@defaultService.Button1Url"
-                                                       class="btn @defaultService.Button1Class btn-lg">
+                                                    <a href="@defaultService!.Button1Url"
+                                                       class="btn @defaultService!.Button1Class btn-lg">
                                                         <i class="fas fa-calendar-plus me-2"></i>@defaultService.Button1Text
                                                     </a>
                                                 }
 
                                                 @* Custom Button 2 *@
-                                                @if (!string.IsNullOrEmpty(defaultService.Button2Text))
+                                                @if (!string.IsNullOrEmpty(defaultService?.Button2Text))
                                                 {
-                                                    <a href="@defaultService.Button2Url"
-                                                       class="btn @defaultService.Button2Class btn-lg">
+                                                    <a href="@defaultService!.Button2Url"
+                                                       class="btn @defaultService!.Button2Class btn-lg">
                                                         <i class="fas fa-phone me-2"></i>@defaultService.Button2Text
                                                     </a>
                                                 }
 
                                                 @* Custom Button 3 *@
-                                                @if (!string.IsNullOrEmpty(defaultService.Button3Text))
+                                                @if (!string.IsNullOrEmpty(defaultService?.Button3Text))
                                                 {
-                                                    <a href="@defaultService.Button3Url"
-                                                       class="btn @defaultService.Button3Class btn-lg">
+                                                    <a href="@defaultService!.Button3Url"
+                                                       class="btn @defaultService!.Button3Class btn-lg">
                                                         <i class="fas fa-info-circle me-2"></i>@defaultService.Button3Text
                                                     </a>
                                                 }
