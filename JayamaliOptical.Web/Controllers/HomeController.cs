@@ -1,25 +1,25 @@
+using JayamaliOptical.Web.Data;
 using JayamaliOptical.Web.Models;
+using JayamaliOptical.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
-using JayamaliOptical.Web.Data;
 
 namespace JayamaliOptical.Web.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IEmailService _emailService;
 
-        public HomeController(ApplicationDbContext context)
+        public HomeController(ApplicationDbContext context, IEmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
 
-        private async Task<SiteSettings> GetSettingsAsync()
-        {
-            return await _context.SiteSettings.FirstOrDefaultAsync()
-                   ?? new SiteSettings();
-        }
+        private async Task<SiteSettings> GetSettingsAsync() =>
+            await _context.SiteSettings.FirstOrDefaultAsync() ?? new SiteSettings();
 
         public async Task<IActionResult> Index()
         {
@@ -50,6 +50,38 @@ namespace JayamaliOptical.Web.Controllers
             return View();
         }
 
+        // POST: Contact form submission
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SendMessage(string name, string phone, string email, string subject, string message)
+        {
+            if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(message))
+            {
+                TempData["ContactError"] = "Please fill in all required fields.";
+                return RedirectToAction(nameof(ContactUs));
+            }
+
+            // 1. Save to database
+            var contact = new ContactMessage
+            {
+                Name = name.Trim(),
+                Phone = phone?.Trim(),
+                Email = email.Trim(),
+                Subject = subject?.Trim(),
+                Message = message.Trim(),
+                SentAt = DateTime.Now,
+                IsRead = false
+            };
+            _context.ContactMessages.Add(contact);
+            await _context.SaveChangesAsync();
+
+            // 2. Send email notification (best effort)
+            await _emailService.SendContactMessageAsync(name, email, phone ?? "", subject ?? "", message);
+
+            TempData["ContactSuccess"] = "Thank you! Your message has been sent. We'll get back to you shortly.";
+            return RedirectToAction(nameof(ContactUs));
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetServiceDetails(int id)
         {
@@ -77,9 +109,7 @@ namespace JayamaliOptical.Web.Controllers
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
+        public IActionResult Error() =>
+            View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
 }

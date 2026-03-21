@@ -355,31 +355,50 @@
                     Have a question about eye care, products, or appointments? Fill in the form and we'll get back to you shortly.
                 </p>
 
-                <form id="contactForm" novalidate>
+                @* Show success/error from server *@
+                @if (TempData["ContactSuccess"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show mx-3 mt-3" role="alert">
+                        <i class="bi bi-check-circle-fill me-2"></i>@TempData["ContactSuccess"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                @if (TempData["ContactError"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show mx-3 mt-3" role="alert">
+                        <i class="bi bi-exclamation-circle-fill me-2"></i>@TempData["ContactError"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                <form action="/Home/SendMessage" method="post" id="contactForm" novalidate>
+                    @Html.AntiForgeryToken()
                     <div class="row g-3">
                         <div class="col-sm-6">
                             <div class="form-floating">
-                                <input type="text" class="form-control" id="cfName" placeholder="Your Name" required />
-                                <label for="cfName"><i class="bi bi-person me-1"></i>Full Name</label>
+                                <input type="text" name="name" class="form-control" id="cfName"
+                                       placeholder="Your Name" required />
+                                <label for="cfName"><i class="bi bi-person me-1"></i>Full Name *</label>
                                 <div class="invalid-feedback">Please enter your name.</div>
                             </div>
                         </div>
                         <div class="col-sm-6">
                             <div class="form-floating">
-                                <input type="tel" class="form-control" id="cfPhone" placeholder="Phone" />
+                                <input type="tel" name="phone" class="form-control" id="cfPhone" placeholder="Phone" />
                                 <label for="cfPhone"><i class="bi bi-telephone me-1"></i>Phone</label>
                             </div>
                         </div>
                         <div class="col-12">
                             <div class="form-floating">
-                                <input type="email" class="form-control" id="cfEmail" placeholder="Email" required />
-                                <label for="cfEmail"><i class="bi bi-envelope me-1"></i>Email Address</label>
+                                <input type="email" name="email" class="form-control" id="cfEmail"
+                                       placeholder="Email" required />
+                                <label for="cfEmail"><i class="bi bi-envelope me-1"></i>Email Address *</label>
                                 <div class="invalid-feedback">Please enter a valid email.</div>
                             </div>
                         </div>
                         <div class="col-12">
                             <div class="form-floating">
-                                <select class="form-select" id="cfSubject">
+                                <select name="subject" class="form-select" id="cfSubject">
                                     <option value="" selected disabled>Choose a topic...</option>
                                     <option>Appointment Inquiry</option>
                                     <option>Product Information</option>
@@ -392,9 +411,9 @@
                         </div>
                         <div class="col-12">
                             <div class="form-floating">
-                                <textarea class="form-control" id="cfMessage" placeholder="Message"
-                                          style="height:120px;" required></textarea>
-                                <label for="cfMessage"><i class="bi bi-chat-text me-1"></i>Your Message</label>
+                                <textarea name="message" class="form-control" id="cfMessage"
+                                          placeholder="Message" style="height:120px;" required></textarea>
+                                <label for="cfMessage"><i class="bi bi-chat-text me-1"></i>Your Message *</label>
                                 <div class="invalid-feedback">Please write your message.</div>
                             </div>
                         </div>
@@ -533,41 +552,18 @@
 
 @section Scripts {
     <script>
-        // Form validation + mailto send
+        // Client-side validation only — submission goes to server
         document.getElementById('contactForm').addEventListener('submit', function(e) {
-            e.preventDefault();
             if (!this.checkValidity()) {
+                e.preventDefault();
                 this.classList.add('was-validated');
-                return;
             }
+        });
 
-            var name    = document.getElementById('cfName').value;
-            var phone   = document.getElementById('cfPhone').value;
-            var email   = document.getElementById('cfEmail').value;
-            var subject = document.getElementById('cfSubject').value || 'Website Inquiry';
-            var message = document.getElementById('cfMessage').value;
-
-            var body = encodeURIComponent(
-                'Name: ' + name + '\n' +
-                'Phone: ' + phone + '\n' +
-                'Email: ' + email + '\n\n' +
-                'Subject: ' + subject + '\n\n' +
-                'Message:\n' + message
-            );
-
-            var mailtoLink = 'mailto:@email?subject=' +
-                encodeURIComponent(subject + ' - From Website') +
-                '&body=' + body;
-
-            window.location.href = mailtoLink;
-
-            // Show toast
-            var toast = new bootstrap.Toast(document.getElementById('successToast'), { delay: 5000 });
-            toast.show();
-
-            // Reset form
-            this.reset();
-            this.classList.remove('was-validated');
+        // Auto-scroll to success/error alert if present
+        document.addEventListener('DOMContentLoaded', function() {
+            var alert = document.querySelector('.alert-success, .alert-danger');
+            if (alert) alert.scrollIntoView({ behavior: 'smooth', block: 'center' });
         });
     </script>
 }
