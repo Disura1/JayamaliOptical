@@ -89,12 +89,76 @@
         }
 
     /* ── Review Cards ── */
-    .reviews-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 24px;
+
+    /* ── Review Slider ── */
+    .reviews-slider-wrapper {
+        position: relative;
+        overflow: hidden;
         margin-bottom: 50px;
+        mask-image: linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%);
+        -webkit-mask-image: linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%);
     }
+
+    .reviews-track {
+        display: flex;
+        gap: 24px;
+        width: max-content;
+        animation: reviewsScroll 40s linear infinite;
+    }
+
+    @@keyframes reviewsScroll {
+        0% {
+            transform: translateX(0);
+        }
+
+        100% {
+            transform: translateX(-50%);
+        }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        .reviews-track {
+            animation-play-state: paused;
+        }
+    }
+
+    /* Fixed card width — same card, just in a row now */
+    .review-card {
+        background: white;
+        border-radius: 16px;
+        padding: 26px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+        position: relative;
+        border-top: 3px solid transparent;
+        width: 320px;
+        min-width: 320px;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+        .review-card:hover {
+            box-shadow: 0 12px 40px rgba(25,120,188,0.13);
+        }
+
+        .review-card.featured {
+            border-top: 3px solid #1978bc;
+        }
+
+            .review-card.featured::after {
+                content: 'Featured';
+                position: absolute;
+                top: -1px;
+                right: 18px;
+                background: linear-gradient(135deg, #1978bc, #26a4e0);
+                color: white;
+                font-size: 0.65rem;
+                font-weight: 700;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                padding: 3px 10px;
+                border-radius: 0 0 6px 6px;
+            }
 
     .review-card {
         background: white;
@@ -269,10 +333,6 @@
         }
 
     @@media (max-width: 768px) {
-        .reviews-grid {
-            grid-template-columns: 1fr;
-        }
-
         .review-form-card {
             padding: 24px;
         }
@@ -339,44 +399,49 @@
             </div>
         }
 
-        @* ── Review Cards ── *@
+        @* ── Review Cards Slider ── *@
         @if (reviews.Any())
         {
-            <div class="reviews-grid">
-                @foreach (var r in reviews)
-                {
-                    <div class="review-card @(r.IsFeatured ? "featured" : "")">
-                        <div class="review-quote">"</div>
-                        <div class="review-stars">
-                            @for (int i = 1; i <= 5; i++)
-                            {
-                                <span class="@(i <= r.Rating ? "" : "star-empty")">★</span>
-                            }
-                        </div>
-                        <p class="review-comment">@r.Comment</p>
-                        <div class="review-footer">
-                            <div class="review-avatar">
-                                @r.Name.Substring(0, 1).ToUpper()
+            @* Duplicate reviews for seamless infinite loop *@
+            var doubled = reviews.Concat(reviews).ToList();
+
+            <div class="reviews-slider-wrapper">
+                <div class="reviews-track">
+                    @foreach (var r in doubled)
+                    {
+                        <div class="review-card @(r.IsFeatured ? "featured" : "")">
+                            <div class="review-quote">"</div>
+                            <div class="review-stars">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <span class="@(i <= r.Rating ? "" : "star-empty")">★</span>
+                                }
                             </div>
-                            <div>
-                                <div class="review-name">@r.Name</div>
-                                <div class="review-meta">
-                                    @if (!string.IsNullOrEmpty(r.Location))
-                                    {
-                                        <i class="bi bi-geo-alt me-1"></i>
-                                        @r.Location
-                                        <span class="mx-1">·</span>
-                                    }
-                                    @r.SubmittedAt.ToString("MMM yyyy")
+                            <p class="review-comment">@r.Comment</p>
+                            <div class="review-footer">
+                                <div class="review-avatar">
+                                    @r.Name.Substring(0, 1).ToUpper()
                                 </div>
+                                <div>
+                                    <div class="review-name">@r.Name</div>
+                                    <div class="review-meta">
+                                        @if (!string.IsNullOrEmpty(r.Location))
+                                        {
+                                            <i class="bi bi-geo-alt me-1"></i>
+                                            @r.Location
+                                            <span class="mx-1">·</span>
+                                        }
+                                        @r.SubmittedAt.ToString("MMM yyyy")
+                                    </div>
+                                </div>
+                                @if (!string.IsNullOrEmpty(r.ServiceType))
+                                {
+                                    <span class="review-service-badge">@r.ServiceType</span>
+                                }
                             </div>
-                            @if (!string.IsNullOrEmpty(r.ServiceType))
-                            {
-                                <span class="review-service-badge">@r.ServiceType</span>
-                            }
                         </div>
-                    </div>
-                }
+                    }
+                </div>
             </div>
         }
         else
