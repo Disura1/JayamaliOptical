@@ -1,0 +1,188 @@
+﻿@model IEnumerable<JayamaliOptical.Web.Models.GalleryImage>
+@{
+    ViewData["Title"] = "Gallery";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+
+    @* Upload Panel *@
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-upload me-2"></i>Upload Image</h5>
+            </div>
+            <div class="card-body">
+                <form action="/Admin/Gallery/Upload" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Image <span class="text-danger">*</span></label>
+                        <input type="file" name="imageFile" class="form-control"
+                               accept=".jpg,.jpeg,.png,.webp" required
+                               onchange="previewGalleryImg(this)" />
+                        <small class="text-muted">JPG/PNG/WebP · Max 8MB</small>
+                    </div>
+
+                    <div id="galleryPreviewBox" class="mb-3 text-center" style="display:none;">
+                        <img id="galleryPreviewImg" src="" alt="Preview"
+                             class="img-fluid rounded border shadow-sm"
+                             style="max-height:160px; object-fit:cover;" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Caption <small class="text-muted">(optional)</small></label>
+                        <input type="text" name="caption" class="form-control"
+                               maxlength="150" placeholder="e.g. Eye examination room" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Category <small class="text-muted">(optional)</small></label>
+                        <input type="text" name="category" class="form-control"
+                               maxlength="100" placeholder="e.g. Clinic, Products, Team" list="categorySuggestions" />
+                        <datalist id="categorySuggestions">
+                            <option value="Clinic" />
+                            <option value="Products" />
+                            <option value="Team" />
+                            <option value="Equipment" />
+                            <option value="Events" />
+                        </datalist>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Display Order</label>
+                        <input type="number" name="displayOrder" class="form-control"
+                               value="@(Model.Any() ? Model.Max(g => g.DisplayOrder) + 1 : 1)"
+                               min="1" />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-upload me-2"></i>Upload to Gallery
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-3 border-info">
+            <div class="card-body">
+                <h6 class="fw-bold text-info"><i class="fas fa-info-circle me-2"></i>Image Tips</h6>
+                <ul class="small text-muted mb-0">
+                    <li>Recommended: <strong>800 × 600 px</strong> (4:3)</li>
+                    <li>Landscape orientation works best</li>
+                    <li>Max file size: 8MB</li>
+                    <li>JPG preferred for photos</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    @* Gallery Grid *@
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-images me-2"></i>Gallery Images
+                    <span class="badge bg-primary ms-2">@Model.Count()</span>
+                    <span class="badge bg-success ms-1">@Model.Count(g => g.IsActive) active</span>
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                @if (!Model.Any())
+                {
+                    <div class="text-center py-5 text-muted">
+                        <i class="fas fa-images fa-3x mb-3"></i>
+                        <p>No images yet. Upload your first gallery image!</p>
+                    </div>
+                }
+                else
+                {
+                    @* Visual grid preview *@
+                    <div class="p-3" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px;">
+                        @foreach (var img in Model.OrderBy(g => g.DisplayOrder))
+                        {
+                            <div class="position-relative rounded-3 overflow-hidden shadow-sm"
+                                 style="height:120px; opacity:@(img.IsActive ? "1" : "0.45");">
+                                <img src="@img.ImagePath" alt="@img.Caption"
+                                     style="width:100%; height:100%; object-fit:cover;" />
+
+                                @* Overlay with controls *@
+                                <div class="position-absolute inset-0 d-flex flex-column justify-content-between p-1"
+                                     style="inset:0; background:linear-gradient(transparent 40%, rgba(0,0,0,0.7));">
+
+                                    @* Top row — order + active toggle *@
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <form action="/Admin/Gallery/UpdateOrder/@img.Id" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <input type="number" name="order"
+                                                   value="@img.DisplayOrder"
+                                                   class="form-control form-control-sm text-center p-0"
+                                                   style="width:40px; height:24px; font-size:0.7rem; opacity:0.9;"
+                                                   min="1" onchange="this.form.submit()" />
+                                        </form>
+                                        <form action="/Admin/Gallery/ToggleActive/@img.Id" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit"
+                                                    class="btn btn-sm p-0 border-0"
+                                                    style="width:24px;height:24px;background:@(img.IsActive ? "rgba(40,167,69,0.85)" : "rgba(108,117,125,0.85)");border-radius:50%;"
+                                                    title="@(img.IsActive ? "Hide" : "Show")">
+                                                <i class="fas fa-@(img.IsActive ? "eye" : "eye-slash") text-white" style="font-size:0.6rem;"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+
+                                    @* Bottom row — caption + delete *@
+                                    <div class="d-flex justify-content-between align-items-end">
+                                        <span class="text-white" style="font-size:0.65rem; line-height:1.2; max-width:100px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                                            @(img.Caption ?? img.Category ?? "")
+                                        </span>
+                                        <form action="/Admin/Gallery/Delete/@img.Id" method="post"
+                                              onsubmit="return confirm('Delete this image?')">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit"
+                                                    class="btn btn-sm p-0 border-0"
+                                                    style="width:24px;height:24px;background:rgba(220,53,69,0.85);border-radius:50%;"
+                                                    title="Delete">
+                                                <i class="fas fa-trash text-white" style="font-size:0.6rem;"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function previewGalleryImg(input) {
+            var box = document.getElementById('galleryPreviewBox');
+            var img = document.getElementById('galleryPreviewImg');
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    img.src = e.target.result;
+                    box.style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+}

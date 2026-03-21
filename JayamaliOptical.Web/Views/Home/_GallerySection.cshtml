@@ -1,0 +1,182 @@
+﻿@using JayamaliOptical.Web.Models
+@{
+    var images = ViewBag.GalleryImages as List<GalleryImage> ?? new List<GalleryImage>();
+    if (!images.Any()) return;
+    var doubled = images.Concat(images).ToList();
+}
+
+<section class="gallery-section">
+
+    @* Header *@
+    <div class="gallery-header">
+        @* <h6 class="gallery-eyebrow">Our Clinic & Products</h6> *@
+        <h2 class="gallery-title">Gallery</h2>
+        <div class="gallery-divider"></div>
+        <p class="gallery-sub">A glimpse into our world of eye care</p>
+    </div>
+
+    @* Track — slides RIGHT (reverse direction) *@
+    <div class="gallery-track-wrapper" id="galleryWrapper">
+        <div class="gallery-track" id="galleryTrack">
+            @foreach (var img in doubled)
+            {
+                <div class="gallery-item" onclick="openGalleryLightbox('@img.ImagePath', '@Html.Raw((img.Caption ?? "").Replace("'", "\\'"))')">
+                    <img src="@img.ImagePath" alt="@(img.Caption ?? "Gallery")" loading="lazy" />
+                    @if (!string.IsNullOrEmpty(img.Caption))
+                    {
+                        <div class="gallery-item-caption">@img.Caption</div>
+                    }
+                    @if (!string.IsNullOrEmpty(img.Category))
+                    {
+                        <div class="gallery-item-tag">@img.Category</div>
+                    }
+                    <div class="gallery-item-overlay">
+                        <i class="bi bi-zoom-in"></i>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    @* Manual nav arrows *@
+    <div class="gallery-nav">
+        <button class="gallery-nav-btn" id="galleryPrev" title="Previous">
+            <i class="bi bi-chevron-left"></i>
+        </button>
+        <button class="gallery-nav-btn" id="galleryNext" title="Next">
+            <i class="bi bi-chevron-right"></i>
+        </button>
+    </div>
+
+</section>
+
+@* Lightbox *@
+<div id="galleryLightbox" onclick="closeGalleryLightbox(event)">
+    <div class="lightbox-inner">
+        <button class="lightbox-close" onclick="closeLightboxDirect()">
+            <i class="bi bi-x-lg"></i>
+        </button>
+        <img id="lightboxImg" src="" alt="Gallery" />
+        <p id="lightboxCaption"></p>
+    </div>
+</div>
+
+<script>
+    (function() {
+        var track     = document.getElementById('galleryTrack');
+        var wrapper   = document.getElementById('galleryWrapper');
+        var prevBtn   = document.getElementById('galleryPrev');
+        var nextBtn   = document.getElementById('galleryNext');
+
+        if (!track) return;
+
+        // ── Manual drag to scroll ──
+        var isDragging = false;
+        var startX = 0;
+        var scrollLeft = 0;
+
+        wrapper.addEventListener('mousedown', function(e) {
+            isDragging = true;
+            startX = e.pageX - wrapper.offsetLeft;
+            scrollLeft = wrapper.scrollLeft;
+            track.classList.add('paused');
+        });
+
+        document.addEventListener('mouseup', function() {
+            if (isDragging) {
+                isDragging = false;
+                // Resume auto-scroll after 3s of inactivity
+                clearTimeout(window._galleryResumeTimer);
+                window._galleryResumeTimer = setTimeout(function() {
+                    track.classList.remove('paused');
+                }, 3000);
+            }
+        });
+
+        wrapper.addEventListener('mousemove', function(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            var x = e.pageX - wrapper.offsetLeft;
+            var walk = (x - startX) * 1.5;
+            wrapper.scrollLeft = scrollLeft - walk;
+        });
+
+        // Touch support
+        wrapper.addEventListener('touchstart', function(e) {
+            startX = e.touches[0].pageX;
+            scrollLeft = wrapper.scrollLeft;
+            track.classList.add('paused');
+        }, { passive: true });
+
+        wrapper.addEventListener('touchend', function() {
+            clearTimeout(window._galleryResumeTimer);
+            window._galleryResumeTimer = setTimeout(function() {
+                track.classList.remove('paused');
+            }, 3000);
+        });
+
+        wrapper.addEventListener('touchmove', function(e) {
+            var x = e.touches[0].pageX;
+            var walk = (x - startX) * 1.5;
+            wrapper.scrollLeft = scrollLeft - walk;
+        }, { passive: true });
+
+        // ── Nav button scroll ──
+        var itemWidth = 276; // 260px + 16px gap
+
+        prevBtn.addEventListener('click', function() {
+            track.classList.add('paused');
+            wrapper.scrollBy({ left: -itemWidth * 2, behavior: 'smooth' });
+            clearTimeout(window._galleryResumeTimer);
+            window._galleryResumeTimer = setTimeout(function() {
+                track.classList.remove('paused');
+            }, 3000);
+        });
+
+        nextBtn.addEventListener('click', function() {
+            track.classList.add('paused');
+            wrapper.scrollBy({ left: itemWidth * 2, behavior: 'smooth' });
+            clearTimeout(window._galleryResumeTimer);
+            window._galleryResumeTimer = setTimeout(function() {
+                track.classList.remove('paused');
+            }, 3000);
+        });
+    })();
+
+    // ── Lightbox ──
+    function openGalleryLightbox(src, caption) {
+        document.getElementById('lightboxImg').src = src;
+        document.getElementById('lightboxCaption').textContent = caption || '';
+        document.getElementById('galleryLightbox').classList.add('open');
+        document.body.style.overflow = 'hidden';
+
+        // Pause gallery while lightbox is open
+        var track = document.getElementById('galleryTrack');
+        if (track) track.classList.add('paused');
+    }
+
+    function closeGalleryLightbox(e) {
+        // Close when clicking the dark backdrop (not the image itself)
+        if (e.target.id === 'galleryLightbox') {
+            closeLightboxDirect();
+        }
+    }
+
+    function closeLightboxDirect() {
+        document.getElementById('galleryLightbox').classList.remove('open');
+        document.body.style.overflow = '';
+        // Resume gallery
+        var track = document.getElementById('galleryTrack');
+        if (track) {
+            clearTimeout(window._galleryResumeTimer);
+            window._galleryResumeTimer = setTimeout(function() {
+                track.classList.remove('paused');
+            }, 500);
+        }
+    }
+
+    // Close lightbox on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeLightboxDirect();
+    });
+</script>

@@ -89,7 +89,61 @@
                         <div class="fp-card product-item"
                              data-product-id="@product.Id"
                              onclick="openProductModal(@product.Id)">
-                            @Html.Partial("_ProductCard", product)
+
+                            @if (product.RequiresPrescription)
+                            {
+                                <div class="fp-rx-badge">
+                                    <i class="bi bi-file-earmark-medical me-1"></i>Rx
+                                </div>
+                            }
+
+                            <div class="fp-img-wrap">
+                                @if (!string.IsNullOrEmpty(product.ImageUrl1))
+                                {
+                                    <img src="@product.ImageUrl1" alt="@product.Name" loading="lazy" />
+                                }
+                                else
+                                {
+                                    <div class="fp-no-img">
+                                        <i class="bi bi-eyeglasses"></i>
+                                    </div>
+                                }
+                                <div class="fp-overlay">
+                                    <button class="fp-overlay-btn">
+                                        <i class="bi bi-eye me-1"></i>Quick View
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="fp-body">
+                                <div class="fp-category">@product.Category?.Name</div>
+                                <div class="fp-name">@product.Name</div>
+                                @if (!string.IsNullOrEmpty(product.Brand))
+                                {
+                                    <div class="fp-brand"><i class="bi bi-tag me-1"></i>@product.Brand</div>
+                                }
+                                <div class="fp-desc">@product.Description</div>
+                                <div class="fp-footer">
+                                    @if (product.Price.HasValue)
+                                    {
+                                        <span class="fp-price">Rs. @product.Price.Value.ToString("0.00")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="fp-price-na">Price on request</span>
+                                    }
+                                    <form action="/Cart/AddToCart" method="post"
+                                          onclick="event.stopPropagation()">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="productId" value="@product.Id" />
+                                        <input type="hidden" name="quantity" value="1" />
+                                        <button type="submit" class="fp-cart-btn">
+                                            <i class="bi bi-cart-plus"></i>Add
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
                         </div>
                     }
                 </div>

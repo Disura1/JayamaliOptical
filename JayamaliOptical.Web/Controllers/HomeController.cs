@@ -53,6 +53,10 @@ namespace JayamaliOptical.Web.Controllers
                 .OrderBy(p => p.Name)
                 .Take(12)
                 .ToListAsync();
+            ViewBag.GalleryImages = await _context.GalleryImages
+                .Where(g => g.IsActive)
+                .OrderBy(g => g.DisplayOrder)
+                .ToListAsync();
             return View();
         }
 
