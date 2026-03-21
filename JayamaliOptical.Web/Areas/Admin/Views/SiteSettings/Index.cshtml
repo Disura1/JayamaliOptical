@@ -11,9 +11,18 @@
     </div>
 }
 
-<form asp-action="Index" method="post">
-    <div class="row">
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
 
+<form action="/Admin/SiteSettings/Save" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="row">
         @* Left Column *@
         <div class="col-md-6">
 
@@ -24,33 +33,31 @@
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label asp-for="Address" class="form-label fw-semibold">Address <small class="text-muted">(max 200 chars)</small></label>
-                        <textarea asp-for="Address" class="form-control" rows="2" maxlength="200"></textarea>
-                        <span asp-validation-for="Address" class="text-danger small"></span>
+                        <label class="form-label fw-semibold">Address <small class="text-muted">(max 200 chars)</small></label>
+                        <textarea name="Address" class="form-control" rows="2" maxlength="200">@Model.Address</textarea>
                     </div>
                     <div class="mb-3">
-                        <label asp-for="Phone1" class="form-label fw-semibold">Phone 1</label>
-                        <input asp-for="Phone1" class="form-control" maxlength="20" placeholder="077 653 7611" />
+                        <label class="form-label fw-semibold">Phone 1</label>
+                        <input name="Phone1" class="form-control" maxlength="20" value="@Model.Phone1" placeholder="077 653 7611" />
                     </div>
                     <div class="mb-3">
-                        <label asp-for="Phone2" class="form-label fw-semibold">Phone 2</label>
-                        <input asp-for="Phone2" class="form-control" maxlength="20" placeholder="076 730 3410" />
+                        <label class="form-label fw-semibold">Phone 2</label>
+                        <input name="Phone2" class="form-control" maxlength="20" value="@Model.Phone2" placeholder="076 730 3410" />
                     </div>
                     <div class="mb-3">
-                        <label asp-for="Phone3" class="form-label fw-semibold">Phone 3</label>
-                        <input asp-for="Phone3" class="form-control" maxlength="20" placeholder="032 226 6965" />
+                        <label class="form-label fw-semibold">Phone 3</label>
+                        <input name="Phone3" class="form-control" maxlength="20" value="@Model.Phone3" placeholder="032 226 6965" />
                     </div>
                     <div class="mb-3">
-                        <label asp-for="Email" class="form-label fw-semibold">Email</label>
-                        <input asp-for="Email" class="form-control" maxlength="100" placeholder="jayamalioptical@gmail.com" />
-                        <span asp-validation-for="Email" class="text-danger small"></span>
+                        <label class="form-label fw-semibold">Email</label>
+                        <input name="Email" class="form-control" maxlength="100" value="@Model.Email" placeholder="jayamalioptical@gmail.com" />
                     </div>
                 </div>
             </div>
 
             @* Opening Hours *@
             <div class="card mb-4">
-                <div class="card-header" style="background: linear-gradient(135deg,#1978bc,#26a4e0);">
+                <div class="card-header" style="background:linear-gradient(135deg,#1978bc,#26a4e0);">
                     <h5 class="mb-0 text-white"><i class="fas fa-clock me-2"></i>Opening Hours</h5>
                 </div>
                 <div class="card-body p-0">
@@ -65,7 +72,7 @@
                         </thead>
                         <tbody>
                             @{
-                                var hourRows = new[]
+                                var days = new[]
                                 {
                                                         ("Monday",         "MonOpen", "MonClose", "MonClosed", Model.MonOpen, Model.MonClose, Model.MonClosed),
                                                         ("Tuesday",        "TueOpen", "TueClose", "TueClosed", Model.TueOpen, Model.TueClose, Model.TueClosed),
@@ -77,36 +84,25 @@
                                                         ("Public Holidays","HolOpen", "HolClose", "HolClosed", Model.HolOpen, Model.HolClose, Model.HolClosed),
                                                         };
                             }
-                            @foreach (var row in hourRows)
+                            @foreach (var (label, openName, closeName, closedName, openVal, closeVal, isClosed) in days)
                             {
-                                var (label, openName, closeName, closedName, openVal, closeVal, isClosed) = row;
                                 <tr id="row-@openName" class="@(isClosed ? "table-danger" : "")">
                                     <td class="fw-semibold align-middle">@label</td>
                                     <td>
-                                        @* Always submit — just style as greyed when closed *@
-                                        <input type="time"
-                                               name="@openName"
-                                               id="@openName"
-                                               value="@openVal"
+                                        <input type="time" name="@openName" id="@openName" value="@openVal"
                                                class="form-control form-control-sm @(isClosed ? "opacity-50" : "")" />
                                     </td>
                                     <td>
-                                        <input type="time"
-                                               name="@closeName"
-                                               id="@closeName"
-                                               value="@closeVal"
+                                        <input type="time" name="@closeName" id="@closeName" value="@closeVal"
                                                class="form-control form-control-sm @(isClosed ? "opacity-50" : "")" />
                                     </td>
                                     <td class="text-center align-middle">
-                                        @* Single checkbox — controller reads "true" string to detect checked *@
                                         <div class="form-check form-switch d-flex justify-content-center mb-0">
-                                            <input class="form-check-input"
-                                                   type="checkbox"
-                                                   name="@closedName"
-                                                   value="true"
+                                            <input class="form-check-input" type="checkbox"
+                                                   name="@closedName" value="true"
                                                    id="chk-@closedName"
                                                    @(isClosed ? "checked" : "")
-                                                   onchange="toggleRow(this, '@openName', '@closeName')" />
+                                                   onchange="toggleRow(this,'@openName','@closeName')" />
                                         </div>
                                     </td>
                                 </tr>
@@ -117,7 +113,7 @@
                 <div class="card-footer bg-light">
                     <small class="text-muted">
                         <i class="fas fa-info-circle me-1"></i>
-                        Toggle <strong>Closed</strong> to mark a day as closed. The live Open/Closed badge updates automatically on the website.
+                        Toggle <strong>Closed</strong> to mark a day as closed.
                     </small>
                 </div>
             </div>
@@ -129,28 +125,20 @@
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label asp-for="FacebookUrl" class="form-label fw-semibold">
-                            <i class="fab fa-facebook text-primary me-1"></i>Facebook URL
-                        </label>
-                        <input asp-for="FacebookUrl" class="form-control" maxlength="300" placeholder="https://facebook.com/..." />
+                        <label class="form-label fw-semibold"><i class="fab fa-facebook text-primary me-1"></i>Facebook URL</label>
+                        <input name="FacebookUrl" class="form-control" maxlength="300" value="@Model.FacebookUrl" placeholder="https://facebook.com/..." />
                     </div>
                     <div class="mb-3">
-                        <label asp-for="WhatsAppUrl" class="form-label fw-semibold">
-                            <i class="fab fa-whatsapp text-success me-1"></i>WhatsApp URL
-                        </label>
-                        <input asp-for="WhatsAppUrl" class="form-control" maxlength="300" placeholder="https://wa.me/94..." />
+                        <label class="form-label fw-semibold"><i class="fab fa-whatsapp text-success me-1"></i>WhatsApp URL</label>
+                        <input name="WhatsAppUrl" class="form-control" maxlength="300" value="@Model.WhatsAppUrl" placeholder="https://wa.me/94..." />
                     </div>
                     <div class="mb-3">
-                        <label asp-for="TikTokUrl" class="form-label fw-semibold">
-                            <i class="fab fa-tiktok me-1"></i>TikTok URL
-                        </label>
-                        <input asp-for="TikTokUrl" class="form-control" maxlength="300" placeholder="https://tiktok.com/@@..." />
+                        <label class="form-label fw-semibold"><i class="fab fa-tiktok me-1"></i>TikTok URL</label>
+                        <input name="TikTokUrl" class="form-control" maxlength="300" value="@Model.TikTokUrl" placeholder="https://tiktok.com/@@..." />
                     </div>
                     <div class="mb-3">
-                        <label asp-for="InstagramUrl" class="form-label fw-semibold">
-                            <i class="fab fa-instagram text-danger me-1"></i>Instagram URL
-                        </label>
-                        <input asp-for="InstagramUrl" class="form-control" maxlength="300" placeholder="https://instagram.com/..." />
+                        <label class="form-label fw-semibold"><i class="fab fa-instagram text-danger me-1"></i>Instagram URL</label>
+                        <input name="InstagramUrl" class="form-control" maxlength="300" value="@Model.InstagramUrl" placeholder="https://instagram.com/..." />
                     </div>
                 </div>
             </div>
@@ -166,12 +154,11 @@
                     <h5 class="mb-0"><i class="fas fa-eye me-2"></i>Vision Statement <small class="opacity-75">(max 1000 chars)</small></h5>
                 </div>
                 <div class="card-body">
-                    <textarea asp-for="Vision" class="form-control" rows="4" maxlength="1000"
-                              oninput="updateCount(this,'visionCount')"></textarea>
+                    <textarea name="Vision" class="form-control" rows="4" maxlength="1000"
+                              oninput="updateCount(this,'visionCount')">@Model.Vision</textarea>
                     <div class="text-end text-muted small mt-1">
                         <span id="visionCount">@(Model.Vision?.Length ?? 0)</span>/1000
                     </div>
-                    <span asp-validation-for="Vision" class="text-danger small"></span>
                 </div>
             </div>
 
@@ -181,15 +168,12 @@
                     <h5 class="mb-0"><i class="fas fa-bullseye me-2"></i>Mission Statement <small class="opacity-75">(max 2000 chars)</small></h5>
                 </div>
                 <div class="card-body">
-                    <small class="text-muted d-block mb-2">
-                        First line = intro paragraph. Next lines = commitment bullet points (one per line, start with "-").
-                    </small>
-                    <textarea asp-for="Mission" class="form-control" rows="7" maxlength="2000"
-                              oninput="updateCount(this,'missionCount')"></textarea>
+                    <small class="text-muted d-block mb-2">First line = intro. Next lines = bullet points starting with "-".</small>
+                    <textarea name="Mission" class="form-control" rows="7" maxlength="2000"
+                              oninput="updateCount(this,'missionCount')">@Model.Mission</textarea>
                     <div class="text-end text-muted small mt-1">
                         <span id="missionCount">@(Model.Mission?.Length ?? 0)</span>/2000
                     </div>
-                    <span asp-validation-for="Mission" class="text-danger small"></span>
                 </div>
             </div>
 
@@ -199,34 +183,33 @@
                     <h5 class="mb-0"><i class="fas fa-history me-2"></i>Company History <small class="opacity-75">(max 3000 chars)</small></h5>
                 </div>
                 <div class="card-body">
-                    <small class="text-muted d-block mb-2">Each paragraph on a new line will appear as a separate timeline item.</small>
-                    <textarea asp-for="History" class="form-control" rows="8" maxlength="3000"
-                              oninput="updateCount(this,'historyCount')"></textarea>
+                    <small class="text-muted d-block mb-2">Each paragraph on a new line = separate timeline item.</small>
+                    <textarea name="History" class="form-control" rows="8" maxlength="3000"
+                              oninput="updateCount(this,'historyCount')">@Model.History</textarea>
                     <div class="text-end text-muted small mt-1">
                         <span id="historyCount">@(Model.History?.Length ?? 0)</span>/3000
                     </div>
-                    <span asp-validation-for="History" class="text-danger small"></span>
                 </div>
             </div>
 
         </div>
     </div>
 
-    @* Privacy Policy — Full Width *@
+    @* Privacy Policy *@
     <div class="card mb-4">
         <div class="card-header bg-secondary text-white">
             <h5 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Privacy Policy <small class="opacity-75">(max 5000 chars)</small></h5>
         </div>
         <div class="card-body">
             <small class="text-muted d-block mb-2">
-                Section headings must be exactly: <code>Information We Collect</code>, <code>How We Use Your Information</code>, <code>Information Protection</code>, <code>Patient Rights</code> — each on its own line. Bullet points start with "-".
+                Section headings: <code>Information We Collect</code>, <code>How We Use Your Information</code>,
+                <code>Information Protection</code>, <code>Patient Rights</code> — each on its own line. Bullets start with "-".
             </small>
-            <textarea asp-for="PrivacyPolicy" class="form-control" rows="14" maxlength="5000"
-                      oninput="updateCount(this,'privacyCount')"></textarea>
+            <textarea name="PrivacyPolicy" class="form-control" rows="14" maxlength="5000"
+                      oninput="updateCount(this,'privacyCount')">@Model.PrivacyPolicy</textarea>
             <div class="text-end text-muted small mt-1">
                 <span id="privacyCount">@(Model.PrivacyPolicy?.Length ?? 0)</span>/5000
             </div>
-            <span asp-validation-for="PrivacyPolicy" class="text-danger small"></span>
         </div>
     </div>
 
@@ -242,32 +225,29 @@
 
 @section Scripts {
     <script>
-         function toggleRow(checkbox, openId, closeId) {
+        function toggleRow(checkbox, openId, closeId) {
             var row = document.getElementById('row-' + openId);
-            var openInput  = document.getElementById(openId);
-            var closeInput = document.getElementById(closeId);
-
+            var o = document.getElementById(openId);
+            var c = document.getElementById(closeId);
             if (checkbox.checked) {
                 row.classList.add('table-danger');
-                openInput.classList.add('opacity-50');
-                closeInput.classList.add('opacity-50');
+                o.classList.add('opacity-50');
+                c.classList.add('opacity-50');
             } else {
                 row.classList.remove('table-danger');
-                openInput.classList.remove('opacity-50');
-                closeInput.classList.remove('opacity-50');
+                o.classList.remove('opacity-50');
+                c.classList.remove('opacity-50');
             }
         }
-
 
         function updateCount(el, countId) {
             document.getElementById(countId).textContent = el.value.length;
         }
 
-        // Init counts on load
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('textarea[maxlength]').forEach(function(ta) {
-                var countId = ta.getAttribute('oninput')?.match(/updateCount\(this,'(\w+)'\)/)?.[1];
-                if (countId) document.getElementById(countId).textContent = ta.value.length;
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('textarea[maxlength]').forEach(function (ta) {
+                var m = ta.getAttribute('oninput')?.match(/updateCount\(this,'(\w+)'\)/);
+                if (m) document.getElementById(m[1]).textContent = ta.value.length;
             });
         });
     </script>
