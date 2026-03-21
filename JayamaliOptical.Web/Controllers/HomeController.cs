@@ -33,6 +33,10 @@ namespace JayamaliOptical.Web.Controllers
                 .Where(o => o.IsActive)
                 .OrderBy(o => o.DisplayOrder)
                 .ToListAsync();
+            ViewBag.Brands = await _context.Brands
+                .Where(b => b.IsActive)
+                .OrderBy(b => b.DisplayOrder)
+                .ToListAsync();
             return View();
         }
 

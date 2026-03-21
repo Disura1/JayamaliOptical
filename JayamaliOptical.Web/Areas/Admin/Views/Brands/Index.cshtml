@@ -1,0 +1,204 @@
+﻿@model IEnumerable<JayamaliOptical.Web.Models.Brand>
+@{
+    ViewData["Title"] = "Brands";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+
+    @* Add Brand Panel *@
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-plus me-2"></i>Add Brand</h5>
+            </div>
+            <div class="card-body">
+                <form action="/Admin/Brands/Add" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Brand Name <span class="text-danger">*</span></label>
+                        <input type="text" name="name" class="form-control"
+                               maxlength="100" placeholder="e.g. Essilor" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Logo Image <small class="text-muted">(optional)</small></label>
+                        <input type="file" name="logoFile" class="form-control"
+                               accept=".jpg,.jpeg,.png,.webp,.svg"
+                               onchange="previewLogo(this)" />
+                        <small class="text-muted">PNG/SVG with transparent background · <strong>200 × 80 px</strong></small>
+                        <div class="mt-2 text-center" id="logoPreviewBox" style="display:none;">
+                            <img id="logoPreviewImg" src="" alt="Preview"
+                                 class="border rounded p-1"
+                                 style="max-height:60px; max-width:160px;" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Display Order</label>
+                        <input type="number" name="displayOrder" class="form-control"
+                               value="@(Model.Any() ? Model.Max(b => b.DisplayOrder) + 1 : 1)"
+                               min="1" />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-plus me-2"></i>Add Brand
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-3 border-info">
+            <div class="card-body">
+                <h6 class="fw-bold text-info"><i class="fas fa-info-circle me-2"></i>Logo Guidelines</h6>
+                <ul class="small text-muted mb-0">
+                    <li>Recommended: <strong>200 × 80 px</strong></li>
+                    <li>Use <strong>PNG or SVG</strong> with transparent background</li>
+                    <li>No logo? Brand name shows as stylised text</li>
+                    <li>Keep it simple — logos are shown greyscale</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    @* Brands List *@
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-store me-2"></i>All Brands
+                    <span class="badge bg-primary ms-2">@Model.Count()</span>
+                    <span class="badge bg-success ms-1">@Model.Count(b => b.IsActive) active</span>
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                @if (!Model.Any())
+                {
+                    <div class="text-center py-5 text-muted">
+                        <i class="fas fa-store fa-3x mb-3"></i>
+                        <p>No brands yet. Add your first brand above!</p>
+                    </div>
+                }
+                else
+                {
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width:90px;">Logo</th>
+                                <th>Name</th>
+                                <th class="text-center" style="width:80px;">Order</th>
+                                <th class="text-center" style="width:80px;">Status</th>
+                                <th class="text-center" style="width:70px;">Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var brand in Model.OrderBy(b => b.DisplayOrder))
+                            {
+                                <tr class="@(!brand.IsActive ? "opacity-50" : "")">
+                                    <td class="align-middle">
+                                        @if (!string.IsNullOrEmpty(brand.LogoPath))
+                                        {
+                                            <img src="@brand.LogoPath" alt="@brand.Name"
+                                                 style="max-width:80px; max-height:36px; object-fit:contain;" />
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Text only</span>
+                                        }
+                                    </td>
+                                    <td class="align-middle fw-semibold">@brand.Name</td>
+                                    <td class="align-middle text-center">
+                                        <form action="/Admin/Brands/UpdateOrder/@brand.Id" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <input type="number" name="order"
+                                                   value="@brand.DisplayOrder"
+                                                   class="form-control form-control-sm text-center"
+                                                   style="width:55px;"
+                                                   min="1"
+                                                   onchange="this.form.submit()" />
+                                        </form>
+                                    </td>
+                                    <td class="align-middle text-center">
+                                        <form action="/Admin/Brands/ToggleActive/@brand.Id" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit"
+                                                    class="btn btn-sm @(brand.IsActive ? "btn-success" : "btn-secondary")"
+                                                    title="@(brand.IsActive ? "Hide" : "Show")">
+                                                <i class="fas fa-@(brand.IsActive ? "eye" : "eye-slash")"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                    <td class="align-middle text-center">
+                                        <form action="/Admin/Brands/Delete/@brand.Id" method="post"
+                                              onsubmit="return confirm('Delete @brand.Name?')">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+
+        @* Live Preview *@
+        @if (Model.Any(b => b.IsActive))
+        {
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-eye me-2"></i>Live Preview</h6>
+                </div>
+                <div class="card-body p-2" style="overflow:hidden; background:#f8f9fa; border-radius:8px;">
+                    <div style="display:flex; gap:30px; overflow:hidden; padding:10px 0;">
+                        @foreach (var brand in Model.Where(b => b.IsActive).OrderBy(b => b.DisplayOrder))
+                        {
+                            <div style="display:flex;flex-direction:column;align-items:center;min-width:100px;border-right:1px solid #ddd;padding-right:30px;">
+                                @if (!string.IsNullOrEmpty(brand.LogoPath))
+                                {
+                                    <img src="@brand.LogoPath" style="max-width:80px;max-height:36px;object-fit:contain;filter:grayscale(40%)" alt="@brand.Name" />
+                                }
+                                <span style="font-size:0.7rem;color:#999;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:6px;">@brand.Name</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function previewLogo(input) {
+            var box = document.getElementById('logoPreviewBox');
+            var img = document.getElementById('logoPreviewImg');
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    img.src = e.target.result;
+                    box.style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+}
