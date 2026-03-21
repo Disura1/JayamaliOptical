@@ -49,6 +49,7 @@ namespace JayamaliOptical.Web.Models
         public string? ImageUrl2 { get; set; }  // Second photo (for Spectacles & Sunglasses)
 
         public bool IsActive { get; set; } = true;
+        public bool IsFeatured { get; set; } = false;
 
         public DateTime CreatedDate { get; set; } = DateTime.Now;
     }

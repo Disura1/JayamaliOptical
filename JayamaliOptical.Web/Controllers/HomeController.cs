@@ -43,11 +43,16 @@ namespace JayamaliOptical.Web.Controllers
                 .ThenByDescending(r => r.SubmittedAt)
                 .Take(20)
                 .ToListAsync();
-
             ViewBag.ReviewCount = await _context.Reviews.CountAsync(r => r.IsApproved);
             ViewBag.AverageRating = await _context.Reviews.Where(r => r.IsApproved).AnyAsync()
                 ? Math.Round(await _context.Reviews.Where(r => r.IsApproved).AverageAsync(r => (double)r.Rating), 1)
                 : 0.0;
+            ViewBag.FeaturedProducts = await _context.Products
+                .Include(p => p.Category)
+                .Where(p => p.IsActive && p.IsFeatured)
+                .OrderBy(p => p.Name)
+                .Take(12)
+                .ToListAsync();
             return View();
         }
 

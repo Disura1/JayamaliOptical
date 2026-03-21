@@ -1,0 +1,169 @@
+﻿@using JayamaliOptical.Web.Models
+@{
+    var products = ViewBag.FeaturedProducts as List<Product> ?? new List<Product>();
+    if (!products.Any()) return;
+}
+
+<section class="featured-section" id="featured-products">
+    <div class="container">
+
+        <div class="featured-header">
+            <p class="featured-eyebrow">Handpicked For You</p>
+            <h2 class="featured-title">Featured Products</h2>
+            <div class="featured-divider"></div>
+            <p class="text-muted">Our most popular optical products, selected by our experts</p>
+        </div>
+
+        <div class="featured-grid">
+            @foreach (var p in products)
+            {
+                <div class="fp-card" onclick="openFeaturedModal(@p.Id)" title="View @p.Name">
+
+                    @* Badges *@
+                    <div class="fp-star-badge">
+                        <i class="bi bi-star-fill"></i> Featured
+                    </div>
+                    @if (p.RequiresPrescription)
+                    {
+                        <div class="fp-rx-badge">
+                            <i class="bi bi-file-earmark-medical me-1"></i>Rx
+                        </div>
+                    }
+
+                    @* Image *@
+                    <div class="fp-img-wrap">
+                        @if (!string.IsNullOrEmpty(p.ImageUrl1))
+                        {
+                            <img src="@p.ImageUrl1" alt="@p.Name" loading="lazy" />
+                        }
+                        else
+                        {
+                            <div class="fp-no-img">
+                                <i class="bi bi-eyeglasses"></i>
+                            </div>
+                        }
+                        <div class="fp-overlay">
+                            <button class="fp-overlay-btn">
+                                <i class="bi bi-eye me-1"></i>Quick View
+                            </button>
+                        </div>
+                    </div>
+
+                    @* Body *@
+                    <div class="fp-body">
+                        @if (p.Category != null)
+                        {
+                            <div class="fp-category">@p.Category.Name</div>
+                        }
+                        <div class="fp-name">@p.Name</div>
+                        @if (!string.IsNullOrEmpty(p.Brand))
+                        {
+                            <div class="fp-brand"><i class="bi bi-tag me-1"></i>@p.Brand</div>
+                        }
+                        <div class="fp-desc">@p.Description</div>
+                        <div class="fp-footer">
+                            @if (p.Price.HasValue)
+                            {
+                                <span class="fp-price">Rs. @p.Price.Value.ToString("0.00")</span>
+                            }
+                            else
+                            {
+                                <span class="fp-price-na">Price on request</span>
+                            }
+                            <form action="/Cart/AddToCart" method="post"
+                                  onclick="event.stopPropagation()">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="productId" value="@p.Id" />
+                                <input type="hidden" name="quantity" value="1" />
+                                <button type="submit" class="fp-cart-btn">
+                                    <i class="bi bi-cart-plus"></i>Add
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                </div>
+            }
+        </div>
+
+        <div class="featured-cta">
+            <a href="/Products/Index" class="btn btn-outline-primary btn-lg rounded-pill px-5">
+                <i class="bi bi-grid me-2"></i>View All Products
+            </a>
+        </div>
+
+    </div>
+</section>
+
+@* Reuse the product modal from Products/Index *@
+<div class="modal fade" id="featuredProductModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:16px; overflow:hidden;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">Product Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="featuredModalContent">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openFeaturedModal(productId) {
+        var modal = new bootstrap.Modal(document.getElementById('featuredProductModal'));
+        var content = document.getElementById('featuredModalContent');
+
+        content.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>';
+        modal.show();
+
+        fetch('/Products/GetProductDetails?id=' + productId)
+            .then(function(r) { return r.json(); })
+            .then(function(p) {
+                var priceDisplay = p.price ? parseFloat(p.price).toFixed(2) : null;
+                var rxBadge = p.requiresPrescription
+                    ? '<div class="alert alert-warning d-flex align-items-center mb-3"><i class="bi bi-file-earmark-medical me-2 fs-5"></i><div><strong>Prescription Required</strong><br/><small>This product requires a valid prescription.</small></div></div>'
+                    : '';
+                var typeBadge = p.productType
+                    ? '<span class="badge ' + (p.productType === "Mens" ? "bg-primary" : p.productType === "Ladies" ? "bg-danger" : "bg-info") + ' mb-2">' + p.productType + '</span>'
+                    : '';
+                var specs = '';
+                if (p.frameType) specs += '<p class="mb-1"><strong>Frame Type:</strong> ' + p.frameType + '</p>';
+                if (p.lensPower) specs += '<p class="mb-1"><strong>Lens Power:</strong> ' + p.lensPower + '</p>';
+                if (p.iolType)   specs += '<p class="mb-1"><strong>IOL Type:</strong> ' + p.iolType + '</p>';
+
+                content.innerHTML =
+                    '<div class="row g-0">' +
+                        '<div class="col-md-5 bg-light d-flex align-items-center justify-content-center" style="min-height:280px; border-radius:0;">' +
+                            (p.imageUrl1 ? '<img src="' + p.imageUrl1 + '" class="img-fluid p-3" style="max-height:300px; object-fit:contain;" />' :
+                            '<i class="bi bi-eyeglasses" style="font-size:4rem; color:#ccc;"></i>') +
+                        '</div>' +
+                        '<div class="col-md-7 p-4">' +
+                            typeBadge +
+                            '<h4 class="fw-bold mb-1">' + p.name + '</h4>' +
+                            '<p class="text-muted mb-2">' + (p.category || '') + '</p>' +
+                            (priceDisplay ? '<h3 class="fw-bold mb-3" style="color:#1978bc;">Rs. ' + priceDisplay + '</h3>' : '<p class="text-muted fst-italic mb-3">Price on request</p>') +
+                            rxBadge +
+                            '<p class="mb-3 text-secondary">' + (p.description || '') + '</p>' +
+                            (p.brand ? '<p class="mb-1"><strong>Brand:</strong> ' + p.brand + '</p>' : '') +
+                            (p.stockQuantity !== null ? '<p class="mb-2"><strong>Stock:</strong> ' + (p.stockQuantity > 0 ? p.stockQuantity + ' available' : '<span class="text-danger">Out of stock</span>') + '</p>' : '') +
+                            (specs ? '<hr/><h6 class="fw-bold mb-2">Specifications</h6>' + specs : '') +
+                            '<div class="d-flex gap-2 mt-3">' +
+                                '<form action="/Cart/AddToCart" method="post" class="flex-grow-1">' +
+                                    '<input type="hidden" name="productId" value="' + p.id + '" />' +
+                                    '<input type="hidden" name="quantity" value="1" />' +
+                                    '<button type="submit" class="btn btn-primary w-100"><i class="bi bi-cart-plus me-2"></i>Add to Cart</button>' +
+                                '</form>' +
+                                '<a href="/Products/Index" class="btn btn-outline-secondary"><i class="bi bi-grid"></i></a>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>';
+            })
+            .catch(function() {
+                content.innerHTML = '<div class="alert alert-danger m-3">Error loading product details.</div>';
+            });
+    }
+</script>

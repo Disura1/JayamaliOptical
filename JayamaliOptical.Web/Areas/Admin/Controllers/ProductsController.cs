@@ -302,5 +302,22 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
         {
             return _context.Products.Any(e => e.Id == id);
         }
+
+        // POST: Admin/Products/ToggleFeatured/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleFeatured(int id)
+        {
+            var product = await _context.Products.FindAsync(id);
+            if (product != null)
+            {
+                product.IsFeatured = !product.IsFeatured;
+                await _context.SaveChangesAsync();
+                TempData["Success"] = product.IsFeatured
+                    ? $"'{product.Name}' is now featured on the home page."
+                    : $"'{product.Name}' removed from featured.";
+            }
+            return RedirectToAction(nameof(Index));
+        }
     }
 }
