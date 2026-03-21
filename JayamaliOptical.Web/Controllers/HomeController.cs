@@ -10,63 +10,51 @@ namespace JayamaliOptical.Web.Controllers
     {
         private readonly ApplicationDbContext _context;
 
-        // ADD THIS CONSTRUCTOR
         public HomeController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        // UPDATE THIS INDEX METHOD
+        private async Task<SiteSettings> GetSettingsAsync()
+        {
+            return await _context.SiteSettings.FirstOrDefaultAsync()
+                   ?? new SiteSettings();
+        }
+
         public async Task<IActionResult> Index()
         {
-            // Get all active services ordered by DisplayOrder
             ViewBag.Services = await _context.Services
-                .Where(s => s.IsActive)
-                .OrderBy(s => s.DisplayOrder)
-                .ToListAsync();
-
-            // Get first service (DisplayOrder = 1) as default
+                .Where(s => s.IsActive).OrderBy(s => s.DisplayOrder).ToListAsync();
             ViewBag.DefaultService = await _context.Services
-                .Where(s => s.IsActive && s.DisplayOrder == 1)
-                .FirstOrDefaultAsync();
-
-            // If no service with DisplayOrder=1, get the first one
-            if (ViewBag.DefaultService == null)
-            {
-                ViewBag.DefaultService = await _context.Services
-                    .Where(s => s.IsActive)
-                    .OrderBy(s => s.DisplayOrder)
-                    .FirstOrDefaultAsync();
-            }
-
+                .Where(s => s.IsActive && s.DisplayOrder == 1).FirstOrDefaultAsync()
+                ?? await _context.Services.Where(s => s.IsActive).OrderBy(s => s.DisplayOrder).FirstOrDefaultAsync();
+            ViewBag.Settings = await GetSettingsAsync();
             return View();
         }
 
-        public IActionResult ContactUs()
+        public async Task<IActionResult> ContactUs()
         {
+            ViewBag.Settings = await GetSettingsAsync();
             return View();
         }
 
-        public IActionResult AboutUs()
+        public async Task<IActionResult> AboutUs()
         {
+            ViewBag.Settings = await GetSettingsAsync();
             return View();
         }
 
-        public IActionResult Privacy()
+        public async Task<IActionResult> Privacy()
         {
+            ViewBag.Settings = await GetSettingsAsync();
             return View();
         }
 
-        // ADD THIS NEW METHOD FOR API
         [HttpGet]
         public async Task<IActionResult> GetServiceDetails(int id)
         {
             var service = await _context.Services.FindAsync(id);
-            if (service == null)
-            {
-                return NotFound();
-            }
-
+            if (service == null) return NotFound();
             return Json(new
             {
                 id = service.Id,

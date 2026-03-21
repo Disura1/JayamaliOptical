@@ -12,6 +12,15 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap">
 </head>
 <body>
+    @using JayamaliOptical.Web.Data
+    @using JayamaliOptical.Web.Models
+    @using Microsoft.EntityFrameworkCore
+    @inject ApplicationDbContext _layoutDb
+    @{
+        var _siteSettings = await _layoutDb.SiteSettings
+        .FirstOrDefaultAsync<SiteSettings>()
+        ?? new SiteSettings();
+    }
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom shadow-lg mb-3">
             <div class="container-fluid">
@@ -166,28 +175,34 @@
                     </ul>
                     <div class="d-flex gap-4">
                         <p class="fw-bolder text-light fs-5">Get In TOUCH</p>
-                        <a class="ftLink fs-4" href="https://www.facebook.com/share/14X82QupZAM/?mibextid=wwXIfr" target="_blank"><i class="bi bi-facebook"></i></a>
-                        <a class="ftLink fs-4" href="https://wa.me/94776537611" target="_blank"><i class="bi bi-whatsapp"></i></a>
-                        <a class="ftLink fs-4" href="https://www.tiktok.com/@@jayamali_optical?_r=1&_t=ZS-94dUY5Di4Zx" target="_blank"><i class="bi bi-tiktok"></i></a>
-                        <a class="ftLink fs-4" href="#" target="_blank"><i class="bi bi-instagram"></i></a>
+                        <a class="ftLink fs-4" href="@_siteSettings.FacebookUrl" target="_blank"><i class="bi bi-facebook"></i></a>
+                        <a class="ftLink fs-4" href="@_siteSettings.WhatsAppUrl" target="_blank"><i class="bi bi-whatsapp"></i></a>
+                        <a class="ftLink fs-4" href="@_siteSettings.TikTokUrl" target="_blank"><i class="bi bi-tiktok"></i></a>
+                        <a class="ftLink fs-4" href="@_siteSettings.InstagramUrl" target="_blank"><i class="bi bi-instagram"></i></a>
                     </div>
                 </div>
                 <div class="d-flex justify-content-around h-75 mt-3">
                     <div class="d-flex flex-column align-items-center pt-3">
                         <h5>ADDRESS</h5>
                         <div class="lh-1">
-                            <p>No: 116, Kurunagala Road, Puttalam, Sri Lanka</p>
+                            <p>@_siteSettings.Address</p>
                         </div>
                     </div>
                     <div class="d-flex flex-column align-items-center pt-3">
                         <h5>TELEPHONE</h5>
-                        <a class="ftLink lh-1 text-decoration-none" href="tel:+94776537611">077 653 7611</a>
-                        <a class="ftLink lh-1 text-decoration-none my-2" href="tel:+94767303410">076 7303410</a>
-                        <a class="ftLink lh-1 text-decoration-none" href="tel:+94322266965">032 226 6965</a>
+                        <a class="ftLink lh-1 text-decoration-none" href="tel:@_siteSettings.Phone1.Replace(" ", "")">@_siteSettings.Phone1</a>
+                        @if (!string.IsNullOrEmpty(_siteSettings.Phone2))
+                        {
+                            <a class="ftLink lh-1 text-decoration-none my-2" href="tel:@_siteSettings.Phone2.Replace(" ", "")">@_siteSettings.Phone2</a>
+                        }
+                        @if (!string.IsNullOrEmpty(_siteSettings.Phone3))
+                        {
+                            <a class="ftLink lh-1 text-decoration-none" href="tel:@_siteSettings.Phone3.Replace(" ", "")">@_siteSettings.Phone3</a>
+                        }
                     </div>
                     <div class="d-flex flex-column align-items-center lh-1 pt-3">
                         <h5>EMAIL</h5>
-                        <a class="ftLink text-decoration-none" href="mailto:jayamalioptical@gmail.com?subject=Inquiry from Website">jayamalioptical@gmail.com</a>
+                        <a class="ftLink text-decoration-none" href="mailto:@_siteSettings.Email">@_siteSettings.Email</a>
                     </div>
                 </div>
             </div>

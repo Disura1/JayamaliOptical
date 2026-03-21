@@ -1,0 +1,182 @@
+﻿@model JayamaliOptical.Web.Models.SiteSettings
+@{
+    ViewData["Title"] = "Site Settings";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<form asp-action="Index" method="post">
+    <div class="row">
+
+        @* Left Column *@
+        <div class="col-md-6">
+
+            @* Contact Info *@
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-map-marker-alt me-2"></i>Contact Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label asp-for="Address" class="form-label fw-semibold">Address <small class="text-muted">(max 200 chars)</small></label>
+                        <textarea asp-for="Address" class="form-control" rows="2" maxlength="200"></textarea>
+                        <span asp-validation-for="Address" class="text-danger small"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Phone1" class="form-label fw-semibold">Phone 1</label>
+                        <input asp-for="Phone1" class="form-control" maxlength="20" placeholder="077 653 7611" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Phone2" class="form-label fw-semibold">Phone 2</label>
+                        <input asp-for="Phone2" class="form-control" maxlength="20" placeholder="076 730 3410" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Phone3" class="form-label fw-semibold">Phone 3</label>
+                        <input asp-for="Phone3" class="form-control" maxlength="20" placeholder="032 226 6965" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label fw-semibold">Email</label>
+                        <input asp-for="Email" class="form-control" maxlength="100" placeholder="jayamalioptical@gmail.com" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+                </div>
+            </div>
+
+            @* Social Media *@
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-share-alt me-2"></i>Social Media Links</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label asp-for="FacebookUrl" class="form-label fw-semibold">
+                            <i class="fab fa-facebook text-primary me-1"></i>Facebook URL
+                        </label>
+                        <input asp-for="FacebookUrl" class="form-control" maxlength="300" placeholder="https://facebook.com/..." />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="WhatsAppUrl" class="form-label fw-semibold">
+                            <i class="fab fa-whatsapp text-success me-1"></i>WhatsApp URL
+                        </label>
+                        <input asp-for="WhatsAppUrl" class="form-control" maxlength="300" placeholder="https://wa.me/94..." />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="TikTokUrl" class="form-label fw-semibold">
+                            <i class="fab fa-tiktok me-1"></i>TikTok URL
+                        </label>
+                        <input asp-for="TikTokUrl" class="form-control" maxlength="300" placeholder="https://tiktok.com/@@..." />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="InstagramUrl" class="form-label fw-semibold">
+                            <i class="fab fa-instagram text-danger me-1"></i>Instagram URL
+                        </label>
+                        <input asp-for="InstagramUrl" class="form-control" maxlength="300" placeholder="https://instagram.com/..." />
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        @* Right Column *@
+        <div class="col-md-6">
+
+            @* Vision *@
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-eye me-2"></i>Vision Statement <small class="opacity-75">(max 1000 chars)</small></h5>
+                </div>
+                <div class="card-body">
+                    <textarea asp-for="Vision" class="form-control" rows="4" maxlength="1000"
+                              oninput="updateCount(this,'visionCount')"></textarea>
+                    <div class="text-end text-muted small mt-1">
+                        <span id="visionCount">@(Model.Vision?.Length ?? 0)</span>/1000
+                    </div>
+                    <span asp-validation-for="Vision" class="text-danger small"></span>
+                </div>
+            </div>
+
+            @* Mission *@
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-bullseye me-2"></i>Mission Statement <small class="opacity-75">(max 2000 chars)</small></h5>
+                </div>
+                <div class="card-body">
+                    <small class="text-muted d-block mb-2">
+                        First line = intro paragraph. Next lines = commitment bullet points (one per line, start with "-").
+                    </small>
+                    <textarea asp-for="Mission" class="form-control" rows="7" maxlength="2000"
+                              oninput="updateCount(this,'missionCount')"></textarea>
+                    <div class="text-end text-muted small mt-1">
+                        <span id="missionCount">@(Model.Mission?.Length ?? 0)</span>/2000
+                    </div>
+                    <span asp-validation-for="Mission" class="text-danger small"></span>
+                </div>
+            </div>
+
+            @* History *@
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-history me-2"></i>Company History <small class="opacity-75">(max 3000 chars)</small></h5>
+                </div>
+                <div class="card-body">
+                    <small class="text-muted d-block mb-2">Each paragraph on a new line will appear as a separate timeline item.</small>
+                    <textarea asp-for="History" class="form-control" rows="8" maxlength="3000"
+                              oninput="updateCount(this,'historyCount')"></textarea>
+                    <div class="text-end text-muted small mt-1">
+                        <span id="historyCount">@(Model.History?.Length ?? 0)</span>/3000
+                    </div>
+                    <span asp-validation-for="History" class="text-danger small"></span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    @* Privacy Policy — Full Width *@
+    <div class="card mb-4">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Privacy Policy <small class="opacity-75">(max 5000 chars)</small></h5>
+        </div>
+        <div class="card-body">
+            <small class="text-muted d-block mb-2">
+                Section headings must be exactly: <code>Information We Collect</code>, <code>How We Use Your Information</code>, <code>Information Protection</code>, <code>Patient Rights</code> — each on its own line. Bullet points start with "-".
+            </small>
+            <textarea asp-for="PrivacyPolicy" class="form-control" rows="14" maxlength="5000"
+                      oninput="updateCount(this,'privacyCount')"></textarea>
+            <div class="text-end text-muted small mt-1">
+                <span id="privacyCount">@(Model.PrivacyPolicy?.Length ?? 0)</span>/5000
+            </div>
+            <span asp-validation-for="PrivacyPolicy" class="text-danger small"></span>
+        </div>
+    </div>
+
+    <div class="d-flex gap-3 mb-5">
+        <button type="submit" class="btn btn-primary btn-lg px-5">
+            <i class="fas fa-save me-2"></i>Save All Settings
+        </button>
+        <a href="/" target="_blank" class="btn btn-outline-secondary btn-lg">
+            <i class="fas fa-globe me-2"></i>Preview Website
+        </a>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        function updateCount(el, countId) {
+            document.getElementById(countId).textContent = el.value.length;
+        }
+        // Init counts on load
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('textarea[maxlength]').forEach(function(ta) {
+                var countId = ta.getAttribute('oninput')?.match(/updateCount\(this,'(\w+)'\)/)?.[1];
+                if (countId) document.getElementById(countId).textContent = ta.value.length;
+            });
+        });
+    </script>
+}
