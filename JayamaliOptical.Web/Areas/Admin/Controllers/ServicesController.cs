@@ -40,6 +40,9 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
                 {
                     service.ImageUrl = await UploadServiceImageAsync(ImageFile);
                 }
+                service.Button1Url = ResolveButtonUrl(service.Button1Text, service.Button1Url);
+                service.Button2Url = ResolveButtonUrl(service.Button2Text, service.Button2Url);
+                service.Button3Url = ResolveButtonUrl(service.Button3Text, service.Button3Url);
 
                 _context.Add(service);
                 await _context.SaveChangesAsync();
@@ -92,13 +95,13 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
                 existingService.DurationMinutes = service.DurationMinutes;
                 existingService.RequiresAppointment = service.RequiresAppointment;
                 existingService.Button1Text = service.Button1Text;
-                existingService.Button1Url = service.Button1Url;
+                existingService.Button1Url = ResolveButtonUrl(service.Button1Text, service.Button1Url);
                 existingService.Button1Class = service.Button1Class;
                 existingService.Button2Text = service.Button2Text;
-                existingService.Button2Url = service.Button2Url;
+                existingService.Button2Url = ResolveButtonUrl(service.Button2Text, service.Button2Url);
                 existingService.Button2Class = service.Button2Class;
                 existingService.Button3Text = service.Button3Text;
-                existingService.Button3Url = service.Button3Url;
+                existingService.Button3Url = ResolveButtonUrl(service.Button3Text, service.Button3Url);
                 existingService.Button3Class = service.Button3Class;
                 existingService.DisplayOrder = service.DisplayOrder;
                 existingService.IsActive = service.IsActive;
@@ -166,6 +169,16 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
         private bool ServiceExists(int id)
         {
             return _context.Services.Any(e => e.Id == id);
+        }
+
+        // Always resolve URL from PredefinedButtons by matching button text
+        // so the DB is never stuck with a stale/wrong URL
+        private static string? ResolveButtonUrl(string? buttonText, string? fallbackUrl)
+        {
+            if (string.IsNullOrEmpty(buttonText)) return null;
+            var match = PredefinedButtons.Buttons
+                .FirstOrDefault(b => b.Text == buttonText);
+            return match?.Url ?? fallbackUrl;
         }
     }
 }
