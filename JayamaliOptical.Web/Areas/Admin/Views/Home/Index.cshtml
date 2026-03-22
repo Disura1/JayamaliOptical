@@ -3,73 +3,284 @@
     ViewData["Title"] = "Dashboard";
 }
 
-<div class="row">
-    <!-- Total Customers Card -->
-    <div class="col-lg-3 col-6">
-        <div class="small-box bg-info">
-            <div class="inner">
-                <h3>@Model.TotalCustomers</h3>
-                <p>Total Customers</p>
-            </div>
-            <div class="icon">
-                <i class="fas fa-users"></i>
-            </div>
-            <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
-        </div>
-    </div>
+@* ── Row 1: Key stat cards ── *@
+<div class="row g-3 mb-4">
 
-    <!-- Total Orders Card -->
-    <div class="col-lg-3 col-6">
-        <div class="small-box bg-success">
+    <div class="col-xl-3 col-md-6">
+        <div class="small-box" style="background:linear-gradient(135deg,#1978bc,#26a4e0); color:white;">
             <div class="inner">
                 <h3>@Model.TotalOrders</h3>
                 <p>Total Orders</p>
+                <small style="opacity:0.8;">@Model.PendingOrders pending · @Model.DeliveredOrders delivered</small>
             </div>
-            <div class="icon">
-                <i class="fas fa-shopping-cart"></i>
-            </div>
-            <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+            <div class="icon"><i class="fas fa-shopping-bag"></i></div>
+            <a href="/Admin/Orders" class="small-box-footer" style="background:rgba(0,0,0,0.15);">
+                View Orders <i class="fas fa-arrow-circle-right"></i>
+            </a>
         </div>
     </div>
 
-    <!-- Total Products Card -->
-    <div class="col-lg-3 col-6">
-        <div class="small-box bg-warning">
-            <div class="inner">
-                <h3>@Model.TotalProducts</h3>
-                <p>Total Products</p>
-            </div>
-            <div class="icon">
-                <i class="fas fa-glasses"></i>
-            </div>
-            <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
-        </div>
-    </div>
-
-    <!-- Today's Appointments Card -->
-    <div class="col-lg-3 col-6">
-        <div class="small-box bg-danger">
+    <div class="col-xl-3 col-md-6">
+        <div class="small-box" style="background:linear-gradient(135deg,#28a745,#20c997); color:white;">
             <div class="inner">
                 <h3>@Model.TodayAppointments</h3>
                 <p>Today's Appointments</p>
+                <small style="opacity:0.8;">@Model.UpcomingAppointments upcoming · @Model.PendingAppointments pending</small>
             </div>
-            <div class="icon">
-                <i class="fas fa-calendar-check"></i>
-            </div>
-            <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+            <div class="icon"><i class="fas fa-calendar-check"></i></div>
+            <a href="/Admin/Bookings?date=@DateTime.Today.ToString("yyyy-MM-dd")" class="small-box-footer" style="background:rgba(0,0,0,0.15);">
+                View Today <i class="fas fa-arrow-circle-right"></i>
+            </a>
         </div>
     </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="small-box" style="background:linear-gradient(135deg,#6f42c1,#a855f7); color:white;">
+            <div class="inner">
+                <h3>@Model.TotalCustomers</h3>
+                <p>Total Customers</p>
+                <small style="opacity:0.8;">Registered accounts</small>
+            </div>
+            <div class="icon"><i class="fas fa-users"></i></div>
+            <a href="/Admin/Customers" class="small-box-footer" style="background:rgba(0,0,0,0.15);">
+                View Customers <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="small-box" style="background:linear-gradient(135deg,#e65c00,#f9a825); color:white;">
+            <div class="inner">
+                <h3>Rs. @Model.TotalRevenue.ToString("N0")</h3>
+                <p>Total Revenue</p>
+                <small style="opacity:0.8;">This month: Rs. @Model.MonthRevenue.ToString("N0")</small>
+            </div>
+            <div class="icon"><i class="fas fa-rupee-sign"></i></div>
+            <a href="/Admin/Orders?status=Delivered" class="small-box-footer" style="background:rgba(0,0,0,0.15);">
+                View Revenue <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+
 </div>
 
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Welcome to Jayamali Optical Admin Panel</h3>
-            </div>
-            <div class="card-body">
-                <p>Admin panel is ready! Start adding features like Products, Customers, Orders, and Appointments.</p>
+@* ── Row 2: Secondary stat pills ── *@
+<div class="row g-3 mb-4">
+
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="info-box shadow-sm">
+            <span class="info-box-icon bg-warning"><i class="fas fa-clock"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Pending Orders</span>
+                <span class="info-box-number">@Model.PendingOrders</span>
             </div>
         </div>
     </div>
+
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="info-box shadow-sm">
+            <span class="info-box-icon bg-danger"><i class="fas fa-star"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Pending Reviews</span>
+                <span class="info-box-number">@Model.PendingReviews</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="info-box shadow-sm">
+            <span class="info-box-icon bg-info"><i class="fas fa-envelope"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Unread Messages</span>
+                <span class="info-box-number">@Model.UnreadMessages</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="info-box shadow-sm">
+            <span class="info-box-icon bg-success"><i class="fas fa-box"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Active Products</span>
+                <span class="info-box-number">@Model.ActiveProducts</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="info-box shadow-sm">
+            <span class="info-box-icon bg-primary"><i class="fas fa-comments"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Approved Reviews</span>
+                <span class="info-box-number">@Model.TotalReviews</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="info-box shadow-sm">
+            <span class="info-box-icon" style="background:#17a2b8;"><i class="fas fa-calendar-alt"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Total Bookings</span>
+                <span class="info-box-number">@Model.TotalAppointments</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@* ── Row 3: Recent Orders + Upcoming Appointments ── *@
+<div class="row g-3">
+
+    @* Recent Orders *@
+    <div class="col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center"
+                 style="background:linear-gradient(135deg,#1978bc,#26a4e0); color:white;">
+                <h5 class="mb-0"><i class="fas fa-shopping-bag me-2"></i>Recent Orders</h5>
+                <a href="/Admin/Orders" class="btn btn-sm btn-light rounded-pill">View All</a>
+            </div>
+            <div class="card-body p-0">
+                @if (!Model.RecentOrders.Any())
+                {
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-shopping-bag fa-2x mb-2"></i>
+                        <p>No orders yet</p>
+                    </div>
+                }
+                else
+                {
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Order #</th>
+                                <th>Customer</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var order in Model.RecentOrders)
+                            {
+                                var statusColor = order.Status switch
+                                {
+                                                "Pending" => "warning",
+                                                "Confirmed" => "info",
+                                                "Delivered" => "success",
+                                                "Cancelled" => "danger",
+                                    _ => "secondary"
+                                };
+                                <tr>
+                                    <td class="fw-bold text-primary">@order.OrderNumber</td>
+                                    <td>@order.FirstName @order.LastName</td>
+                                    <td>Rs. @order.TotalAmount.ToString("N0")</td>
+                                    <td><span class="badge bg-@statusColor">@order.Status</span></td>
+                                    <td>
+                                        <a href="/Admin/Orders/Details/@order.Id"
+                                           class="btn btn-xs btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+
+    @* Upcoming Appointments *@
+    <div class="col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center"
+                 style="background:linear-gradient(135deg,#28a745,#20c997); color:white;">
+                <h5 class="mb-0"><i class="fas fa-calendar-check me-2"></i>Upcoming Appointments</h5>
+                <a href="/Admin/Bookings" class="btn btn-sm btn-light rounded-pill">View All</a>
+            </div>
+            <div class="card-body p-0">
+                @if (!Model.UpcomingBookings.Any())
+                {
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-calendar-times fa-2x mb-2"></i>
+                        <p>No upcoming appointments</p>
+                    </div>
+                }
+                else
+                {
+                    @foreach (var b in Model.UpcomingBookings)
+                    {
+                        var isToday = b.AppointmentDate.Date == DateTime.Today;
+                        <div class="d-flex align-items-center px-3 py-2 border-bottom
+                                            @(isToday ? "bg-success bg-opacity-10" : "")">
+                            <div class="me-3 text-center"
+                                 style="width:46px; height:46px; border-radius:10px;
+                                                background:@(isToday ? "#d1fae5" : "#e8f0fb");
+                                                display:flex; align-items:center; justify-content:center;
+                                                flex-direction:column; line-height:1;">
+                                <span style="font-size:1rem; font-weight:800;
+                                                     color:@(isToday ? "#065f46" : "#1978bc");">
+                                    @b.AppointmentDate.ToString("dd")
+                                </span>
+                                <span style="font-size:0.6rem;
+                                                     color:@(isToday ? "#065f46" : "#1978bc");">
+                                    @b.AppointmentDate.ToString("MMM")
+                                </span>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold" style="font-size:0.88rem;">
+                                    @b.FirstName @b.LastName
+                                    @if (isToday)
+                                    {
+                                        <span class="badge bg-success ms-1" style="font-size:0.55rem;">TODAY</span>
+                                    }
+                                </div>
+                                <div class="text-muted" style="font-size:0.75rem;">
+                                    @b.Service?.Name ·
+                                    @DateTime.Today.Add(b.AppointmentTime).ToString("hh:mm tt")
+                                </div>
+                            </div>
+                            <a href="/Admin/Bookings/Details/@b.Id"
+                               class="btn btn-xs btn-outline-success">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+
+        @* Quick Actions *@
+        <div class="card shadow-sm mt-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-bolt me-2 text-warning"></i>Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-6">
+                        <a href="/Admin/Products/Create" class="btn btn-outline-primary btn-sm w-100">
+                            <i class="fas fa-plus me-1"></i>Add Product
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="/Admin/Orders?status=Pending" class="btn btn-outline-warning btn-sm w-100">
+                            <i class="fas fa-clock me-1"></i>Pending Orders
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="/Admin/Reviews?filter=Pending" class="btn btn-outline-danger btn-sm w-100">
+                            <i class="fas fa-star me-1"></i>Review Approvals
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="/Admin/Messages" class="btn btn-outline-info btn-sm w-100">
+                            <i class="fas fa-envelope me-1"></i>Messages
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
