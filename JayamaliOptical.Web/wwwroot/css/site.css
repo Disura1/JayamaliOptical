@@ -1312,6 +1312,23 @@ html {
             color: #1978bc !important;
         }
 
+        /* ── Cart icon active state (when on Cart page) ── */
+        .cart-icon-link.cart-icon-active {
+            background: #1978bc !important;
+            color: white !important;
+            box-shadow: 0 4px 15px rgba(25,120,188,0.35) !important;
+        }
+
+            .cart-icon-link.cart-icon-active svg {
+                fill: white;
+            }
+
+            /* Keep badge visible on active state */
+            .cart-icon-link.cart-icon-active .cart-badge {
+                background: white;
+                color: #1978bc;
+            }
+
     /* ── Shared icon button style ── */
     .nav-mobile-icon-btn {
         width: 38px;
