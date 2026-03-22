@@ -126,6 +126,36 @@
         .main-header .navbar-nav.ms-auto {
             margin-left: auto !important;
         }
+
+        /* ── Info box: show full text on hover ── */
+        .info-box {
+            overflow: visible !important;
+            position: relative;
+            cursor: default;
+        }
+
+        .info-box-content {
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            transition: all 0.2s;
+        }
+
+        .info-box:hover {
+            z-index: 100;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
+            transform: translateY(-2px);
+        }
+
+            .info-box:hover .info-box-text {
+                white-space: normal !important;
+                word-break: break-word;
+            }
+
+            .info-box:hover .info-box-content {
+                overflow: visible;
+                white-space: normal;
+            }
     </style>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -306,5 +336,26 @@
     <script src="~/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="~/dist/js/adminlte.min.js"></script>
     @RenderSection("Scripts", required: false)
+
+    <script>
+        // Mark active sidebar link based on current URL
+        (function () {
+            var path = window.location.pathname.toLowerCase();
+            var links = document.querySelectorAll('.nav-sidebar .nav-link');
+            links.forEach(function (link) {
+                var href = link.getAttribute('href');
+                if (!href) return;
+                var linkPath = href.toLowerCase().split('?')[0];
+                // Exact match OR current path starts with link path (for sub-pages)
+                if (linkPath !== '/admin/home' && path.startsWith(linkPath)) {
+                    link.classList.add('active');
+                    var parentItem = link.closest('.nav-item');
+                    if (parentItem) parentItem.classList.add('menu-open');
+                } else if (linkPath === '/admin/home' && (path === '/admin/home' || path === '/admin/home/index' || path === '/admin')) {
+                    link.classList.add('active');
+                }
+            });
+        })();
+    </script>
 </body>
 </html>

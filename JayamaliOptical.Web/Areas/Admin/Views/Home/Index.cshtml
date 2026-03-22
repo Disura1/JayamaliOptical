@@ -236,9 +236,9 @@
                                         <span class="badge bg-success ms-1" style="font-size:0.55rem;">TODAY</span>
                                     }
                                 </div>
-                                <div class="text-muted" style="font-size:0.75rem;">
-                                    @b.Service?.Name ·
-                                    @DateTime.Today.Add(b.AppointmentTime).ToString("hh:mm tt")
+                                <div style="font-size:0.75rem; color:#444;">
+                                    <span style="color:#1978bc; font-weight:600;">@b.Service?.Name</span>
+                                    <span style="color:#666;"> · @DateTime.Today.Add(b.AppointmentTime).ToString("hh:mm tt")</span>
                                 </div>
                             </div>
                             <a href="/Admin/Bookings/Details/@b.Id"

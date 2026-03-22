@@ -22,11 +22,27 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
             var today = DateTime.Today;
             var monthStart = new DateTime(today.Year, today.Month, 1);
 
+            // Match exactly how CustomersController counts — unique emails from orders + booking-only emails
+            var orderEmailsList = await _context.Orders
+                .Select(o => o.Email.ToLower())
+                .Distinct()
+                .ToListAsync();
+
+            var bookingOnlyEmailsList = await _context.ServiceBookings
+                .Select(b => b.Email.ToLower())
+                .Distinct()
+                .ToListAsync();
+
+            // booking-only = booking emails that don't appear in any order
+            var bookingOnlyUnique = bookingOnlyEmailsList
+                .Where(e => !orderEmailsList.Contains(e))
+                .ToList();
+
+            var totalCustomers = orderEmailsList.Count + bookingOnlyUnique.Count;
+
             var model = new DashboardViewModel
             {
-                // Customers
-                TotalCustomers = await _context.Users
-                    .CountAsync(u => u.Email != null && !u.Email.EndsWith("@jayamalioptical.com")),
+                TotalCustomers = totalCustomers,
 
                 // Orders
                 TotalOrders = await _context.Orders.CountAsync(),
