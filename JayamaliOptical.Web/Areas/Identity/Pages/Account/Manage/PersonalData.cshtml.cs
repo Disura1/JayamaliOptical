@@ -72,20 +72,22 @@ namespace JayamaliOptical.Web.Areas.Identity.Pages.Account.Manage
             // Bookings
             var bookings = await _context.ServiceBookings
                 .Include(b => b.Service)
-                .Where(b => b.Email == user.Email)
+                .Where(b => b.Email == user.Email || b.UserId == user.Id)
                 .OrderByDescending(b => b.AppointmentDate)
                 .Select(b => new
                 {
                     b.BookingNumber,
                     Service = b.Service != null ? b.Service.Name : "N/A",
                     b.AppointmentDate,
+                    AppointmentTime = b.AppointmentTime.ToString(),
                     b.Status,
                     b.FirstName,
                     b.LastName,
-                    b.PhoneNumber
+                    b.PhoneNumber,
+                    b.Notes
                 })
                 .ToListAsync();
-            personalData["Bookings"] = bookings;
+            personalData["Appointments"] = bookings;
 
             var json = JsonSerializer.Serialize(personalData, new JsonSerializerOptions
             {
