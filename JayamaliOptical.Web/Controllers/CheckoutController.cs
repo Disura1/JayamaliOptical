@@ -189,6 +189,7 @@ namespace JayamaliOptical.Web.Controllers
 
                 await SaveUserProfileAsync(model, order.UserId);
 
+                // Send customer confirmation
                 try
                 {
                     await _emailService.SendOrderConfirmationAsync(
@@ -201,6 +202,17 @@ namespace JayamaliOptical.Web.Controllers
                 {
                     _logger?.LogError(ex, "Email sending failed");
                 }
+
+                // Notify admin of new order
+                try
+                {
+                    await _emailService.SendNewOrderAlertAsync(
+                        order.OrderNumber,
+                        $"{model.FirstName} {model.LastName}",
+                        model.Email,
+                        order.TotalAmount);
+                }
+                catch { /* never block checkout if alert fails */ }
 
                 _cartService.ClearCart();
                 return RedirectToAction("Confirmation", new { orderId = order.Id });

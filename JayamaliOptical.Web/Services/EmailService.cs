@@ -9,6 +9,8 @@ namespace JayamaliOptical.Web.Services
         Task SendBookingConfirmationAsync(string toEmail, string customerName, string bookingNumber, string serviceName, DateTime appointmentDate, TimeSpan appointmentTime);
         Task SendContactMessageAsync(string senderName, string senderEmail, string phone, string subject, string message);
         Task SendEmailAsync(string toEmail, string subject, string htmlBody);
+        Task SendNewOrderAlertAsync(string orderNumber, string customerName, string customerEmail, decimal totalAmount);
+        Task SendNewBookingAlertAsync(string bookingNumber, string customerName, string customerEmail, string serviceName, DateTime appointmentDate, TimeSpan appointmentTime);
     }
 
     public class EmailService : IEmailService
@@ -149,7 +151,121 @@ namespace JayamaliOptical.Web.Services
             }
         }
 
+        // ── New Order Admin Alert ─────────────────────────────────────────
+        public async Task SendNewOrderAlertAsync(string orderNumber, string customerName,
+            string customerEmail, decimal totalAmount)
+        {
+            try
+            {
+                var (smtp, from) = BuildSmtp();
+                var notifyEmail = _configuration["EmailSettings:TestNotifyEmail"];
+                if (string.IsNullOrEmpty(notifyEmail)) notifyEmail = from;
+
+                var mail = new MailMessage
+                {
+                    From = new MailAddress(from, "Jayamali Optical"),
+                    Subject = $"🛒 New Order Received — {orderNumber}",
+                    Body = NewOrderAlertBody(orderNumber, customerName, customerEmail, totalAmount),
+                    IsBodyHtml = true
+                };
+                mail.To.Add(notifyEmail);
+                using (smtp) await smtp.SendMailAsync(mail);
+                _logger?.LogInformation("New order alert sent for {OrderNumber}", orderNumber);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Failed to send new order alert");
+                // Don't rethrow — order is already saved
+            }
+        }
+
+        // ── New Booking Admin Alert ───────────────────────────────────────
+        public async Task SendNewBookingAlertAsync(string bookingNumber, string customerName,
+            string customerEmail, string serviceName,
+            DateTime appointmentDate, TimeSpan appointmentTime)
+        {
+            try
+            {
+                var (smtp, from) = BuildSmtp();
+                var notifyEmail = _configuration["EmailSettings:TestNotifyEmail"];
+                if (string.IsNullOrEmpty(notifyEmail)) notifyEmail = from;
+
+                var mail = new MailMessage
+                {
+                    From = new MailAddress(from, "Jayamali Optical"),
+                    Subject = $"📅 New Appointment — {bookingNumber}",
+                    Body = NewBookingAlertBody(bookingNumber, customerName, customerEmail,
+                                     serviceName, appointmentDate, appointmentTime),
+                    IsBodyHtml = true
+                };
+                mail.To.Add(notifyEmail);
+                using (smtp) await smtp.SendMailAsync(mail);
+                _logger?.LogInformation("New booking alert sent for {BookingNumber}", bookingNumber);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Failed to send new booking alert");
+            }
+        }
+
         // ── Email Bodies ──────────────────────────────────────────────────
+
+        private static string NewOrderAlertBody(string orderNumber, string customerName,
+            string customerEmail, decimal totalAmount)
+        {
+            return "<html><body style='font-family:Arial,sans-serif;color:#333;'>"
+                 + "<div style='max-width:580px;margin:0 auto;border:1px solid #e0e0e0;border-radius:10px;overflow:hidden;'>"
+                 + "<div style='background:linear-gradient(135deg,#1978bc,#26a4e0);padding:22px 28px;color:white;'>"
+                 + "<h2 style='margin:0;font-size:1.3rem;'>🛒 New Order Received</h2>"
+                 + "<p style='margin:4px 0 0;opacity:0.85;font-size:0.9rem;'>Action required — review in admin panel</p>"
+                 + "</div>"
+                 + "<div style='padding:28px;'>"
+                 + "<table style='width:100%;border-collapse:collapse;'>"
+                 + "<tr><td style='padding:8px 0;color:#666;width:130px;'><strong>Order No.</strong></td><td style='padding:8px 0;font-weight:700;color:#1978bc;'>" + orderNumber + "</td></tr>"
+                 + "<tr><td style='padding:8px 0;color:#666;'><strong>Customer</strong></td><td style='padding:8px 0;'>" + customerName + "</td></tr>"
+                 + "<tr><td style='padding:8px 0;color:#666;'><strong>Email</strong></td><td style='padding:8px 0;'>" + customerEmail + "</td></tr>"
+                 + "<tr><td style='padding:8px 0;color:#666;'><strong>Amount</strong></td><td style='padding:8px 0;font-weight:700;font-size:1.1rem;'>Rs. " + totalAmount.ToString("0.00") + "</td></tr>"
+                 + "<tr><td style='padding:8px 0;color:#666;'><strong>Time</strong></td><td style='padding:8px 0;'>" + DateTime.Now.ToString("dd MMM yyyy, hh:mm tt") + "</td></tr>"
+                 + "</table>"
+                 + "<div style='margin-top:24px;text-align:center;'>"
+                 + "<a href='/Admin/Orders' style='display:inline-block;background:#1978bc;color:white;padding:12px 32px;border-radius:50px;text-decoration:none;font-weight:700;'>View Order in Admin Panel</a>"
+                 + "</div>"
+                 + "</div>"
+                 + "<div style='background:#f8f9fa;padding:14px 28px;font-size:0.8rem;color:#999;text-align:center;'>"
+                 + "Jayamali Optical — Automated Notification System"
+                 + "</div>"
+                 + "</div></body></html>";
+        }
+
+        private static string NewBookingAlertBody(string bookingNumber, string customerName,
+            string customerEmail, string serviceName,
+            DateTime appointmentDate, TimeSpan appointmentTime)
+        {
+            var formattedTime = DateTime.Today.Add(appointmentTime).ToString("hh:mm tt");
+            return "<html><body style='font-family:Arial,sans-serif;color:#333;'>"
+                 + "<div style='max-width:580px;margin:0 auto;border:1px solid #e0e0e0;border-radius:10px;overflow:hidden;'>"
+                 + "<div style='background:linear-gradient(135deg,#28a745,#20c997);padding:22px 28px;color:white;'>"
+                 + "<h2 style='margin:0;font-size:1.3rem;'>📅 New Appointment Booked</h2>"
+                 + "<p style='margin:4px 0 0;opacity:0.85;font-size:0.9rem;'>Review and confirm in admin panel</p>"
+                 + "</div>"
+                 + "<div style='padding:28px;'>"
+                 + "<table style='width:100%;border-collapse:collapse;'>"
+                 + "<tr><td style='padding:8px 0;color:#666;width:130px;'><strong>Booking Ref.</strong></td><td style='padding:8px 0;font-weight:700;color:#28a745;'>" + bookingNumber + "</td></tr>"
+                 + "<tr><td style='padding:8px 0;color:#666;'><strong>Customer</strong></td><td style='padding:8px 0;'>" + customerName + "</td></tr>"
+                 + "<tr><td style='padding:8px 0;color:#666;'><strong>Email</strong></td><td style='padding:8px 0;'>" + customerEmail + "</td></tr>"
+                 + "<tr><td style='padding:8px 0;color:#666;'><strong>Service</strong></td><td style='padding:8px 0;font-weight:600;'>" + serviceName + "</td></tr>"
+                 + "<tr><td style='padding:8px 0;color:#666;'><strong>Date</strong></td><td style='padding:8px 0;font-weight:600;'>" + appointmentDate.ToString("dd MMMM yyyy") + "</td></tr>"
+                 + "<tr><td style='padding:8px 0;color:#666;'><strong>Time</strong></td><td style='padding:8px 0;font-weight:600;'>" + formattedTime + "</td></tr>"
+                 + "</table>"
+                 + "<div style='margin-top:24px;text-align:center;'>"
+                 + "<a href='/Admin/Bookings' style='display:inline-block;background:#28a745;color:white;padding:12px 32px;border-radius:50px;text-decoration:none;font-weight:700;'>View Booking in Admin Panel</a>"
+                 + "</div>"
+                 + "</div>"
+                 + "<div style='background:#f8f9fa;padding:14px 28px;font-size:0.8rem;color:#999;text-align:center;'>"
+                 + "Jayamali Optical — Automated Notification System"
+                 + "</div>"
+                 + "</div></body></html>";
+        }
 
         private static string OrderEmailBody(string customerName, string orderNumber, decimal totalAmount)
         {

@@ -94,7 +94,7 @@ namespace JayamaliOptical.Web.Controllers
                 _context.ServiceBookings.Add(booking);
                 await _context.SaveChangesAsync();
 
-                // Send booking confirmation email
+                // Send customer confirmation
                 try
                 {
                     var service = await _context.Services.FindAsync(booking.ServiceId);
@@ -107,6 +107,15 @@ namespace JayamaliOptical.Web.Controllers
                         booking.AppointmentDate,
                         booking.AppointmentTime
                     );
+
+                    // Notify admin of new booking
+                    await _emailService.SendNewBookingAlertAsync(
+                        booking.BookingNumber,
+                        $"{booking.FirstName} {booking.LastName}",
+                        booking.Email,
+                        service?.Name ?? "Service",
+                        booking.AppointmentDate,
+                        booking.AppointmentTime);
                 }
                 catch (Exception ex)
                 {

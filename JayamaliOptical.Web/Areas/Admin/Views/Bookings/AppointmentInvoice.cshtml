@@ -1,0 +1,564 @@
+﻿@model JayamaliOptical.Web.Models.ServiceBooking
+@using JayamaliOptical.Web.Models
+@using JayamaliOptical.Web.Data
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext _db
+@{
+    Layout = null;
+    var settings = await _db.SiteSettings.FirstOrDefaultAsync() ?? new SiteSettings();
+    var invoiceNumber = "INV-" + Model.BookingNumber.Replace("BKG-", "");
+    var completedDate = DateTime.Now;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Invoice — @invoiceNumber</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f0f4f8;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ── Print action bar ── */
+        .action-bar {
+            max-width: 760px;
+            margin: 20px auto 0;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            padding: 0 16px;
+        }
+
+        .btn-act {
+            border: none;
+            border-radius: 50px;
+            padding: 10px 26px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.88rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.2s;
+        }
+
+            .btn-act:hover {
+                opacity: 0.88;
+            }
+
+        .btn-print {
+            background: #1978bc;
+            color: white;
+        }
+
+        .btn-download {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-close2 {
+            background: #6c757d;
+            color: white;
+        }
+
+        /* ── Invoice wrapper ── */
+        .invoice-wrap {
+            max-width: 760px;
+            margin: 16px auto 40px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.10);
+            overflow: hidden;
+        }
+
+        /* ── Header ── */
+        .inv-header {
+            background: linear-gradient(135deg, #1978bc 0%, #0d4f8a 100%);
+            color: white;
+            padding: 32px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .clinic-name {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        .clinic-sub {
+            font-size: 0.82rem;
+            opacity: 0.8;
+            margin-top: 3px;
+        }
+
+        .clinic-meta {
+            font-size: 0.78rem;
+            opacity: 0.75;
+            margin-top: 10px;
+            line-height: 1.7;
+        }
+
+        .inv-title-block {
+            text-align: right;
+        }
+
+        .inv-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.95;
+        }
+
+        .inv-num {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+
+        .inv-date {
+            font-size: 0.78rem;
+            opacity: 0.65;
+            margin-top: 2px;
+        }
+
+        /* ── Divider strip ── */
+        .inv-strip {
+            height: 5px;
+            background: linear-gradient(to right, #1978bc, #26a4e0, #6ea700, #26a4e0, #1978bc);
+        }
+
+        /* ── Body ── */
+        .inv-body {
+            padding: 32px 40px;
+        }
+
+        /* ── Patient & Visit info ── */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 28px;
+        }
+
+        .info-box {
+            background: #f8faff;
+            border-radius: 10px;
+            padding: 18px 20px;
+            border-left: 4px solid #1978bc;
+        }
+
+            .info-box h6 {
+                font-size: 0.68rem;
+                font-weight: 800;
+                letter-spacing: 2px;
+                text-transform: uppercase;
+                color: #1978bc;
+                margin-bottom: 12px;
+            }
+
+        .info-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 6px;
+            font-size: 0.88rem;
+        }
+
+        .info-lbl {
+            color: #888;
+            min-width: 80px;
+            font-weight: 500;
+        }
+
+        .info-val {
+            color: #222;
+            font-weight: 600;
+        }
+
+        /* ── Service table ── */
+        .service-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+        }
+
+            .service-table thead tr {
+                background: linear-gradient(135deg, #1978bc, #26a4e0);
+                color: white;
+            }
+
+            .service-table thead th {
+                padding: 12px 16px;
+                font-size: 0.8rem;
+                font-weight: 700;
+                letter-spacing: 0.5px;
+            }
+
+            .service-table tbody tr {
+                border-bottom: 1px solid #f0f4f8;
+            }
+
+                .service-table tbody tr:last-child {
+                    border-bottom: none;
+                }
+
+            .service-table tbody td {
+                padding: 14px 16px;
+                font-size: 0.9rem;
+            }
+
+            .service-table tbody tr:nth-child(even) {
+                background: #f8faff;
+            }
+
+        /* ── Total box ── */
+        .total-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 28px;
+        }
+
+        .total-box {
+            background: #f0f6ff;
+            border-radius: 10px;
+            padding: 18px 28px;
+            min-width: 280px;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            font-size: 0.9rem;
+        }
+
+            .total-row.grand {
+                border-top: 2px solid #1978bc;
+                margin-top: 8px;
+                padding-top: 12px;
+                font-size: 1.1rem;
+                font-weight: 800;
+                color: #1978bc;
+            }
+
+        /* ── Notes ── */
+        .notes-box {
+            background: #fffbec;
+            border-left: 4px solid #f59e0b;
+            border-radius: 0 8px 8px 0;
+            padding: 14px 18px;
+            margin-bottom: 28px;
+            font-size: 0.88rem;
+            color: #555;
+        }
+
+            .notes-box strong {
+                color: #b45309;
+            }
+
+        /* ── Status badge ── */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 18px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .status-Completed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-Confirmed {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-Pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-Cancelled {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* ── Footer ── */
+        .inv-footer {
+            background: #f8faff;
+            border-top: 1px solid #e8eef5;
+            padding: 20px 40px;
+            text-align: center;
+            font-size: 0.78rem;
+            color: #999;
+            line-height: 1.8;
+        }
+
+            .inv-footer strong {
+                color: #555;
+            }
+
+        .thank-you {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1978bc;
+            margin-bottom: 6px;
+        }
+
+        /* ── Watermark for completed ── */
+        .watermark-paid {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-size: 5rem;
+            font-weight: 900;
+            color: rgba(40,167,69,0.06);
+            text-transform: uppercase;
+            letter-spacing: 8px;
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 0;
+        }
+
+        .inv-body-relative {
+            position: relative;
+        }
+
+        @@media print {
+            .action-bar {
+                display: none !important;
+            }
+
+            body {
+                background: white;
+            }
+
+            .invoice-wrap {
+                box-shadow: none;
+                margin: 0;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="action-bar">
+        <button class="btn-act btn-print" onclick="window.print()">
+            🖨 Print Invoice
+        </button>
+        <button class="btn-act btn-download" onclick="window.print()">
+            ⬇ Save as PDF
+        </button>
+        <button class="btn-act btn-close2" onclick="window.close()">
+            ✕ Close
+        </button>
+    </div>
+
+    <div class="invoice-wrap">
+
+        @* ── Coloured top strip ── *@
+        <div class="inv-strip"></div>
+
+        @* ── Header ── *@
+        <div class="inv-header">
+            <div>
+                <div class="clinic-name">Jayamali Optical</div>
+                <div class="clinic-sub">& Eye Care Centre</div>
+                <div class="clinic-meta">
+                    @if (!string.IsNullOrEmpty(settings.Address))
+                    {
+                        <div>📍 @settings.Address</div>
+                    }
+                    @if (!string.IsNullOrEmpty(settings.Phone1))
+                    {
+                        <div>
+                            📞 @settings.Phone1
+                            @if (!string.IsNullOrEmpty(settings.Phone2))
+                            {
+                                <text> / @settings.Phone2</text>
+                            }
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(settings.Email))
+                    {
+                        <div>✉ @settings.Email</div>
+                    }
+                </div>
+            </div>
+            <div class="inv-title-block">
+                <div class="inv-title">Invoice</div>
+                <div class="inv-num">@invoiceNumber</div>
+                <div class="inv-date">Issued: @completedDate.ToString("dd MMM yyyy")</div>
+                <div class="inv-date">Time: @completedDate.ToString("hh:mm tt")</div>
+            </div>
+        </div>
+
+        @* ── Body ── *@
+        <div class="inv-body">
+            <div class="inv-body-relative">
+
+                @if (Model.Status == "Completed")
+                {
+                    <div class="watermark-paid">Completed</div>
+                }
+
+                @* ── Patient + Visit Info ── *@
+                <div class="info-grid">
+                    <div class="info-box">
+                        <h6>Patient Details</h6>
+                        <div class="info-row">
+                            <span class="info-lbl">Name</span>
+                            <span class="info-val">@Model.FirstName @Model.LastName</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-lbl">Phone</span>
+                            <span class="info-val">@Model.PhoneNumber</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-lbl">Email</span>
+                            <span class="info-val" style="font-size:0.82rem;">@Model.Email</span>
+                        </div>
+                    </div>
+                    <div class="info-box">
+                        <h6>Visit Details</h6>
+                        <div class="info-row">
+                            <span class="info-lbl">Booking</span>
+                            <span class="info-val" style="color:#1978bc;">@Model.BookingNumber</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-lbl">Date</span>
+                            <span class="info-val">@Model.AppointmentDate.ToString("dd MMM yyyy")</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-lbl">Time</span>
+                            <span class="info-val">@DateTime.Today.Add(Model.AppointmentTime).ToString("hh:mm tt")</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-lbl">Status</span>
+                            <span class="info-val">
+                                <span class="status-badge status-@Model.Status">@Model.Status</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                @* ── Services Rendered Table ── *@
+                <table class="service-table">
+                    <thead>
+                        <tr>
+                            <th style="width:50px;">#</th>
+                            <th>Service Description</th>
+                            <th class="text-center" style="width:120px;">Duration</th>
+                            <th class="text-end" style="width:140px;">Amount (Rs.)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>
+                                <div class="fw-bold">@Model.Service?.Name</div>
+                                @if (!string.IsNullOrEmpty(Model.Notes))
+                                {
+                                    <div style="font-size:0.78rem; color:#888; margin-top:3px;">
+                                        @Model.Notes
+                                    </div>
+                                }
+                            </td>
+                            <td class="text-center">
+                                @if (Model.Service?.DurationMinutes != null)
+                                {
+                                    @($"{Model.Service.DurationMinutes} min")
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td class="text-end fw-bold">
+                                @if (Model.Service?.Price != null)
+                                {
+                                    @Model.Service.Price.Value.ToString("0.00")
+                                }
+                                else
+                                {
+                                    <span class="text-muted" style="font-size:0.8rem;">As advised</span>
+                                }
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                @* ── Totals ── *@
+                <div class="total-section">
+                    <div class="total-box">
+                        @if (Model.Service?.Price != null)
+                        {
+                            <div class="total-row">
+                                <span>Subtotal</span>
+                                <span>Rs. @Model.Service.Price.Value.ToString("0.00")</span>
+                            </div>
+                            <div class="total-row">
+                                <span>Tax / Discount</span>
+                                <span class="text-muted">—</span>
+                            </div>
+                            <div class="total-row grand">
+                                <span>Total Due</span>
+                                <span>Rs. @Model.Service.Price.Value.ToString("0.00")</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="total-row grand">
+                                <span>Total Due</span>
+                                <span>As per consultation</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                @* ── Admin Notes (if any) ── *@
+                @if (!string.IsNullOrEmpty(Model.AdminNotes))
+                {
+                    <div class="notes-box">
+                        <strong>Clinical Notes:</strong> @Model.AdminNotes
+                    </div>
+                }
+
+            </div>
+        </div>
+
+        @* ── Footer ── *@
+        <div class="inv-footer">
+            <div class="thank-you">Thank you for choosing Jayamali Optical!</div>
+            <div>
+                <strong>Please retain this invoice for your records.</strong><br />
+                For any queries regarding this invoice, contact us at
+                @(string.IsNullOrEmpty(settings.Email) ? "jayamalioptical@gmail.com" : settings.Email)
+                or call @(string.IsNullOrEmpty(settings.Phone1) ? "our clinic" : settings.Phone1)<br />
+                @(string.IsNullOrEmpty(settings.Address) ? "No: 116, Kurunagala Road, Puttalam, Sri Lanka" : settings.Address)
+            </div>
+        </div>
+
+        @* ── Bottom strip ── *@
+        <div class="inv-strip"></div>
+
+    </div>
+
+</body>
+</html>
