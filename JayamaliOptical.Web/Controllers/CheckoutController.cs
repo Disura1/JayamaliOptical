@@ -173,7 +173,7 @@ namespace JayamaliOptical.Web.Controllers
                     order.PrescriptionFileName = model.UploadPrescriptionFile.FileName;
                 }
 
-                foreach (var item in cart.Items)
+                foreach (var item in cart?.Items ?? new List<CartItem>())
                 {
                     order.OrderItems.Add(new OrderItem
                     {

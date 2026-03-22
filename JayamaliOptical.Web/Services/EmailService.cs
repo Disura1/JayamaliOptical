@@ -8,6 +8,7 @@ namespace JayamaliOptical.Web.Services
         Task SendOrderConfirmationAsync(string toEmail, string customerName, string orderNumber, decimal totalAmount);
         Task SendBookingConfirmationAsync(string toEmail, string customerName, string bookingNumber, string serviceName, DateTime appointmentDate, TimeSpan appointmentTime);
         Task SendContactMessageAsync(string senderName, string senderEmail, string phone, string subject, string message);
+        Task SendEmailAsync(string toEmail, string subject, string htmlBody);
     }
 
     public class EmailService : IEmailService
@@ -122,6 +123,29 @@ namespace JayamaliOptical.Web.Services
             {
                 _logger?.LogError(ex, "Failed to send contact message notification");
                 // Don't rethrow — message already saved to DB
+            }
+        }
+
+        public async Task SendEmailAsync(string toEmail, string subject, string htmlBody)
+        {
+            try
+            {
+                var (smtp, from) = BuildSmtp();
+                var mail = new MailMessage
+                {
+                    From = new MailAddress(from, "Jayamali Optical"),
+                    Subject = subject,
+                    Body = htmlBody,
+                    IsBodyHtml = true
+                };
+                mail.To.Add(toEmail);
+                using (smtp) await smtp.SendMailAsync(mail);
+                _logger?.LogInformation("Email sent to {Email}", toEmail);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Failed to send email to {Email}", toEmail);
+                throw;
             }
         }
 
