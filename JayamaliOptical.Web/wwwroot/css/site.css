@@ -1158,6 +1158,117 @@ html {
 ==============================================================*/
 
 /* ── Navbar ── */
+
+/*----------------------Mobile Navbar (<992px)----------------------------*/
+
+@media (max-width: 991.98px) {
+
+    /* Make navbar a relative container for 3-zone layout */
+    .navbar > .container-fluid {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: nowrap;
+    }
+
+    /* Zone 1: left icons */
+    .mobile-right-icons {
+        flex-shrink: 0;
+        order: 3;
+    }
+
+    /* Zone 2: brand centred absolutely */
+    .mobile-brand-center {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        order: 2;
+        white-space: nowrap;
+    }
+
+    /* Zone 3: hamburger right */
+    .navbar-toggler {
+        order: 1;
+        flex-shrink: 0;
+    }
+
+    /* Collapsed nav — full width below the top bar */
+    .navbar-collapse {
+        order: 4;
+        width: 100%;
+        background: white;
+        border-top: 1px solid #e8eef5;
+        padding: 8px 0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+        /* Nav links inside collapse — stack vertically, left aligned */
+        .navbar-collapse .navbar-nav {
+            flex-direction: column !important;
+            width: 100%;
+        }
+
+        .navbar-collapse .nav-item {
+            margin: 0;
+            width: 100%;
+        }
+
+        .navbar-collapse .nav-link {
+            padding: 12px 20px !important;
+            font-size: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+            .navbar-collapse .nav-link::after {
+                display: none !important;
+            }
+
+            .navbar-collapse .nav-link::before {
+                display: none !important;
+            }
+
+            .navbar-collapse .nav-link:hover {
+                background: #f0f6ff;
+                padding-left: 28px !important;
+            }
+
+        /* Dropdowns inside mobile menu */
+        .navbar-collapse .dropdown-menu {
+            position: static !important;
+            box-shadow: none;
+            border: none;
+            background: #f8faff;
+            padding-left: 16px;
+        }
+
+    /* Search inside collapsed menu */
+    #mobileSearchInMenu {
+        display: flex !important;
+    }
+
+    /* Mobile search toggle button — show full search inline on click */
+    .mobile-search-btn {
+        border-color: #dee2e6;
+    }
+}
+
+@media (min-width: 992px) {
+    /* Ensure mobile-only elements are hidden on desktop */
+    .mobile-left-icons {
+        display: none !important;
+    }
+
+    .mobile-brand-center {
+        display: none !important;
+    }
+
+    #mobileSearchInMenu {
+        display: none !important;
+    }
+}
+
+
 @media (max-width: 992px) {
     /* Reduce nav link font size on tablet */
     .navbar-nav .nav-link {
