@@ -24,7 +24,7 @@
     <div class="col-md-4">
         <div class="card">
             <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="fas fa-plus me-2"></i>Add Brand</h5>
+                <h5 class="mb-0"><i class="fas fa-plus mr-2"></i>Add Brand</h5>
             </div>
             <div class="card-body">
                 <form action="/Admin/Brands/Add" method="post" enctype="multipart/form-data">
@@ -57,7 +57,7 @@
                     </div>
 
                     <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-plus me-2"></i>Add Brand
+                        <i class="fas fa-plus mr-2"></i>Add Brand
                     </button>
                 </form>
             </div>
@@ -65,7 +65,7 @@
 
         <div class="card mt-3 border-info">
             <div class="card-body">
-                <h6 class="fw-bold text-info"><i class="fas fa-info-circle me-2"></i>Logo Guidelines</h6>
+                <h6 class="fw-bold text-info"><i class="fas fa-info-circle mr-2"></i>Logo Guidelines</h6>
                 <ul class="small text-muted mb-0">
                     <li>Recommended: <strong>200 × 80 px</strong></li>
                     <li>Use <strong>PNG or SVG</strong> with transparent background</li>
@@ -81,9 +81,9 @@
         <div class="card">
             <div class="card-header">
                 <h5 class="mb-0">
-                    <i class="fas fa-store me-2"></i>All Brands
-                    <span class="badge bg-primary ms-2">@Model.Count()</span>
-                    <span class="badge bg-success ms-1">@Model.Count(b => b.IsActive) active</span>
+                    <i class="fas fa-store mr-2"></i>All Brands
+                    <span class="badge bg-primary ml-2">@Model.Count()</span>
+                    <span class="badge bg-success ml-1">@Model.Count(b => b.IsActive) active</span>
                 </h5>
             </div>
             <div class="card-body p-0">

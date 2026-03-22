@@ -46,7 +46,7 @@
 
 <div class="card">
     <div class="card-header">
-        <h3 class="card-title"><i class="fas fa-comments me-2"></i>Customer Reviews</h3>
+        <h3 class="card-title"><i class="fas fa-comments mr-2"></i>Customer Reviews</h3>
         <div class="card-tools">
             <div class="btn-group">
                 @foreach (var f in new[] { "All", "Pending", "Approved", "Featured" })
@@ -91,7 +91,7 @@
                                 @if (!string.IsNullOrEmpty(r.Location))
                                 {
                                     <small class="text-muted">
-                                        <i class="fas fa-map-marker-alt me-1"></i>@r.Location
+                                        <i class="fas fa-map-marker-alt mr-1"></i>@r.Location
                                     </small>
                                 }
                             </td>
@@ -157,7 +157,7 @@
                                             </button>
                                         </form>
                                     }
-                                    <form action="/Admin/Reviews/Delete/@r.Id" method="post"
+                                    <form action="/Admin/Reviews/Delete/@r.Id" method="post" class="ml-1"
                                           onsubmit="return confirm('Delete this review?')">
                                         @Html.AntiForgeryToken()
                                         <button type="submit" class="btn btn-danger" title="Delete">

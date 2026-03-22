@@ -51,7 +51,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-users me-2"></i>Customer Management</h3>
+                <h3 class="card-title"><i class="fas fa-users mr-2"></i>Customer Management</h3>
             </div>
 
             <div class="card-body border-bottom pb-3">
@@ -87,8 +87,8 @@
                         </select>
                     </div>
                     <div class="col-md-2 d-flex gap-2">
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-filter me-1"></i>Apply
+                        <button type="submit" class="btn btn-primary w-100 mr-2">
+                            <i class="fas fa-filter mr-1"></i>Apply
                         </button>
                         <a href="/Admin/Customers" class="btn btn-outline-secondary" title="Reset">
                             <i class="fas fa-times"></i>
@@ -103,14 +103,14 @@
                         @if (!string.IsNullOrEmpty(search))
                         {
                             <span class="badge bg-primary rounded-pill">
-                                <i class="fas fa-search me-1"></i>@search
+                                <i class="fas fa-search mr-1"></i>@search
                                 <a href="/Admin/Customers?filter=@filter&sort=@sort" class="text-white ms-1">×</a>
                             </span>
                         }
                         @if (filter != "All")
                         {
                             <span class="badge bg-success rounded-pill">
-                                <i class="fas fa-tag me-1"></i>@filter
+                                <i class="fas fa-tag mr-1"></i>@filter
                                 <a href="/Admin/Customers?search=@search&sort=@sort" class="text-white ms-1">×</a>
                             </span>
                         }
@@ -151,7 +151,7 @@
                                 <tr>
                                     <td>
                                         <div class="d-flex align-items-center gap-2">
-                                            <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
+                                            <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold mr-2"
                                                  style="width:38px;height:38px;min-width:38px;font-size:0.9rem;
                                                                 background:@(customer.IsRegistered ? "#0d6efd" : "#6c757d");">
                                                 @(customer.FirstName.Length > 0 ? customer.FirstName[0].ToString().ToUpper() : "?")@(customer.LastName.Length > 0 ? customer.LastName[0].ToString().ToUpper() : "?")
@@ -167,21 +167,21 @@
                                     <td class="text-center">
                                         @if (customer.IsRegistered)
                                         {
-                                            <span class="badge bg-success"><i class="fas fa-user-check me-1"></i>Registered</span>
+                                            <span class="badge bg-success"><i class="fas fa-user-check mr-1"></i>Registered</span>
                                         }
                                         else
                                         {
-                                            <span class="badge bg-secondary"><i class="fas fa-user me-1"></i>Guest</span>
+                                            <span class="badge bg-secondary"><i class="fas fa-user mr-1"></i>Guest</span>
                                         }
                                     </td>
                                     <td class="text-center">
                                         <span class="badge @(customer.TotalOrders >= 3 ? "bg-warning text-dark" : "bg-light text-dark") border">
-                                            <i class="fas fa-shopping-bag me-1"></i>@customer.TotalOrders
+                                            <i class="fas fa-shopping-bag mr-1"></i>@customer.TotalOrders
                                         </span>
                                     </td>
                                     <td class="text-center">
                                         <span class="badge @(customer.TotalBookings > 0 ? "bg-primary" : "bg-light text-dark") border">
-                                            <i class="fas fa-calendar me-1"></i>@customer.TotalBookings
+                                            <i class="fas fa-calendar mr-1"></i>@customer.TotalBookings
                                         </span>
                                     </td>
                                     <td class="text-end fw-bold @(customer.TotalSpent >= 100000 ? "text-success" : "")">

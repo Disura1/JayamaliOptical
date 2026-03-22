@@ -12,16 +12,16 @@
                 <h3 class="card-title">Order Details - @Model.OrderNumber</h3>
                 <div class="card-tools">
                     <a href="/Admin/Orders/CustomerInvoice/@Model.Id" target="_blank" class="btn btn-info btn-sm">
-                        <i class="fas fa-file-invoice me-1"></i>Customer Invoice
+                        <i class="fas fa-file-invoice mr-1"></i>Customer Invoice
                     </a>
                     <a href="/Admin/Orders/PrintInvoice/@Model.Id" target="_blank" class="btn btn-success btn-sm">
-                        <i class="fas fa-print me-1"></i>Shop Invoice
+                        <i class="fas fa-print mr-1"></i>Shop Invoice
                     </a>
                     <a href="/Admin/Orders/UpdateStatus/@Model.Id" class="btn btn-primary btn-sm">
-                        <i class="fas fa-edit me-1"></i>Update Status
+                        <i class="fas fa-edit mr-1"></i>Update Status
                     </a>
                     <a href="/Admin/Orders" class="btn btn-default btn-sm">
-                        <i class="fas fa-arrow-left me-1"></i>Back
+                        <i class="fas fa-arrow-left mr-1"></i>Back
                     </a>
                 </div>
             </div>
@@ -96,7 +96,7 @@
                 @if (hasSavedRx || hasUploadedRx)
                 {
                     <hr />
-                    <h5 class="text-primary mb-3"><i class="fas fa-file-medical me-2"></i>Prescription Details</h5>
+                    <h5 class="text-primary mb-3"><i class="fas fa-file-medical mr-2"></i>Prescription Details</h5>
                     <div class="card border-warning mb-3">
                         <div class="card-body">
 
@@ -160,7 +160,7 @@
                                             <td><strong>Attached File:</strong></td>
                                             <td>
                                                 <a href="@Model.Prescription.FilePath" target="_blank" class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-eye me-1"></i>View File
+                                                    <i class="fas fa-eye mr-1"></i>View File
                                                 </a>
                                             </td>
                                         </tr>

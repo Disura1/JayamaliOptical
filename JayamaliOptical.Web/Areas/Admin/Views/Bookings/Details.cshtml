@@ -16,15 +16,15 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h3 class="card-title mb-0">
-                    <i class="fas fa-calendar-check me-2"></i>@Model.BookingNumber
+                    <i class="fas fa-calendar-check mr-2"></i>@Model.BookingNumber
                 </h3>
                 <div class="d-flex gap-2">
                     <a href="/Admin/Bookings/AppointmentInvoice/@Model.Id"
-                       target="_blank" class="btn btn-success btn-sm">
-                        <i class="fas fa-file-invoice me-1"></i>Invoice
+                       target="_blank" class="btn btn-success btn-sm mr-2">
+                        <i class="fas fa-file-invoice mr-1"></i>Invoice
                     </a>
                     <a href="/Admin/Bookings" class="btn btn-secondary btn-sm">
-                        <i class="fas fa-arrow-left me-1"></i>Back
+                        <i class="fas fa-arrow-left mr-1"></i>Back
                     </a>
                 </div>
             </div>
@@ -32,7 +32,7 @@
                 <div class="row g-4">
                     <div class="col-md-6">
                         <h6 class="fw-bold text-muted text-uppercase mb-3">
-                            <i class="fas fa-user me-2"></i>Customer
+                            <i class="fas fa-user mr-2"></i>Customer
                         </h6>
                         <table class="table table-sm table-borderless">
                             <tr><th style="width:120px;">Name</th><td>@Model.FirstName @Model.LastName</td></tr>
@@ -42,7 +42,7 @@
                     </div>
                     <div class="col-md-6">
                         <h6 class="fw-bold text-muted text-uppercase mb-3">
-                            <i class="fas fa-calendar me-2"></i>Appointment
+                            <i class="fas fa-calendar mr-2"></i>Appointment
                         </h6>
                         <table class="table table-sm table-borderless">
                             <tr><th style="width:120px;">Service</th><td><strong>@Model.Service?.Name</strong></td></tr>
@@ -86,7 +86,7 @@
                                   placeholder="Internal notes...">@Model.AdminNotes</textarea>
                     </div>
                     <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-save me-2"></i>Update Status
+                        <i class="fas fa-save mr-2"></i>Update Status
                     </button>
                 </form>
             </div>
@@ -99,7 +99,7 @@
                       onsubmit="return confirm('Permanently delete this booking?')">
                     @Html.AntiForgeryToken()
                     <button type="submit" class="btn btn-outline-danger w-100 btn-sm">
-                        <i class="fas fa-trash me-2"></i>Delete Booking
+                        <i class="fas fa-trash mr-2"></i>Delete Booking
                     </button>
                 </form>
             </div>
