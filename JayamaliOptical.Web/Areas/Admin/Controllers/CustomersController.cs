@@ -14,7 +14,9 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
 
-        public CustomersController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+        public CustomersController(
+            ApplicationDbContext context,
+            UserManager<IdentityUser> userManager)
         {
             _context = context;
             _userManager = userManager;
@@ -28,7 +30,13 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
         {
             int pageSize = 10;
 
-            // Load orders grouped by email
+            // ── Get admin emails to exclude everywhere ────────────────
+            var adminUsers = await _userManager.GetUsersInRoleAsync("Admin");
+            var adminEmails = adminUsers
+                .Select(u => (u.Email ?? "").ToLower())
+                .ToHashSet();
+
+            // ── Orders grouped by email ───────────────────────────────
             var orderGroups = await _context.Orders
                 .GroupBy(o => o.Email)
                 .Select(g => new
@@ -45,37 +53,43 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
                 })
                 .ToListAsync();
 
-            // Load bookings grouped by email
+            // ── Bookings grouped by email ─────────────────────────────
             var bookingGroups = await _context.ServiceBookings
                 .GroupBy(b => b.Email)
                 .Select(g => new { Email = g.Key, Count = g.Count() })
                 .ToListAsync();
 
-            var bookingLookup = bookingGroups.ToDictionary(b => b.Email.ToLower(), b => b.Count);
+            var bookingLookup = bookingGroups
+                .ToDictionary(b => b.Email.ToLower(), b => b.Count);
 
-            // Merge all emails (customers with only bookings, no orders)
+            // booking-only = booking emails not in any order
             var bookingOnlyEmails = bookingGroups
-                .Where(b => !orderGroups.Any(o => o.Email.ToLower() == b.Email.ToLower()))
+                .Where(b => !orderGroups.Any(
+                    o => o.Email.ToLower() == b.Email.ToLower()))
                 .ToList();
 
-            // Build customer list from orders
-            var customers = orderGroups.Select(g => new CustomerViewModel
-            {
-                Email = g.Email,
-                FirstName = g.FirstName,
-                LastName = g.LastName,
-                PhoneNumber = g.PhoneNumber,
-                City = g.City,
-                TotalOrders = g.TotalOrders,
-                TotalBookings = bookingLookup.TryGetValue(g.Email.ToLower(), out var bc) ? bc : 0,
-                TotalSpent = g.TotalSpent,
-                LastOrderDate = g.LastOrderDate,
-                FirstOrderDate = g.FirstOrderDate,
-                IsRegistered = false
-            }).ToList();
+            // ── Build customer list from orders ───────────────────────
+            var customers = orderGroups
+                .Where(g => !adminEmails.Contains(g.Email.ToLower()))
+                .Select(g => new CustomerViewModel
+                {
+                    Email = g.Email,
+                    FirstName = g.FirstName,
+                    LastName = g.LastName,
+                    PhoneNumber = g.PhoneNumber,
+                    City = g.City,
+                    TotalOrders = g.TotalOrders,
+                    TotalBookings = bookingLookup.TryGetValue(
+                                         g.Email.ToLower(), out var bc) ? bc : 0,
+                    TotalSpent = g.TotalSpent,
+                    LastOrderDate = g.LastOrderDate,
+                    FirstOrderDate = g.FirstOrderDate,
+                    IsRegistered = false
+                }).ToList();
 
-            // Add booking-only customers (no orders)
-            foreach (var b in bookingOnlyEmails)
+            // ── Add booking-only customers ────────────────────────────
+            foreach (var b in bookingOnlyEmails
+                .Where(b => !adminEmails.Contains(b.Email.ToLower())))
             {
                 var latestBooking = await _context.ServiceBookings
                     .Where(sb => sb.Email.ToLower() == b.Email.ToLower())
@@ -98,17 +112,57 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
                 });
             }
 
-            // Mark registered users
-            var registeredUsers = await _userManager.Users.ToListAsync();
-            var registeredEmails = registeredUsers
-                .Select(u => u.Email?.ToLower())
-                .Where(e => e != null)
+            // ── Add registered users who have no orders/bookings ──────
+            // These are real customers who registered but haven't transacted yet
+            var allUsers = await _userManager.Users.ToListAsync();
+            var nonAdminUsers = allUsers
+                .Where(u => u.Email != null
+                         && !adminEmails.Contains(u.Email.ToLower()))
+                .ToList();
+
+            var existingEmails = customers
+                .Select(c => c.Email.ToLower())
                 .ToHashSet();
 
-            foreach (var c in customers)
-                c.IsRegistered = registeredEmails.Contains(c.Email.ToLower());
+            foreach (var u in nonAdminUsers)
+            {
+                var uEmail = (u.Email ?? "").ToLower();
+                if (!existingEmails.Contains(uEmail))
+                {
+                    // Registered user with no orders or bookings
+                    customers.Add(new CustomerViewModel
+                    {
+                        Email = u.Email ?? "",
+                        FirstName = u.UserName?.Split(' ').First() ?? "",
+                        LastName = u.UserName?.Contains(' ') == true
+                                         ? u.UserName.Split(' ', 2)[1] : "",
+                        PhoneNumber = u.PhoneNumber ?? "",
+                        City = "",
+                        TotalOrders = 0,
+                        TotalBookings = 0,
+                        TotalSpent = 0,
+                        LastOrderDate = DateTime.MinValue,
+                        FirstOrderDate = DateTime.MinValue,
+                        IsRegistered = true
+                    });
+                }
+            }
 
-            // Search
+            // ── Mark IsRegistered for all existing customers ──────────
+            // Build normalised email → userId map for non-admin users
+            var registeredEmailMap = nonAdminUsers
+                .Where(u => u.NormalizedEmail != null)
+                .ToDictionary(
+                    u => u.NormalizedEmail!,
+                    u => u.Id);
+
+            foreach (var c in customers)
+            {
+                var key = c.Email.ToUpper();
+                c.IsRegistered = registeredEmailMap.ContainsKey(key);
+            }
+
+            // ── Search ────────────────────────────────────────────────
             if (!string.IsNullOrWhiteSpace(search))
             {
                 var s = search.ToLower();
@@ -121,7 +175,7 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
                 ).ToList();
             }
 
-            // Filter
+            // ── Filter ────────────────────────────────────────────────
             customers = filter switch
             {
                 "Registered" => customers.Where(c => c.IsRegistered).ToList(),
@@ -132,7 +186,7 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
                 _ => customers
             };
 
-            // Sort
+            // ── Sort ──────────────────────────────────────────────────
             customers = sort switch
             {
                 "oldest" => customers.OrderBy(c => c.FirstOrderDate).ToList(),
@@ -143,7 +197,7 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
                 _ => customers.OrderByDescending(c => c.LastOrderDate).ToList()
             };
 
-            // Stats
+            // ── Stats ─────────────────────────────────────────────────
             ViewBag.TotalCustomers = customers.Count;
             ViewBag.RegisteredCount = customers.Count(c => c.IsRegistered);
             ViewBag.GuestCount = customers.Count(c => !c.IsRegistered);
@@ -153,9 +207,13 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
             ViewBag.Filter = filter;
             ViewBag.Sort = sort;
             ViewBag.CurrentPage = page;
-            ViewBag.TotalPages = (int)Math.Ceiling(customers.Count / (double)pageSize);
+            ViewBag.TotalPages = (int)Math.Ceiling(
+                                         customers.Count / (double)pageSize);
 
-            return View(customers.Skip((page - 1) * pageSize).Take(pageSize).ToList());
+            return View(customers
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList());
         }
 
         public async Task<IActionResult> Details(string email)
@@ -174,11 +232,21 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
                 .OrderByDescending(b => b.AppointmentDate)
                 .ToListAsync();
 
-            if (!orders.Any() && !bookings.Any()) return NotFound();
+            // ── Find registered user first ────────────────────────────
+            // Use NormalizedEmail for reliable case-insensitive match
+            var normalizedEmail = email.ToUpper();
+            var allUsers = await _userManager.Users.ToListAsync();
+            var registeredUser = allUsers.FirstOrDefault(u =>
+                (u.NormalizedEmail ?? "").Equals(
+                    normalizedEmail, StringComparison.Ordinal));
 
-            // Get latest info from either source
-            string firstName, lastName, phoneNumber, address = "", city = "", postalCode = "";
-            DateTime firstDate, lastDate;
+            // If no orders and no bookings but user is registered — still show
+            if (!orders.Any() && !bookings.Any() && registeredUser == null)
+                return NotFound();
+
+            string firstName, lastName, phoneNumber,
+                   address = "", city = "", postalCode = "";
+            DateTime firstDate = DateTime.Now, lastDate = DateTime.Now;
 
             if (orders.Any())
             {
@@ -192,7 +260,7 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
                 firstDate = orders.Min(o => o.OrderDate);
                 lastDate = orders.Max(o => o.OrderDate);
             }
-            else
+            else if (bookings.Any())
             {
                 var latestB = bookings.First();
                 firstName = latestB.FirstName;
@@ -201,15 +269,24 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
                 firstDate = bookings.Min(b => b.BookingDate);
                 lastDate = bookings.Max(b => b.BookingDate);
             }
+            else
+            {
+                // Registered user only — use Identity username
+                firstName = registeredUser!.UserName?.Split(' ').First() ?? "";
+                lastName = registeredUser.UserName?.Contains(' ') == true
+                              ? registeredUser.UserName.Split(' ', 2)[1] : "";
+                phoneNumber = registeredUser.PhoneNumber ?? "";
+            }
 
-            var registeredUser = await _userManager.FindByEmailAsync(email);
-
-            var prescriptions = registeredUser != null
-                ? await _context.Prescriptions
+            // ── Load prescriptions via UserId ─────────────────────────
+            var prescriptions = new List<Prescription>();
+            if (registeredUser != null)
+            {
+                prescriptions = await _context.Prescriptions
                     .Where(p => p.UserId == registeredUser.Id)
                     .OrderByDescending(p => p.CreatedDate)
-                    .ToListAsync()
-                : new List<Prescription>();
+                    .ToListAsync();
+            }
 
             var vm = new CustomerDetailViewModel
             {
