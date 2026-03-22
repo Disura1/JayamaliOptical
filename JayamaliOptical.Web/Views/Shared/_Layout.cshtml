@@ -25,144 +25,131 @@
         <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-lg mb-3">
             <div class="container-fluid">
 
-                @* ── DESKTOP (≥992px): original layout unchanged ── *@
+                @{
+                    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+                    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+                    bool isHome = currentController == "Home" && currentAction == "Index";
+                    bool isProducts = currentController == "Products";
+                    bool isContact = currentController == "Home" && currentAction == "ContactUs";
+                    bool isAbout = currentController == "Home" && currentAction == "AboutUs";
+                    bool isPrivacy = currentController == "Home" && currentAction == "Privacy";
+                }
 
-                @* Brand — always visible *@
-                <a class="navbar-brand d-none d-lg-flex" asp-area="" asp-controller="Home" asp-action="Index">
-                    <img src="~/images/LogoOnly.png" alt="Jayamali Optical Logo" style="height:60px;">
-                    <img src="~/images/Name.png" alt="Jayamali Optical" style="height:55px;">
+                @using Microsoft.AspNetCore.Identity
+                @using JayamaliOptical.Web.Services
+                @inject SignInManager<IdentityUser> SignInManager
+                @inject UserManager<IdentityUser> UserManager
+                @inject ICartService CartService
+
+                @* ── DESKTOP brand (hidden on mobile) ── *@
+                <a class="navbar-brand d-none d-lg-flex"
+                   asp-area="" asp-controller="Home" asp-action="Index">
+                    <img src="~/images/LogoOnly.png" alt="Logo" class="brand-logo">
+                    <img src="~/images/Name.png" alt="Jayamali Optical" class="brand-name">
                 </a>
 
-                @* ── MOBILE (<992px): 3-zone top bar ── *@
-                @* Zone 1 LEFT: Search + Cart + Profile *@
-                <div class="d-flex d-lg-none align-items-center gap-2 mobile-right-icons">
-                    @* Search *@
-                    <button class="btn btn-sm btn-outline-secondary rounded-circle mobile-search-btn"
-                            type="button" id="mobileSearchToggle"
-                            style="width:38px;height:38px;padding:0;">
-                        <i class="bi bi-search"></i>
-                    </button>
+                @* ══════════════════════════════════════════════════
+                   MOBILE TOP BAR (<992px) — 3 zones, fixed position
+                   ══════════════════════════════════════════════════ *@
+
+                @* LEFT: hamburger — opens OFF-CANVAS drawer *@
+                <button class="nav-mobile-icon-btn d-flex d-lg-none"
+                        id="mobileMenuBtn" title="Menu">
+                    <i class="bi bi-list fs-4"></i>
+                </button>
+
+                @* CENTER: brand *@
+                <a class="navbar-brand d-flex d-lg-none nav-mobile-brand"
+                   asp-area="" asp-controller="Home" asp-action="Index">
+                    <img src="~/images/LogoOnly.png" alt="Logo" class="brand-logo-center">
+                    <img src="~/images/Name.png" alt="Jayamali Optical" class="brand-name-center">
+                </a>
+
+                @* RIGHT: cart + profile *@
+                <div class="d-flex d-lg-none align-items-center gap-1 nav-mobile-right">
+
                     @* Cart *@
                     @await Component.InvokeAsync("Cart")
+
                     @* Profile *@
-                    @using Microsoft.AspNetCore.Identity
-                    @using JayamaliOptical.Web.Services
-                    @inject SignInManager<IdentityUser> SignInManager
-                    @inject UserManager<IdentityUser> UserManager
-                    @inject ICartService CartService
                     @if (SignInManager.IsSignedIn(User))
                     {
                         var isAdminM = User.IsInRole("Admin");
-                        <div class="profile-icon-wrapper" style="margin:0;">
-                            <div class="dropdown">
-                                <a href="#" class="profile-icon-link dropdown-toggle"
-                                   style="width:38px;height:38px;"
-                                   role="button" data-bs-toggle="dropdown">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                         fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
-                                        <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
-                                        <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z" />
-                                    </svg>
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><h6 class="dropdown-header">@User.Identity?.Name</h6></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    @if (isAdminM)
-                                    {
-                                        <li>
-                                            <a class="dropdown-item text-danger fw-bold"
-                                               asp-area="Admin" asp-controller="Home" asp-action="Index">
-                                                <i class="bi bi-shield-lock me-2"></i>Admin Panel
-                                            </a>
-                                        </li>
-                                        <li><hr class="dropdown-divider"></li>
-                                    }
+                        <div class="dropdown">
+                            <button class="nav-mobile-icon-btn dropdown-toggle"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle fs-5"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-start shadow-lg border-0 rounded-3">
+                                <li><h6 class="dropdown-header text-primary">@User.Identity?.Name</h6></li>
+                                <li><hr class="dropdown-divider my-0"></li>
+                                @if (isAdminM)
+                                {
                                     <li>
-                                        <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">
-                                            <i class="bi bi-gear me-2"></i>My Account
+                                        <a class="dropdown-item fw-bold text-danger"
+                                           asp-area="Admin" asp-controller="Home" asp-action="Index">
+                                            <i class="bi bi-shield-lock me-2"></i>Admin Panel
                                         </a>
                                     </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Dashboard" asp-action="Index">
-                                            <i class="bi bi-speedometer2 me-1"></i>Dashboard
-                                        </a>
-                                    </li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li>
-                                        <form class="dropdown-item" asp-area="Identity"
-                                              asp-page="/Account/Logout" asp-route-returnUrl="/" method="post">
-                                            <button type="submit"
-                                                    class="btn btn-link w-100 p-0 text-white text-decoration-none bg-danger">
-                                                <i class="bi bi-box-arrow-right me-2"></i>Logout
-                                            </button>
-                                        </form>
-                                    </li>
-                                </ul>
-                            </div>
+                                    <li><hr class="dropdown-divider my-0"></li>
+                                }
+                                <li>
+                                    <a class="dropdown-item"
+                                       asp-area="Identity" asp-page="/Account/Manage/Index">
+                                        <i class="bi bi-gear me-2"></i>My Account
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Dashboard" asp-action="Index">
+                                        <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider my-0"></li>
+                                <li>
+                                    <form asp-area="Identity" asp-page="/Account/Logout"
+                                          asp-route-returnUrl="/" method="post" class="px-3 py-1">
+                                        <button type="submit"
+                                                class="btn btn-danger btn-sm w-100 rounded-pill">
+                                            <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
                         </div>
                     }
                     else
                     {
-                        <div class="profile-icon-wrapper" style="margin:0;">
-                            <div class="dropdown">
-                                <a href="#" class="profile-icon-link dropdown-toggle"
-                                   style="width:38px;height:38px;"
-                                   role="button" data-bs-toggle="dropdown">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                         fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
-                                        <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
-                                        <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z" />
-                                    </svg>
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><h6 class="dropdown-header">Welcome!</h6></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li>
-                                        <a class="dropdown-item" href="/Identity/Account/Login">
-                                            <i class="bi bi-box-arrow-in-right me-2"></i>Login
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="/Identity/Account/Register">
-                                            <i class="bi bi-person-plus me-2"></i>Register
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
+                        <div class="dropdown">
+                            <button class="nav-mobile-icon-btn dropdown-toggle"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle fs-5"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-start shadow-lg border-0 rounded-3">
+                                <li><h6 class="dropdown-header">Welcome!</h6></li>
+                                <li><hr class="dropdown-divider my-0"></li>
+                                <li>
+                                    <a class="dropdown-item" href="/Identity/Account/Login">
+                                        <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="/Identity/Account/Register">
+                                        <i class="bi bi-person-plus me-2"></i>Register
+                                    </a>
+                                </li>
+                            </ul>
                         </div>
                     }
                 </div>
 
-                @* Zone 2 CENTER: Brand (mobile only) *@
-                <a class="navbar-brand d-flex d-lg-none mobile-brand-center"
-                   asp-area="" asp-controller="Home" asp-action="Index">
-                    <img src="~/images/LogoOnly.png" alt="Logo" style="height:44px;">
-                    <img src="~/images/Name.png" alt="Jayamali Optical" style="height:40px;">
-                </a>
+                
 
-                @* Zone 3 RIGHT: Hamburger (mobile only) *@
-                <button class="navbar-toggler d-flex d-lg-none border-0"
-                        type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#navbarCollapse"
-                        aria-expanded="false"
-                        aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+                
 
-                @* ── Collapsible nav — nav links only ── *@
-                <div class="collapse navbar-collapse" id="navbarCollapse">
-                    @{
-                        var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
-                        var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
-                        bool isHome = currentController == "Home" && currentAction == "Index";
-                        bool isProducts = currentController == "Products";
-                        bool isContact = currentController == "Home" && currentAction == "ContactUs";
-                        bool isAbout = currentController == "Home" && currentAction == "AboutUs";
-                        bool isPrivacy = currentController == "Home" && currentAction == "Privacy";
-                    }
-
-                    @* Desktop: nav links centred, with search+cart+profile on right *@
+                @* ══════════════════════════════════════════════════
+           DESKTOP nav (≥992px) — original layout
+           ══════════════════════════════════════════════════ *@
+                <div class="collapse navbar-collapse d-none d-lg-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1 justify-content-center">
                         <li class="nav-item">
                             <a class="nav-link @(isHome ? "nav-active" : "")"
@@ -197,118 +184,187 @@
                                asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
                     </ul>
-
-                    @* Desktop only: search + cart + profile on the right *@
-                    <div class="d-none d-lg-flex align-items-center gap-2">
-                        <form class="secSearch d-flex" action="/Products/Index" method="get">
-                            <input class="form-control me-2" type="search" name="search"
-                                   placeholder="Search products..." aria-label="Search"
-                                   value="@(Context.Request.Query["search"].ToString())" />
-                            <button class="btn btn-outline-success" type="submit">
-                                <i class="bi bi-search"></i>
-                            </button>
-                        </form>
-                        @await Component.InvokeAsync("Cart")
-                        @if (SignInManager.IsSignedIn(User))
-                        {
-                            var isAdmin = User.IsInRole("Admin");
-                            <div class="profile-icon-wrapper">
-                                <div class="dropdown">
-                                    <a href="#" class="profile-icon-link dropdown-toggle"
-                                       id="profileDropdownDesktop" role="button"
-                                       data-bs-toggle="dropdown" aria-expanded="false">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                             fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
-                                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
-                                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z" />
-                                        </svg>
-                                    </a>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li><h6 class="dropdown-header">Hello, @User.Identity?.Name!</h6></li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        @if (isAdmin)
-                                        {
-                                            <li>
-                                                <a class="dropdown-item text-danger fw-bold"
-                                                   asp-area="Admin" asp-controller="Home" asp-action="Index">
-                                                    <i class="bi bi-shield-lock me-2"></i>Admin Panel
-                                                </a>
-                                            </li>
-                                            <li><hr class="dropdown-divider"></li>
-                                        }
+                    <form class="secSearch d-flex" action="/Products/Index" method="get">
+                        <input class="form-control me-2 search-input" type="search" name="search"
+                               placeholder="Search products..." aria-label="Search"
+                               value="@(Context.Request.Query["search"].ToString())" />
+                        <button class="btn btn-outline-success" type="submit">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </form>
+                    @await Component.InvokeAsync("Cart")
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        var isAdmin = User.IsInRole("Admin");
+                        <div class="profile-icon-wrapper">
+                            <div class="dropdown">
+                                <a href="#" class="profile-icon-link dropdown-toggle"
+                                   id="profileDropdownDesktop" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                         fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                                        <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
+                                        <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z" />
+                                    </svg>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><h6 class="dropdown-header">Hello, @User.Identity?.Name!</h6></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    @if (isAdmin)
+                                    {
                                         <li>
-                                            <a class="dropdown-item"
-                                               asp-area="Identity" asp-page="/Account/Manage/Index">
-                                                <i class="bi bi-gear me-2"></i>My Account
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item"
-                                               asp-controller="Dashboard" asp-action="Index">
-                                                <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                                            <a class="dropdown-item text-danger fw-bold"
+                                               asp-area="Admin" asp-controller="Home" asp-action="Index">
+                                                <i class="bi bi-shield-lock me-2"></i>Admin Panel
                                             </a>
                                         </li>
                                         <li><hr class="dropdown-divider"></li>
-                                        <li>
-                                            <form class="dropdown-item" asp-area="Identity"
-                                                  asp-page="/Account/Logout" asp-route-returnUrl="/" method="post">
-                                                <button type="submit"
-                                                        class="btn btn-link w-100 p-0 gap-1 text-white text-decoration-none bg-danger">
-                                                    <i class="bi bi-box-arrow-right me-2"></i>Logout
-                                                </button>
-                                            </form>
-                                        </li>
-                                    </ul>
-                                </div>
+                                    }
+                                    <li>
+                                        <a class="dropdown-item"
+                                           asp-area="Identity" asp-page="/Account/Manage/Index">
+                                            <i class="bi bi-gear me-2"></i>My Account
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item"
+                                           asp-controller="Dashboard" asp-action="Index">
+                                            <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form class="dropdown-item" asp-area="Identity"
+                                              asp-page="/Account/Logout" asp-route-returnUrl="/" method="post">
+                                            <button type="submit"
+                                                    class="btn btn-link w-100 p-0 gap-1 text-white text-decoration-none bg-danger">
+                                                <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
                             </div>
-                        }
-                        else
-                        {
-                            <div class="profile-icon-wrapper">
-                                <div class="dropdown">
-                                    <a href="#" class="profile-icon-link dropdown-toggle"
-                                       id="profileDropdownDesktop2" role="button"
-                                       data-bs-toggle="dropdown" aria-expanded="false">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                             fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
-                                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
-                                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z" />
-                                        </svg>
-                                    </a>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li><h6 class="dropdown-header">Welcome!</h6></li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li>
-                                            <a class="dropdown-item" href="/Identity/Account/Login">
-                                                <i class="bi bi-box-arrow-in-right me-2"></i>Login
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item" href="/Identity/Account/Register">
-                                                <i class="bi bi-person-plus me-2"></i>Register
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="profile-icon-wrapper">
+                            <div class="dropdown">
+                                <a href="#" class="profile-icon-link dropdown-toggle"
+                                   id="profileDropdownDesktop2" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                         fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                                        <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
+                                        <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z" />
+                                    </svg>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><h6 class="dropdown-header">Welcome!</h6></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" href="/Identity/Account/Login">
+                                            <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="/Identity/Account/Register">
+                                            <i class="bi bi-person-plus me-2"></i>Register
+                                        </a>
+                                    </li>
+                                </ul>
                             </div>
-                        }
-                    </div>
-
-                    @* Mobile: search bar inside collapsed menu *@
-                    <div class="d-flex d-lg-none mt-2 px-2 pb-2" id="mobileSearchInMenu" style="display:none!important;">
-                        <form class="w-100 d-flex" action="/Products/Index" method="get">
-                            <input class="form-control me-2" type="search" name="search"
-                                   placeholder="Search products..."
-                                   value="@(Context.Request.Query["search"].ToString())" />
-                            <button class="btn btn-outline-primary" type="submit">
-                                <i class="bi bi-search"></i>
-                            </button>
-                        </form>
-                    </div>
+                        </div>
+                    }
                 </div>
 
             </div>
         </nav>
+
+        @* ══════════════════════════════════════════════════════════
+   OFF-CANVAS MOBILE DRAWER — completely outside the header
+   Opens as overlay, never moves/pushes content
+   ══════════════════════════════════════════════════════════ *@
+        <div id="mobileNavOverlay" class="mobile-nav-overlay"></div>
+        <div id="mobileNavDrawer" class="mobile-nav-drawer">
+
+            @* Drawer header *@
+            <div class="mobile-drawer-header">
+                <div class="d-flex align-items-center gap-2">
+                    <img src="~/images/LogoOnly.png" alt="Logo" style="height:36px;">
+                    <span style="font-weight:800; color:#1978bc; font-size:1rem;">Jayamali Optical</span>
+                </div>
+                <button id="mobileDrawerClose" class="mobile-drawer-close">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            @* Search bar inside drawer *@
+            <div class="mobile-drawer-search">
+                <form action="/Products/Index" method="get" class="d-flex gap-2">
+                    <input class="form-control" type="search" name="search"
+                           placeholder="Search products..."
+                           value="@(Context.Request.Query["search"].ToString())" />
+                    <button class="btn btn-primary rounded-pill px-3" type="submit">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </form>
+            </div>
+
+            @* Nav links *@
+            <nav class="mobile-drawer-nav">
+                <a href="/" class="mobile-drawer-link @(isHome ? "active" : "")">
+                    <i class="bi bi-house me-3"></i>Home
+                </a>
+
+                @* Products accordion *@
+                <div class="mobile-drawer-accordion">
+                    <button class="mobile-drawer-link mobile-accordion-btn @(isProducts ? "active" : "")"
+                            id="mobileProductsBtn">
+                        <span><i class="bi bi-eyeglasses me-3"></i>Products</span>
+                        <i class="bi bi-chevron-down mobile-accordion-arrow"></i>
+                    </button>
+                    <div class="mobile-accordion-body" id="mobileProductsBody">
+                        @await Component.InvokeAsync("CategoriesMenu")
+                    </div>
+                </div>
+
+                @* Services accordion *@
+                <div class="mobile-drawer-accordion">
+                    <button class="mobile-drawer-link mobile-accordion-btn"
+                            id="mobileServicesBtn">
+                        <span><i class="bi bi-heart-pulse me-3"></i>Services</span>
+                        <i class="bi bi-chevron-down mobile-accordion-arrow"></i>
+                    </button>
+                    <div class="mobile-accordion-body" id="mobileServicesBody">
+                        @await Component.InvokeAsync("ServicesMenu")
+                    </div>
+                </div>
+
+                <a href="/Home/ContactUs"
+                   class="mobile-drawer-link @(isContact ? "active" : "")">
+                    <i class="bi bi-telephone me-3"></i>Contact Us
+                </a>
+                <a href="/Home/AboutUs"
+                   class="mobile-drawer-link @(isAbout ? "active" : "")">
+                    <i class="bi bi-info-circle me-3"></i>About Us
+                </a>
+                <a href="/Home/Privacy"
+                   class="mobile-drawer-link @(isPrivacy ? "active" : "")">
+                    <i class="bi bi-shield-check me-3"></i>Privacy
+                </a>
+            </nav>
+
+            @* Drawer footer *@
+            <div class="mobile-drawer-footer">
+                <a href="/Bookings/Create" class="btn btn-primary rounded-pill w-100 mb-2">
+                    <i class="bi bi-calendar-check me-2"></i>Book Appointment
+                </a>
+                <a href="/Products/Index" class="btn btn-outline-primary rounded-pill w-100">
+                    <i class="bi bi-bag me-2"></i>Shop Now
+                </a>
+            </div>
+        </div>
     </header>
     
     <div class="container-fluid">
@@ -636,6 +692,65 @@
         function scrollToTop() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
+    </script>
+
+    <script>
+        (function () {
+            var drawer  = document.getElementById('mobileNavDrawer');
+            var overlay = document.getElementById('mobileNavOverlay');
+            var openBtn = document.getElementById('mobileMenuBtn');
+            var closeBtn= document.getElementById('mobileDrawerClose');
+
+            if (!drawer) return;
+
+            function openDrawer() {
+                drawer.classList.add('open');
+                overlay.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeDrawer() {
+                drawer.classList.remove('open');
+                overlay.classList.remove('open');
+                document.body.style.overflow = '';
+            }
+
+            openBtn.addEventListener('click', openDrawer);
+            closeBtn.addEventListener('click', closeDrawer);
+            overlay.addEventListener('click', closeDrawer);
+
+            // Close on Escape
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') closeDrawer();
+            });
+
+            // Accordion — Products
+            var prodBtn  = document.getElementById('mobileProductsBtn');
+            var prodBody = document.getElementById('mobileProductsBody');
+            if (prodBtn) {
+                prodBtn.addEventListener('click', function() {
+                    var open = prodBody.classList.toggle('open');
+                    prodBtn.classList.toggle('expanded', open);
+                });
+            }
+
+            // Accordion — Services
+            var svcBtn  = document.getElementById('mobileServicesBtn');
+            var svcBody = document.getElementById('mobileServicesBody');
+            if (svcBtn) {
+                svcBtn.addEventListener('click', function() {
+                    var open = svcBody.classList.toggle('open');
+                    svcBtn.classList.toggle('expanded', open);
+                });
+            }
+
+            // Close drawer when a nav link is clicked
+            drawer.querySelectorAll('a:not(.mobile-accordion-btn)').forEach(function(link) {
+                link.addEventListener('click', function() {
+                    closeDrawer();
+                });
+            });
+        })();
     </script>
 </body>
 </html>
