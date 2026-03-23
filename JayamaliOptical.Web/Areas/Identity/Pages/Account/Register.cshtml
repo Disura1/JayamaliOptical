@@ -2,43 +2,90 @@
 @model RegisterModel
 @{
     ViewData["Title"] = "Register";
-    Layout = "/Views/Shared/_AuthLayout.cshtml";  // ← ADD THIS
+    Layout = "/Views/Shared/_AuthLayout.cshtml";
 }
 
-<h2 class="text-center mb-4">Create Account</h2>
+<h4 class="auth-title">Create Account</h4>
+<p class="auth-subtitle">Join Jayamali Optical for the best eye care experience</p>
 
 <form id="registerForm" method="post">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div asp-validation-summary="ModelOnly"
+         class="alert alert-danger rounded-3 py-2 small" role="alert"></div>
 
     <div class="form-floating mb-3">
-        <input asp-for="Input.Email" class="form-control" placeholder="name@example.com" />
-        <label asp-for="Input.Email">Email Address</label>
-        <span asp-validation-for="Input.Email" class="text-danger"></span>
+        <input asp-for="Input.Email" class="form-control"
+               placeholder="name@example.com"
+               autocomplete="email" />
+        <label asp-for="Input.Email">
+            <i class="bi bi-envelope me-1"></i>Email Address
+        </label>
+        <span asp-validation-for="Input.Email" class="text-danger small"></span>
     </div>
 
-    <div class="form-floating mb-3">
-        <input asp-for="Input.Password" class="form-control" placeholder="Password" />
-        <label asp-for="Input.Password">Password</label>
-        <span asp-validation-for="Input.Password" class="text-danger"></span>
+    <div class="form-floating mb-3 position-relative">
+        <input asp-for="Input.Password" class="form-control"
+               placeholder="Password" id="regPassword"
+               autocomplete="new-password" />
+        <label asp-for="Input.Password">
+            <i class="bi bi-lock me-1"></i>Password
+        </label>
+        <button type="button"
+                class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-2 border-0 bg-transparent text-muted"
+                onclick="togglePassword('regPassword', this)"
+                tabindex="-1">
+            <i class="bi bi-eye"></i>
+        </button>
+        <span asp-validation-for="Input.Password" class="text-danger small"></span>
     </div>
 
-    <div class="form-floating mb-3">
-        <input asp-for="Input.ConfirmPassword" class="form-control" placeholder="Confirm Password" />
-        <label asp-for="Input.ConfirmPassword">Confirm Password</label>
-        <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+    <div class="form-floating mb-4 position-relative">
+        <input asp-for="Input.ConfirmPassword" class="form-control"
+               placeholder="Confirm Password" id="regConfirmPassword"
+               autocomplete="new-password" />
+        <label asp-for="Input.ConfirmPassword">
+            <i class="bi bi-lock-fill me-1"></i>Confirm Password
+        </label>
+        <button type="button"
+                class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-2 border-0 bg-transparent text-muted"
+                onclick="togglePassword('regConfirmPassword', this)"
+                tabindex="-1">
+            <i class="bi bi-eye"></i>
+        </button>
+        <span asp-validation-for="Input.ConfirmPassword" class="text-danger small"></span>
     </div>
 
-    <div class="d-grid">
-        <button type="submit" class="btn btn-primary btn-lg">
+    <div class="d-grid mb-2">
+        <button type="submit" class="btn btn-auth btn-lg">
             <i class="bi bi-person-plus me-2"></i>Create Account
         </button>
     </div>
+
+    <p class="text-center text-muted mt-2" style="font-size:0.75rem;">
+        By registering you agree to our
+        <a href="/Home/Privacy" class="text-primary">Privacy Policy</a>
+    </p>
 </form>
 
-<div class="text-center mt-4">
-    <p>Already have an account? <a asp-page="./Login">Login here</a></p>
+<div class="auth-divider">or</div>
+
+<div class="auth-footer">
+    Already have an account?
+    <a asp-page="./Login">Sign in here</a>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        function togglePassword(inputId, btn) {
+            var input = document.getElementById(inputId);
+            var icon  = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'bi bi-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'bi bi-eye';
+            }
+        }
+    </script>
 }

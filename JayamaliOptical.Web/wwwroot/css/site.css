@@ -1652,7 +1652,20 @@ html {
     }
 }
 
+/* -------------------------Login & Register-------------------------*/
+@media (max-width: 480px) {
+    .auth-body {
+        padding: 24px 20px 28px;
+    }
 
+    .auth-header {
+        padding: 24px 20px 20px;
+    }
+
+    .auth-card {
+        border-radius: 18px;
+    }
+}
 
 
 /* ── Hero Section ── */
