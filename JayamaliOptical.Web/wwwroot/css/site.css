@@ -2259,6 +2259,10 @@ html {
     .contact-form-card {
         padding: 24px 16px;
     }
+
+    .book-contact {
+        margin-bottom: 12px;
+    }
 }
 
 @media (max-width: 576px) {
