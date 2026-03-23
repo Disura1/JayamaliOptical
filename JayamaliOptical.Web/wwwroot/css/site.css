@@ -254,7 +254,7 @@ html {
 }
 
 .hero-left {
-    flex: 0 0 45%;
+    flex: 0 0 40%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1667,8 +1667,18 @@ html {
     }
 }
 
+/* ---------------------------── Hero Section ─---------------------------─ */
 
-/* ── Hero Section ── */
+@media (max-width: 1180px) {
+    .hero-animation {
+        margin-bottom: 0px !important;
+    }
+
+    .hero-welcome-text {
+        font-size: 2rem !important;
+    }
+}
+
 @media (max-width: 992px) {
     .hero-section {
         padding: 20px 24px 28px;
@@ -1680,8 +1690,12 @@ html {
         flex: 0 0 42%;
     }
 
+    .hero-btns {
+        font-size: 1rem;
+    }
+
     .offer-carousel-wrapper {
-        flex: 0 0 58%;
+        flex: 0 0 55%;
     }
 
     .floating-specs {
