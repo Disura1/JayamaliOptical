@@ -58,6 +58,10 @@ builder.Services.AddSession(options =>
 });
 
 builder.Services.AddScoped<IEmailService, EmailService>();
+// Bridge Identity's IEmailSender to our IEmailService
+// This fixes Forgot Password and other Identity email flows
+builder.Services.AddTransient<Microsoft.AspNetCore.Identity.UI.Services.IEmailSender,
+    JayamaliOptical.Web.Services.IdentityEmailSender>();
 builder.Services.AddScoped<IPrescriptionService, PrescriptionService>();
 
 var app = builder.Build();

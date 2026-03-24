@@ -48,7 +48,8 @@ namespace JayamaliOptical.Web.Areas.Identity.Pages.Account.Manage
         {
             var email = await _userManager.GetEmailAsync(user);
             Email = email;
-            Input = new InputModel { NewEmail = email };
+            // Leave NewEmail empty — user should type the new address themselves
+            Input = new InputModel { NewEmail = string.Empty };
             IsEmailConfirmed = await _userManager.IsEmailConfirmedAsync(user);
         }
 
@@ -101,7 +102,8 @@ namespace JayamaliOptical.Web.Areas.Identity.Pages.Account.Manage
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return NotFound();
 
-            if (!ModelState.IsValid) { await LoadAsync(user); return Page(); }
+            // Clear ModelState errors from Input.NewEmail — it's not part of this form
+            ModelState.Clear();
 
             var userId = await _userManager.GetUserIdAsync(user);
             var email = await _userManager.GetEmailAsync(user);
