@@ -27,19 +27,29 @@ namespace JayamaliOptical.Web.Services
         // ── Shared: build SmtpClient from config ──────────────────────────
         private (SmtpClient client, string senderEmail) BuildSmtp()
         {
+            // 1. Get the section for general settings
             var s = _configuration.GetSection("EmailSettings");
+
+            // 2. Fetch values. 
+            // IMPORTANT: Use _configuration["EmailSettings:SenderPassword"] 
+            // to ensure it checks User Secrets/Environment Variables correctly.
             var smtpServer = s["SmtpServer"] ?? "smtp.gmail.com";
             var senderEmail = s["SenderEmail"] ?? "";
-            var senderPassword = s["SenderPassword"] ?? "";
+            var senderPassword = _configuration["EmailSettings:SenderPassword"] ?? ""; // <--- Changed this
             var enableSsl = (s["EnableSsl"] ?? "true").ToLower() == "true";
 
             if (!int.TryParse(s["SmtpPort"], out var port)) port = 587;
 
+            // 3. Build the client
             var client = new SmtpClient(smtpServer, port)
             {
+                // Use the password we fetched from the root configuration
                 Credentials = new NetworkCredential(senderEmail, senderPassword),
-                EnableSsl = enableSsl
+                EnableSsl = enableSsl,
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                UseDefaultCredentials = false // Always set this to false when providing your own credentials
             };
+
             return (client, senderEmail);
         }
 
