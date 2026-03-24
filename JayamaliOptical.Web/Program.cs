@@ -12,7 +12,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ✅ Add Identity (USE ONLY THIS ONE)
+// ✅ Add Identity
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
@@ -33,11 +33,10 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.Name = "JayamaliOpticalAuth";
     options.LoginPath = "/Identity/Account/Login";
     options.AccessDeniedPath = "/Identity/Account/AccessDenied";
-    options.LogoutPath = "/Identity/Account/Logout";  // ← CHANGE THIS
+    options.LogoutPath = "/Identity/Account/Logout";
     options.Cookie.HttpOnly = true;
     options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
 
-    // ✅ ADD THIS: Redirect to home after logout
     options.Events.OnRedirectToLogout = context =>
     {
         context.Response.Redirect("/");
@@ -45,11 +44,9 @@ builder.Services.ConfigureApplicationCookie(options =>
     };
 });
 
-// Register Cart Service
+// Register Services
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICartService, CartService>();
-
-// Configure Session (add this if not already exists)
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -58,10 +55,7 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// Register Email Service
 builder.Services.AddScoped<IEmailService, EmailService>();
-
-// Register Prescription Service
 builder.Services.AddScoped<IPrescriptionService, PrescriptionService>();
 
 var app = builder.Build();
@@ -69,11 +63,9 @@ var app = builder.Build();
 // Enable Session
 app.UseSession();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -98,7 +90,7 @@ app.MapControllerRoute(
 
 app.MapRazorPages();
 
-// Create admin user on startup
+// ✅ UPDATED: Create admin user on startup with Configuration support
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -108,7 +100,11 @@ using (var scope = app.Services.CreateScope())
         var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
-        await DbInitializer.Initialize(context, userManager, roleManager);
+        // 1. Get the IConfiguration service
+        var configuration = services.GetRequiredService<IConfiguration>();
+
+        // 2. Pass the configuration into the Initialize method
+        await DbInitializer.Initialize(context, userManager, roleManager, configuration);
     }
     catch (Exception ex)
     {
