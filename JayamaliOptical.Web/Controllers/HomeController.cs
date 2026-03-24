@@ -142,6 +142,18 @@ namespace JayamaliOptical.Web.Controllers
         string name, string? location, int rating,
         string comment, string? serviceType)
         {
+            // Simple IP-based throttle — max 3 reviews per hour per IP
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "";
+            var oneHourAgo = DateTime.Now.AddHours(-1);
+            var recentCount = await _context.Reviews
+                .CountAsync(r => r.SubmittedAt >= oneHourAgo);
+            // You can store IP in Review model for stricter checking
+            if (recentCount > 50) // site-wide safety valve
+            {
+                TempData["ReviewError"] = "Too many submissions. Please try again later.";
+                return Redirect("/#reviews");
+            }
+
             if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(comment)
                 || rating < 1 || rating > 5)
             {

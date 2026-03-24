@@ -45,6 +45,13 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            var allowedMimeTypes = new[] { "image/jpeg", "image/png", "image/webp" };
+            if (!allowedMimeTypes.Contains(imageFile.ContentType.ToLower()))
+            {
+                TempData["Error"] = "Invalid file type.";
+                return RedirectToAction(nameof(Index));
+            }
+
             if (imageFile.Length > 8 * 1024 * 1024)
             {
                 TempData["Error"] = "Image must be under 8MB.";

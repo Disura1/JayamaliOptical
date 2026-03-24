@@ -39,21 +39,39 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
 
             if (logoFile != null && logoFile.Length > 0)
             {
-                var allowed = new[] { ".jpg", ".jpeg", ".png", ".webp", ".svg" };
+                // --- LAYER 1: EXTENSION VALIDATION ---
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp", ".svg" };
                 var ext = Path.GetExtension(logoFile.FileName).ToLower();
-                if (!allowed.Contains(ext))
+
+                // --- LAYER 2: CONTENT TYPE (MIME) VALIDATION ---
+                // We add "image/svg+xml" for SVG support
+                var allowedMimeTypes = new[] { "image/jpeg", "image/png", "image/webp", "image/svg+xml" };
+                var contentType = logoFile.ContentType.ToLower();
+
+                if (!allowedExtensions.Contains(ext) || !allowedMimeTypes.Contains(contentType))
                 {
-                    TempData["Error"] = "Only JPG, PNG, WebP, SVG allowed.";
+                    TempData["Error"] = "Invalid file type. Only real JPG, PNG, WebP, and SVG images are allowed.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // --- LAYER 3: SIZE VALIDATION (Safety Bonus) ---
+                if (logoFile.Length > 2 * 1024 * 1024) // Limit to 2MB
+                {
+                    TempData["Error"] = "File size must be less than 2MB.";
                     return RedirectToAction(nameof(Index));
                 }
 
                 var folder = Path.Combine(_environment.WebRootPath, "images", "Brands");
                 Directory.CreateDirectory(folder);
+
                 var fileName = Guid.NewGuid().ToString() + ext;
                 var filePath = Path.Combine(folder, fileName);
 
-                using var stream = new FileStream(filePath, FileMode.Create);
-                await logoFile.CopyToAsync(stream);
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await logoFile.CopyToAsync(stream);
+                }
+
                 logoPath = "/images/Brands/" + fileName;
             }
 
@@ -65,6 +83,7 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
                 IsActive = true,
                 CreatedDate = DateTime.Now
             };
+
             _context.Brands.Add(brand);
             await _context.SaveChangesAsync();
 
