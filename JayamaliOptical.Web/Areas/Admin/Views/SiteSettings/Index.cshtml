@@ -213,6 +213,96 @@
         </div>
     </div>
 
+    @* ── Payment Methods ──────────────────────────────────────────────────── *@
+    <div class="card mb-4">
+        <div class="card-header text-white" style="background:linear-gradient(135deg,#1a1a2e,#16213e);">
+            <h5 class="mb-0"><i class="bi bi-wallet2 me-2"></i>Payment Methods</h5>
+        </div>
+        <div class="card-body">
+
+            @* COD toggle *@
+            <div class="d-flex justify-content-between align-items-center p-3 border rounded-3 mb-3 @(Model.CodEnabled ? "border-success bg-light" : "")">
+                <div>
+                    <strong><i class="fas fa-money-bill-wave me-2 text-success"></i>Cash on Delivery (COD)</strong>
+                    <div class="text-muted small">Allow customers to pay when their order arrives at the door</div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span id="codLabel" class="badge @(Model.CodEnabled ? "bg-success" : "bg-secondary")">
+                        @(Model.CodEnabled ? "Enabled" : "Disabled")
+                    </span>
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" role="switch"
+                               name="CodEnabled" value="true" id="codToggle"
+                               @(Model.CodEnabled ? "checked" : "")
+                               style="width:2.6rem;height:1.4rem;cursor:pointer;"
+                               onchange="togglePayBadge(this,'codLabel','bg-success')" />
+                    </div>
+                </div>
+            </div>
+
+            @* PayHere toggle *@
+            <div class="d-flex justify-content-between align-items-center p-3 border rounded-3 mb-3 @(Model.PayHereEnabled ? "border-primary bg-light" : "")">
+                <div>
+                    <strong><i class="fas fa-credit-card me-2 text-primary"></i>PayHere Online Payment</strong>
+                    <div class="text-muted small">Accept cards, bank transfers &amp; more via PayHere</div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span id="payHereLabel" class="badge @(Model.PayHereEnabled ? "bg-primary" : "bg-secondary")">
+                        @(Model.PayHereEnabled ? "Enabled" : "Disabled")
+                    </span>
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" role="switch"
+                               name="PayHereEnabled" value="true" id="payHereToggle"
+                               @(Model.PayHereEnabled ? "checked" : "")
+                               style="width:2.6rem;height:1.4rem;cursor:pointer;"
+                               onchange="togglePayBadge(this,'payHereLabel','bg-primary'); togglePayHereConfig(this)" />
+                    </div>
+                </div>
+            </div>
+
+            @* PayHere credentials — shown only when enabled *@
+            <div id="payHereConfig" style="@(Model.PayHereEnabled ? "" : "display:none;")">
+                <hr />
+                <h6 class="text-muted mb-3"><i class="fas fa-key me-1"></i>PayHere Credentials</h6>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">Merchant ID</label>
+                        <input name="PayHereMerchantId" class="form-control" maxlength="100"
+                               value="@Model.PayHereMerchantId" placeholder="From your PayHere dashboard" />
+                        <small class="text-muted">Found at payhere.lk → Settings → API Credentials</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">Merchant Secret</label>
+                        <div class="input-group">
+                            <input name="PayHereMerchantSecret" class="form-control" type="password"
+                                   id="phSecret" maxlength="200"
+                                   value="@Model.PayHereMerchantSecret" placeholder="Keep this confidential!" />
+                            <button class="btn btn-outline-secondary" type="button"
+                                    onclick="toggleSecret()">
+                                <i class="fas fa-eye" id="secretEyeIcon"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted">Never shared with customers — used for hash verification only.</small>
+                    </div>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" name="PayHereSandbox" value="true"
+                           id="sandboxCheck" @(Model.PayHereSandbox ? "checked" : "") />
+                    <label class="form-check-label" for="sandboxCheck">
+                        <strong>Sandbox / Test Mode</strong>
+                        <span class="text-muted small ms-1">(Uncheck this only when you are ready to accept real payments)</span>
+                    </label>
+                </div>
+                <div class="alert alert-warning py-2 small mt-2">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    <strong>Notify URL</strong> for PayHere dashboard:
+                    <code>@($"https://yourdomain.com/Checkout/PayHereNotify")</code> — replace with your actual domain.
+                </div>
+            </div>
+
+        </div>
+    </div>
+
     <div class="d-flex gap-3 mb-5">
         <button type="submit" class="btn btn-primary btn-lg px-5">
             <i class="fas fa-save mr-2"></i>Save All Settings
@@ -222,6 +312,8 @@
         </a>
     </div>
 </form>
+
+
 
 @section Scripts {
     <script>
@@ -250,5 +342,27 @@
                 if (m) document.getElementById(m[1]).textContent = ta.value.length;
             });
         });
+
+                function togglePayBadge(checkbox, labelId, activeClass) {
+            var label = document.getElementById(labelId);
+            label.className = 'badge ' + (checkbox.checked ? activeClass : 'bg-secondary');
+            label.textContent = checkbox.checked ? 'Enabled' : 'Disabled';
+        }
+
+        function togglePayHereConfig(checkbox) {
+            document.getElementById('payHereConfig').style.display = checkbox.checked ? 'block' : 'none';
+        }
+
+        function toggleSecret() {
+            var inp  = document.getElementById('phSecret');
+            var icon = document.getElementById('secretEyeIcon');
+            if (inp.type === 'password') {
+                inp.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                inp.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
     </script>
 }

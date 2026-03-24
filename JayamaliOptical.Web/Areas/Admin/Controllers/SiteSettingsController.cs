@@ -94,6 +94,17 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
                 existing.Vision = f["Vision"].FirstOrDefault() ?? "";
                 existing.Mission = f["Mission"].FirstOrDefault() ?? "";
 
+                // Payment
+                existing.CodEnabled = f["CodEnabled"].FirstOrDefault() == "true";
+                existing.PayHereEnabled = f["PayHereEnabled"].FirstOrDefault() == "true";
+                existing.PayHereMerchantId = f["PayHereMerchantId"].FirstOrDefault() ?? string.Empty;
+                existing.PayHereSandbox = f["PayHereSandbox"].FirstOrDefault() == "true";
+
+                // Only update secret if a new value was provided (don't wipe it with empty on save)
+                var newSecret = f["PayHereMerchantSecret"].FirstOrDefault() ?? string.Empty;
+                if (!string.IsNullOrWhiteSpace(newSecret))
+                    existing.PayHereMerchantSecret = newSecret;
+
                 await _context.SaveChangesAsync();
                 TempData["Success"] = "Site settings saved successfully!";
             }

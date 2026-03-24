@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace JayamaliOptical.Web.Models
 {
@@ -20,7 +19,7 @@ namespace JayamaliOptical.Web.Models
         [StringLength(300)] public string TikTokUrl { get; set; } = string.Empty;
         [StringLength(300)] public string InstagramUrl { get; set; } = string.Empty;
 
-        // Opening Hours — each day has open/close time + closed flag
+        // Opening Hours
         [StringLength(10)] public string MonOpen { get; set; } = "08:30";
         [StringLength(10)] public string MonClose { get; set; } = "18:00";
         public bool MonClosed { get; set; } = false;
@@ -53,12 +52,10 @@ namespace JayamaliOptical.Web.Models
         [StringLength(10)] public string HolClose { get; set; } = "18:00";
         public bool HolClosed { get; set; } = true;
 
-        // Helper: is clinic open right now?
         public bool IsOpenNow()
         {
             var now = DateTime.Now;
-            var open = string.Empty;
-            var close = string.Empty;
+            string open = string.Empty, close = string.Empty;
             bool closed = false;
 
             switch (now.DayOfWeek)
@@ -79,16 +76,27 @@ namespace JayamaliOptical.Web.Models
             return false;
         }
 
-        // Privacy Policy (max 5000 chars)
         [StringLength(5000)] public string PrivacyPolicy { get; set; } = string.Empty;
-
-        // History (max 3000 chars)
         [StringLength(3000)] public string History { get; set; } = string.Empty;
-
-        // Vision (max 1000 chars)
         [StringLength(1000)] public string Vision { get; set; } = string.Empty;
-
-        // Mission (max 2000 chars)
         [StringLength(2000)] public string Mission { get; set; } = string.Empty;
+
+        // ── Payment Settings ────────────────────────────────────────────────
+        /// <summary>Admin can enable/disable Cash on Delivery at checkout</summary>
+        public bool CodEnabled { get; set; } = true;
+
+        /// <summary>Admin can enable/disable PayHere online payment</summary>
+        public bool PayHereEnabled { get; set; } = false;
+
+        /// <summary>PayHere Merchant ID from the PayHere dashboard</summary>
+        [StringLength(100)]
+        public string PayHereMerchantId { get; set; } = string.Empty;
+
+        /// <summary>PayHere Merchant Secret — used server-side only, never exposed to browser</summary>
+        [StringLength(200)]
+        public string PayHereMerchantSecret { get; set; } = string.Empty;
+
+        /// <summary>true = sandbox/test mode; false = live payments</summary>
+        public bool PayHereSandbox { get; set; } = true;
     }
 }

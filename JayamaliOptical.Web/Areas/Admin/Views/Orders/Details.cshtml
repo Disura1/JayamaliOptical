@@ -52,6 +52,39 @@
                             </tr>
                             <tr><td><strong>Shipped Date:</strong></td><td>@(Model.ShippedDate?.ToString("dd MMM yyyy") ?? "-")</td></tr>
                             <tr><td><strong>Delivered Date:</strong></td><td>@(Model.DeliveredDate?.ToString("dd MMM yyyy") ?? "-")</td></tr>
+                            <tr>
+                                <td><strong>Payment Method:</strong></td>
+                                <td>
+                                    @if (Model.PaymentMethod == "COD")
+                                    {
+                                        <span class="badge bg-success"><i class="fas fa-money-bill-wave me-1"></i>Cash on Delivery</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-primary"><i class="fas fa-credit-card me-1"></i>PayHere Online</span>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Payment Status:</strong></td>
+                                <td>
+                                    @{
+                                        var psBadge = Model.PaymentStatus switch
+                                        {
+                                            "Paid" => "bg-success",
+                                            "Pending" => "bg-warning",
+                                            "Awaiting" => "bg-info",
+                                            "Failed" => "bg-danger",
+                                            _ => "bg-secondary"
+                                        };
+                                    }
+                                    <span class="badge @psBadge">@Model.PaymentStatus</span>
+                                    @if (!string.IsNullOrEmpty(Model.PaymentReference))
+                                    {
+                                        <small class="text-muted ms-2">Ref: @Model.PaymentReference</small>
+                                    }
+                                </td>
+                            </tr>
                         </table>
                     </div>
 

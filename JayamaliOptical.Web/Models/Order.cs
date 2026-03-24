@@ -49,16 +49,28 @@ namespace JayamaliOptical.Web.Models
 
         public string Status { get; set; } = "Pending";
 
+        /// <summary>COD or PayHere</summary>
+        [StringLength(50)]
+        public string PaymentMethod { get; set; } = "COD";
+
+        /// <summary>Pending | Paid | Failed | Refunded</summary>
+        [StringLength(50)]
+        public string PaymentStatus { get; set; } = "Pending";
+
+        /// <summary>PayHere transaction/order reference returned by IPN</summary>
+        [StringLength(100)]
+        public string? PaymentReference { get; set; }
+
         public DateTime OrderDate { get; set; } = DateTime.Now;
         public DateTime? ShippedDate { get; set; }
         public DateTime? DeliveredDate { get; set; }
 
-        // Prescription — Option 1: saved prescription FK
+        // Prescription — option 1: saved prescription FK
         [ForeignKey("Prescription")]
         public int? PrescriptionId { get; set; }
         public Prescription? Prescription { get; set; }
 
-        // Prescription — Option 2: uploaded image
+        // Prescription — option 2: uploaded image
         [StringLength(500)]
         public string? PrescriptionImagePath { get; set; }
         [StringLength(255)]
@@ -115,7 +127,11 @@ namespace JayamaliOptical.Web.Models
         public bool CartRequiresPrescription { get; set; } = false;
         public int? SelectedPrescriptionId { get; set; } = null;
         public IFormFile? UploadPrescriptionFile { get; set; }
-
         public List<Prescription>? UserPrescriptions { get; set; }
+
+        // Payment
+        public string PaymentMethod { get; set; } = "COD";
+        public bool CodEnabled { get; set; } = true;
+        public bool PayHereEnabled { get; set; } = false;
     }
 }

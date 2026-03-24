@@ -3,18 +3,12 @@
     ViewData["Title"] = "Checkout";
 }
 
-@* Debug: Check if user is logged in *@
 @if (User?.Identity?.IsAuthenticated == true)
 {
     <script>
-        console.log("User is logged in: @User.Identity.Name");
-        // Auto-show form for logged-in users
-        document.addEventListener('DOMContentLoaded', function() {
-            var checkoutForm = document.getElementById('checkoutForm');
-            if (checkoutForm) {
-                checkoutForm.style.display = 'flex';
-                console.log("Form shown for logged-in user");
-            }
+        document.addEventListener('DOMContentLoaded', function () {
+            var f = document.getElementById('checkoutForm');
+            if (f) f.style.display = 'flex';
         });
     </script>
 }
@@ -22,7 +16,6 @@
 <div class="container py-5">
     <h2 class="mb-4"><i class="bi bi-credit-card me-2"></i>Checkout</h2>
 
-    @* Validation Summary *@
     @if (!ViewData.ModelState.IsValid)
     {
         <div class="alert alert-danger">
@@ -36,7 +29,6 @@
         </div>
     }
 
-    @* Checkout Mode Selection - Only show for guests *@
     @if (!User.Identity.IsAuthenticated)
     {
         <div class="row mb-4" id="checkoutModeSelection">
@@ -45,20 +37,15 @@
                     <div class="card-body text-center">
                         <h5 class="card-title"><i class="bi bi-person-check me-2"></i>Choose How to Checkout</h5>
                         <p class="card-text text-muted">You can complete your order as a guest or login for a faster experience.</p>
-
                         <div class="d-flex flex-wrap justify-content-center gap-3">
-                            <!-- Guest Checkout Button -->
                             <button type="button" class="btn btn-outline-primary btn-lg" onclick="showGuestForm()">
                                 <i class="bi bi-person me-2"></i>Continue as Guest
                             </button>
-
-                            <!-- Login Button -->
                             <a asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="/Checkout" class="btn btn-primary btn-lg">
                                 <i class="bi bi-box-arrow-in-right me-2"></i>Login for Faster Checkout
                             </a>
                         </div>
-
-                        <div class="mt-3 text-start" style="max-width: 500px; margin: 0 auto;">
+                        <div class="mt-3 text-start" style="max-width:500px;margin:0 auto;">
                             <h6 class="text-primary">Benefits of logging in:</h6>
                             <ul class="small text-muted mb-0">
                                 <li>✓ Track your order status easily</li>
@@ -73,11 +60,11 @@
         </div>
     }
 
-    @* Main Checkout Form - Hidden for guests until they choose *@
-    <div class="row" id="checkoutForm" style="@(User?.Identity?.IsAuthenticated == true ? "" : "display: none;")">
+    <div class="row" id="checkoutForm" style="@(User?.Identity?.IsAuthenticated == true ? "" : "display:none;")">
         <form asp-action="Index" method="post" enctype="multipart/form-data">
-            <!-- Customer Information -->
             <div class="col-lg-8">
+
+                @* ── Customer Info ──────────────────────────────────────────── *@
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-primary text-white">
                         <h5 class="mb-0"><i class="bi bi-person me-2"></i>Customer Information</h5>
@@ -95,13 +82,11 @@
                                 <span asp-validation-for="LastName" class="text-danger"></span>
                             </div>
                         </div>
-
                         <div class="mb-3">
                             <label asp-for="Email" class="form-label">Email Address <span class="text-danger">*</span></label>
                             <input asp-for="Email" class="form-control" placeholder="your.email@example.com" />
                             <span asp-validation-for="Email" class="text-danger"></span>
                         </div>
-
                         <div class="mb-3">
                             <label asp-for="PhoneNumber" class="form-label">Phone Number <span class="text-danger">*</span></label>
                             <input asp-for="PhoneNumber" class="form-control" placeholder="+94 XX XXX XXXX" />
@@ -110,7 +95,7 @@
                     </div>
                 </div>
 
-                @* Prescription Section - Show only if cart requires prescription *@
+                @* ── Prescription ────────────────────────────────────────────── *@
                 @if (Model.CartRequiresPrescription)
                 {
                     <div class="card shadow-sm mb-4 border-warning">
@@ -118,9 +103,7 @@
                             <h5 class="mb-0"><i class="bi bi-file-earmark-medical me-2"></i>Prescription Required</h5>
                         </div>
                         <div class="card-body">
-                            <p class="mb-3">Your order contains products that require a valid prescription. Please select one of the options below:</p>
-
-                            @* Option 1: Select Saved Prescription *@
+                            <p class="mb-3">Your order contains products that require a valid prescription.</p>
                             <div class="mb-4">
                                 <label class="form-label fw-bold">Option 1: Select Saved Prescription</label>
                                 @if (Model.UserPrescriptions != null && Model.UserPrescriptions.Count > 0)
@@ -134,9 +117,7 @@
                                             </option>
                                         }
                                     </select>
-                                    <small class="text-muted">
-                                        <a asp-controller="Prescriptions" asp-action="Index" target="_blank">Manage your prescriptions</a>
-                                    </small>
+                                    <small class="text-muted"><a asp-controller="Prescriptions" asp-action="Index" target="_blank">Manage your prescriptions</a></small>
                                 }
                                 else if (User.Identity?.IsAuthenticated == true)
                                 {
@@ -154,28 +135,21 @@
                                     </div>
                                 }
                             </div>
-
-                            <div class="text-center my-3">
-                                <span class="text-muted">— OR —</span>
-                            </div>
-
-                            @* Option 2: Upload Prescription *@
+                            <div class="text-center my-3"><span class="text-muted">— OR —</span></div>
                             <div class="mb-3">
                                 <label asp-for="UploadPrescriptionFile" class="form-label fw-bold">Option 2: Upload Prescription Now</label>
                                 <input asp-for="UploadPrescriptionFile" class="form-control" accept="image/*,.pdf" />
-                                <small class="text-muted">Upload a clear photo or PDF of your prescription (JPG, PNG, PDF)</small>
-                                <span asp-validation-for="UploadPrescriptionFile" class="text-danger"></span>
+                                <small class="text-muted">Upload a clear photo or PDF of your prescription</small>
                             </div>
-
                             <div class="alert alert-warning mb-0">
                                 <i class="bi bi-exclamation-triangle me-2"></i>
-                                <strong>Note:</strong> Orders with prescription products will be processed after we verify your prescription. You'll receive a confirmation email once verified.
+                                <strong>Note:</strong> Orders will be processed after prescription verification.
                             </div>
                         </div>
                     </div>
                 }
 
-                <!-- Billing Address -->
+                @* ── Billing Address ─────────────────────────────────────────── *@
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-primary text-white">
                         <h5 class="mb-0"><i class="bi bi-geo-alt me-2"></i>Billing Address</h5>
@@ -186,7 +160,6 @@
                             <textarea asp-for="Address" class="form-control" rows="2" placeholder="House no, Street name"></textarea>
                             <span asp-validation-for="Address" class="text-danger"></span>
                         </div>
-
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label asp-for="City" class="form-label">City <span class="text-danger">*</span></label>
@@ -199,7 +172,6 @@
                                 <span asp-validation-for="PostalCode" class="text-danger"></span>
                             </div>
                         </div>
-
                         <div class="mb-3">
                             <label asp-for="OrderNotes" class="form-label">Order Notes (Optional)</label>
                             <textarea asp-for="OrderNotes" class="form-control" rows="3" placeholder="Any special instructions..."></textarea>
@@ -208,18 +180,16 @@
                 </div>
             </div>
 
-            <!-- Order Summary -->
+            @* ── Order Summary + Payment ──────────────────────────────────── *@
             <div class="col-lg-4">
-                <div class="card shadow-sm sticky-top" style="top: 20px;">
+                <div class="card shadow-sm sticky-top" style="top:20px;">
                     <div class="card-header bg-success text-white">
                         <h5 class="mb-0"><i class="bi bi-cart-check me-2"></i>Order Summary</h5>
                     </div>
                     <div class="card-body">
-                        <h6 class="card-subtitle mb-3 text-muted">
-                            @Model.Cart.TotalItems item(s)
-                        </h6>
+                        <h6 class="card-subtitle mb-3 text-muted">@Model.Cart.TotalItems item(s)</h6>
 
-                        <div class="order-items mb-3" style="max-height: 300px; overflow-y: auto;">
+                        <div class="order-items mb-3" style="max-height:300px;overflow-y:auto;">
                             @foreach (var item in Model.Cart.Items)
                             {
                                 <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
@@ -238,7 +208,6 @@
                             <span>Subtotal:</span>
                             <strong>Rs. @Model.Cart.TotalPrice.ToString("0.00")</strong>
                         </div>
-
                         <div class="d-flex justify-content-between mb-3">
                             <span>Delivery:</span>
                             <strong class="text-success">FREE</strong>
@@ -248,10 +217,63 @@
 
                         <div class="d-flex justify-content-between mb-4">
                             <h5>Total:</h5>
-                            <h5 class="text-primary">Rs. @(Model.TotalAmount.ToString("0.00"))</h5>
+                            <h5 class="text-primary">Rs. @Model.TotalAmount.ToString("0.00")</h5>
                         </div>
 
-                        <button type="submit" class="btn btn-success btn-lg w-100 mb-2">
+                        @* ── Payment Method Selection ──────────────────────── *@
+                        <div class="mb-4">
+                            <p class="fw-bold small text-muted text-uppercase mb-2" style="letter-spacing:.5px;">
+                                <i class="bi bi-wallet2 me-1"></i>Payment Method
+                            </p>
+
+                            @if (Model.CodEnabled)
+                            {
+                                <div class="payment-option border rounded-3 p-3 mb-2 cursor-pointer @(Model.PaymentMethod == "COD" ? "border-success bg-light" : "")"
+                                     onclick="selectPayment('COD',this)" style="cursor:pointer;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input class="form-check-input mt-0" type="radio" name="PaymentMethod"
+                                               id="payCOD" value="COD"
+                                               @(Model.PaymentMethod == "COD" ? "checked" : "") />
+                                        <label class="form-check-label w-100 mb-0" for="payCOD" style="cursor:pointer;">
+                                            <strong><i class="bi bi-cash-stack me-1 text-success"></i>Cash on Delivery</strong>
+                                            <div class="text-muted small">Pay when your order arrives</div>
+                                        </label>
+                                    </div>
+                                </div>
+                            }
+
+                            @if (Model.PayHereEnabled)
+                            {
+                                <div class="payment-option border rounded-3 p-3 mb-2 cursor-pointer @(Model.PaymentMethod == "PayHere" ? "border-primary bg-light" : "")"
+                                     onclick="selectPayment('PayHere',this)" style="cursor:pointer;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input class="form-check-input mt-0" type="radio" name="PaymentMethod"
+                                               id="payPayHere" value="PayHere"
+                                               @(Model.PaymentMethod == "PayHere" ? "checked" : "") />
+                                        <label class="form-check-label w-100 mb-0" for="payPayHere" style="cursor:pointer;">
+                                            <strong><i class="bi bi-credit-card me-1 text-primary"></i>Pay Online</strong>
+                                            <div class="mt-1">
+                                                <img src="https://www.payhere.lk/downloads/images/payhere_short_banner.png"
+                                                     alt="PayHere" height="22" />
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            }
+
+                            @if (!Model.CodEnabled && !Model.PayHereEnabled)
+                            {
+                                <div class="alert alert-warning small py-2">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>
+                                    No payment methods available. Please contact us.
+                                </div>
+                            }
+
+                            <span asp-validation-for="PaymentMethod" class="text-danger small"></span>
+                        </div>
+
+                        <button type="submit" class="btn btn-success btn-lg w-100 mb-2"
+                                @(!Model.CodEnabled && !Model.PayHereEnabled ? "disabled" : "")>
                             <i class="bi bi-lock me-2"></i>Place Order
                         </button>
 
@@ -270,56 +292,52 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 
-    @if (User?.Identity?.IsAuthenticated != true)
-    {
-        <script>
-            function showGuestForm() {
-                var modeCard = document.getElementById('checkoutModeSelection');
-                if (modeCard) modeCard.style.display = 'none';
-
-                var checkoutForm = document.getElementById('checkoutForm');
-                if (checkoutForm) checkoutForm.style.display = 'flex';
-            }
-
-            // Show form if there are validation errors
-            @if (!ViewData.ModelState.IsValid)
-            {
-                    <text>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        showGuestForm();
-                    });
-                    </text>
-            }
-        </script>
-    }
-    else
-    {
-        <script>
-            // Auto-show form for logged-in users
-            document.addEventListener('DOMContentLoaded', function() {
-                var checkoutForm = document.getElementById('checkoutForm');
-                if (checkoutForm) {
-                    checkoutForm.style.display = 'flex';
-                    console.log("Form auto-shown for logged-in user");
-                }
+    <script>
+        // Highlight the selected payment option card
+        function selectPayment(method, card) {
+            document.querySelectorAll('.payment-option').forEach(function (el) {
+                el.classList.remove('border-success', 'border-primary', 'bg-light');
             });
-        </script>
-    }
+            var radio = card.querySelector('input[type=radio]');
+            if (radio) radio.checked = true;
 
-    @if (Model.CartRequiresPrescription)
-    {
-        <script>
-            document.querySelector('form').addEventListener('submit', function(e) {
-                var selectedPrescription = document.querySelector('[name="SelectedPrescriptionId"]').value;
-                var uploadedFile = document.querySelector('[name="UploadPrescriptionFile"]').value;
+            if (method === 'COD')
+                card.classList.add('border-success', 'bg-light');
+            else
+                card.classList.add('border-primary', 'bg-light');
+        }
 
-                // Check if either option is selected
-                if (!selectedPrescription && !uploadedFile) {
-                    e.preventDefault();
-                    alert('⚠️ Prescription Required: Please select a saved prescription OR upload a new one before placing your order.');
-                    return false;
+        @if (User?.Identity?.IsAuthenticated != true)
+        {
+                <text>
+                function showGuestForm() {
+                    var sel = document.getElementById('checkoutModeSelection');
+                    if (sel) sel.style.display = 'none';
+                    var form = document.getElementById('checkoutForm');
+                    if (form) form.style.display = 'flex';
                 }
-            });
-        </script>
-    }
+
+                @if (!ViewData.ModelState.IsValid)
+                {
+                        <text>
+                        document.addEventListener('DOMContentLoaded', function () { showGuestForm(); });
+                        </text>
+                }
+                </text>
+        }
+
+        @if (Model.CartRequiresPrescription)
+        {
+                <text>
+                document.querySelector('form').addEventListener('submit', function (e) {
+                    var rx  = document.querySelector('[name="SelectedPrescriptionId"]');
+                    var upf = document.querySelector('[name="UploadPrescriptionFile"]');
+                    if ((!rx || !rx.value) && (!upf || !upf.value)) {
+                        e.preventDefault();
+                        alert('⚠️ Prescription Required: Please select or upload a prescription before placing your order.');
+                    }
+                });
+                </text>
+        }
+    </script>
 }
