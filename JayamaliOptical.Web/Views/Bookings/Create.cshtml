@@ -1,4 +1,5 @@
 ﻿@model JayamaliOptical.Web.Models.ServiceBookingViewModel
+@using JayamaliOptical.Web.Services
 @{
     ViewData["Title"] = "Book Appointment";
     var services = ViewBag.Services as List<JayamaliOptical.Web.Models.Service>;
@@ -67,7 +68,7 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label asp-for="AppointmentDate" class="form-label">Preferred Date <span class="text-danger">*</span></label>
-                                <input asp-for="AppointmentDate" type="date" class="form-control" min="@DateTime.Now.AddDays(1).ToString("yyyy-MM-dd")" />
+                                <input asp-for="AppointmentDate" type="date" class="form-control" min="@TimeHelper.Now.AddDays(1).ToString("yyyy-MM-dd")" />
                                 <span asp-validation-for="AppointmentDate" class="text-danger"></span>
                                 <small class="text-muted">Earliest available: Tomorrow</small>
                             </div>

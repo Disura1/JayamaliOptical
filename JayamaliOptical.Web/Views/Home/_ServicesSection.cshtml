@@ -220,140 +220,132 @@
     </style>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Services section loaded!');
+        document.addEventListener('DOMContentLoaded', function () {
+            var serviceButtons = document.querySelectorAll('.service-btn');
+            var serviceContent = document.getElementById('serviceContent');
 
-            // Get all service buttons
-            const serviceButtons = document.querySelectorAll('.service-btn');
+            serviceButtons.forEach(function (button) {
+                button.addEventListener('click', function () {
+                    var serviceId = this.getAttribute('data-service-id');
 
-            serviceButtons.forEach(function(button) {
-                button.addEventListener('click', function() {
-                    const serviceId = this.getAttribute('data-service-id');
-                    const serviceName = this.getAttribute('data-service-name');
-
-                    console.log('Button clicked! Service ID:', serviceId, 'Name:', serviceName);
-
-                    // Update active button
-                    serviceButtons.forEach(function(btn) {
+                    // Update active button immediately
+                    serviceButtons.forEach(function (btn) {
                         btn.classList.remove('active');
                     });
                     this.classList.add('active');
 
-                    // Show loading state
-                    const serviceContent = document.getElementById('serviceContent');
-                    serviceContent.style.opacity = '0.5';
+                    // Show subtle loading — don't fully hide content
+                    serviceContent.style.opacity = '0.6';
+                    serviceContent.style.pointerEvents = 'none';
 
-                    // Fetch service details using fetch API
-                    fetch('/Home/GetServiceDetails?id=' + serviceId)
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
-                            }
+                    // Use absolute path to avoid routing issues on hosted environments
+                    var url = window.location.origin + '/Home/GetServiceDetails?id=' + serviceId;
+
+                    fetch(url)
+                        .then(function (response) {
+                            if (!response.ok) throw new Error('HTTP ' + response.status);
                             return response.json();
                         })
-                        .then(data => {
-                            console.log('Service data received:', data);
+                        .then(function (data) {
+                            // Update name
+                            document.getElementById('serviceName').textContent = data.name || '';
 
-                            // Update service image
-                            const imageContainer = document.getElementById('serviceImage');
+                            // Update image
+                            var imageContainer = document.getElementById('serviceImage');
                             if (data.imageUrl) {
-                                imageContainer.outerHTML = '<img id="serviceImage" src="' + data.imageUrl + '" alt="' + data.name + '" class="img-fluid rounded-3 shadow service-image fade-in" />';
+                                imageContainer.outerHTML =
+                                    '<img id="serviceImage" src="' + data.imageUrl + '" ' +
+                                    'alt="' + (data.name || '') + '" ' +
+                                    'class="img-fluid rounded-3 shadow service-image fade-in" />';
                             } else {
-                                imageContainer.outerHTML = '<div id="serviceImage" class="bg-secondary rounded-3 d-flex align-items-center justify-content-center service-placeholder fade-in" style="height: 400px;"><i class="fas fa-concierge-bell fa-5x text-white"></i></div>';
+                                imageContainer.outerHTML =
+                                    '<div id="serviceImage" class="bg-secondary rounded-3 ' +
+                                    'd-flex align-items-center justify-content-center ' +
+                                    'service-placeholder fade-in" style="height:300px;">' +
+                                    '<i class="fas fa-concierge-bell fa-5x text-white"></i></div>';
                             }
-
-                            // Update service name
-                            document.getElementById('serviceName').textContent = data.name;
 
                             // Update badge
-                            const badgeContainer = document.getElementById('serviceBadge');
-                            if (data.requiresAppointment) {
-                                badgeContainer.innerHTML = '<span class="badge bg-success mb-3 fade-in"><i class="fas fa-calendar-check me-1"></i> Appointment Required</span>';
-                            } else {
-                                badgeContainer.innerHTML = '<span class="badge bg-info mb-3 fade-in"><i class="fas fa-walking me-1"></i> Walk-in Available</span>';
-                            }
+                            var badgeContainer = document.getElementById('serviceBadge');
+                            badgeContainer.innerHTML = data.requiresAppointment
+                                ? '<span class="badge bg-success mb-3"><i class="fas fa-calendar-check me-1"></i> Appointment Required</span>'
+                                : '<span class="badge bg-info mb-3"><i class="fas fa-walking me-1"></i> Walk-in Available</span>';
 
                             // Update description
-                            document.getElementById('serviceDescription').textContent = data.description;
+                            document.getElementById('serviceDescription').textContent =
+                                data.description || '';
 
-                            // Update service info (price & duration)
-                            const infoContainer = document.getElementById('serviceInfo');
-                            let infoHtml = '';
-                            if (data.price || data.durationMinutes) {
-                                if (data.price) {
-                                    infoHtml += '<div class="d-flex align-items-center w-50 mb-md-3 p-md-3 bg-light rounded fade-in"><div class="me-3"><i class="fas fa-tag fa-2x text-primary"></i></div><div><h6 class="mb-0 text-muted">Price</h6><span class="fw-bold text-primary fs-5">Rs. ' + parseFloat(data.price).toFixed(2) + '</span></div></div>';
-                                }
-                                if (data.durationMinutes) {
-                                    infoHtml += '<div class="d-flex align-items-center w-50 mb-md-3 p-md-3 bg-light rounded fade-in"><div class="me-3"><i class="fas fa-clock fa-2x text-info"></i></div><div><h6 class="mb-0 text-muted">Duration</h6><span class="fw-bold text-info fs-5">' + data.durationMinutes + ' minutes</span></div></div>';
-                                }
+                            // Update info boxes
+                            var infoContainer = document.getElementById('serviceInfo');
+                            var infoHtml = '';
+                            if (data.price) {
+                                infoHtml +=
+                                    '<div class="d-flex align-items-center w-50 mb-3 p-3 bg-light rounded fade-in">' +
+                                    '<div class="me-3"><i class="fas fa-tag fa-2x text-primary"></i></div>' +
+                                    '<div><h6 class="mb-0 text-muted">Price</h6>' +
+                                    '<span class="fw-bold text-primary fs-5">Rs. ' +
+                                    parseFloat(data.price).toFixed(2) + '</span></div></div>';
+                            }
+                            if (data.durationMinutes) {
+                                infoHtml +=
+                                    '<div class="d-flex align-items-center w-50 mb-3 p-3 bg-light rounded fade-in">' +
+                                    '<div class="me-3"><i class="fas fa-clock fa-2x text-info"></i></div>' +
+                                    '<div><h6 class="mb-0 text-muted">Duration</h6>' +
+                                    '<span class="fw-bold text-info fs-5">' +
+                                    data.durationMinutes + ' minutes</span></div></div>';
                             }
                             infoContainer.innerHTML = infoHtml;
 
-                            // Update buttons
+                            // Update action buttons
                             var buttonsHtml = '';
-                            if (data.button1Text || data.button2Text || data.button3Text || data.requiresAppointment) {
-                                buttonsHtml = '<h5 class="mb-3">Take Action</h5><div class="d-flex flex-wrap gap-3">';
-                            
-                                // Booking Button (for services requiring appointment)
+                            if (data.requiresAppointment || data.button1Text ||
+                                data.button2Text || data.button3Text) {
+                                buttonsHtml = '<h5 class="mb-3">Take Action</h5>' +
+                                              '<div class="d-flex flex-wrap gap-3">';
                                 if (data.requiresAppointment) {
-                                    buttonsHtml += `
-                                        <a href="/Bookings/Create?serviceId=${data.id}" class="btn btn-success btn-md fade-in">
-                                            <i class="fas fa-calendar-plus me-2"></i>Book Appointment
-                                        </a>
-                                    `;
+                                    buttonsHtml +=
+                                        '<a href="/Bookings/Create?serviceId=' + data.id + '" ' +
+                                        'class="btn btn-success btn-lg fade-in">' +
+                                        '<i class="fas fa-calendar-plus me-2"></i>Book Appointment</a>';
                                 }
-                            
                                 if (data.button1Text) {
-                                    var icon1 = data.button1Class.includes('success') ? 'calendar-plus' :
-                                               data.button1Class.includes('info') ? 'info-circle' : 'arrow-right';
-                                    buttonsHtml += `
-                                        <a href="${data.button1Url}" class="btn ${data.button1Class} btn-md fade-in">
-                                            <i class="fas fa-${icon1} me-2"></i>${data.button1Text}
-                                        </a>
-                                    `;
+                                    var icon1 = (data.button1Class || '').includes('success')
+                                        ? 'calendar-plus' : 'arrow-right';
+                                    buttonsHtml +=
+                                        '<a href="' + (data.button1Url || '#') + '" ' +
+                                        'class="btn ' + (data.button1Class || 'btn-primary') +
+                                        ' btn-lg fade-in"><i class="fas fa-' + icon1 +
+                                        ' me-2"></i>' + data.button1Text + '</a>';
                                 }
-                            
                                 if (data.button2Text) {
-                                    var icon2 = data.button2Class.includes('info') ? 'phone' : 'arrow-right';
-                                    buttonsHtml += `
-                                        <a href="${data.button2Url}" class="btn ${data.button2Class} btn-md fade-in">
-                                            <i class="fas fa-${icon2} me-2"></i>${data.button2Text}
-                                        </a>
-                                    `;
+                                    buttonsHtml +=
+                                        '<a href="' + (data.button2Url || '#') + '" ' +
+                                        'class="btn ' + (data.button2Class || 'btn-info') +
+                                        ' btn-lg fade-in"><i class="fas fa-phone me-2"></i>' +
+                                        data.button2Text + '</a>';
                                 }
-                            
                                 if (data.button3Text) {
-                                    buttonsHtml += `
-                                        <a href="${data.button3Url}" class="btn ${data.button3Class} btn-md fade-in">
-                                            <i class="fas fa-arrow-right me-2"></i>${data.button3Text}
-                                        </a>
-                                    `;
+                                    buttonsHtml +=
+                                        '<a href="' + (data.button3Url || '#') + '" ' +
+                                        'class="btn ' + (data.button3Class || 'btn-warning') +
+                                        ' btn-lg fade-in"><i class="fas fa-info-circle me-2"></i>' +
+                                        data.button3Text + '</a>';
                                 }
-                            
                                 buttonsHtml += '</div>';
                             }
-                            $('#serviceButtons').html(buttonsHtml);
-
-                            // Remove loading state
-                            serviceContent.style.opacity = '1';
-
-                            // Remove animation classes after animation completes
-                            setTimeout(function() {
-                                const fadeElements = document.querySelectorAll('.fade-in');
-                                fadeElements.forEach(function(el) {
-                                    el.classList.remove('fade-in');
-                                });
-                            }, 500);
+                            document.getElementById('serviceButtons').innerHTML = buttonsHtml;
                         })
-                        .catch(error => {
-                            console.error('Error fetching service details:', error);
-                            alert('Error loading service details. Please try again.');
+                        .catch(function (error) {
+                            console.error('Service load error:', error);
+                            // Don't show alert — just restore the UI silently
+                        })
+                        .finally(function () {
+                            // Always restore — never leave stuck
                             serviceContent.style.opacity = '1';
+                            serviceContent.style.pointerEvents = '';
                         });
                 });
             });
-
-            console.log('Service buttons initialized:', serviceButtons.length);
         });
     </script>
 }

@@ -336,7 +336,7 @@
    Opens as overlay, never moves/pushes content
    ══════════════════════════════════════════════════════════ *@
         <div id="mobileNavOverlay" class="mobile-nav-overlay"></div>
-        <div id="mobileNavDrawer" class="mobile-nav-drawer">
+        <div id="mobileNavDrawer" class="mobile-nav-drawer h-100">
 
             @* Drawer header *@
             <div class="mobile-drawer-header">
@@ -471,12 +471,12 @@
                 </div>
             </div>
         </div>
-        <div class="bg-dark d-flex justify-content-around align-items-center text-white lh-sm" style="height: 30px; font-size: 0.8rem;">
+        <div class="lower-footer bg-dark d-flex justify-content-around align-items-center text-white lh-sm" style="height: 30px; font-size: 0.8rem;">
             <span>All copyrights reserved by Jayamali Optical - © 2026</span>
-            <span>Website Designed & Developed by 
-                <a href="https://www.linkedin.com/in/disura-sandaruwan-649a422b8/" target="_blank" class="text-white fw-bold text-decoration-none">Disura Sandaruwan</a>
+            <span class="dev-authority">Designed & Developed by 
+                <a href="https://www.linkedin.com/in/disura-sandaruwan-649a422b8/" target="_blank" class="developer text-white fw-bold text-decoration-none">Disura Sandaruwan</a>
                  & 
-                <a href="https://www.linkedin.com/in/s-s-m-chathuranganee-b26753317/" target="_blank" class="text-white fw-bold text-decoration-none">S. S. M. Chathuranganee</a>
+                <a href="https://www.linkedin.com/in/s-s-m-chathuranganee-b26753317/" target="_blank" class="developer text-white fw-bold text-decoration-none">S. S. M. Chathuranganee</a>
             </span>
         </div>
     </footer>
@@ -663,7 +663,8 @@
                     if (images.length === 0) {
                         imageHtml = '<div class="d-flex align-items-center justify-content-center bg-light" style="height:320px;"><i class="bi bi-eyeglasses" style="font-size:4rem;color:#ccc;"></i></div>';
                     } else if (images.length === 1) {
-                        imageHtml = '<img src="' + images[0] + '" class="img-fluid w-100" style="height:320px;object-fit:contain;background:#f8f9fa;padding:16px;" alt="' + p.name + '" />';
+                        // Change height:320px to a custom class like 'modal-product-img'
+                        imageHtml = '<img src="' + images[0] + '" class="img-fluid w-100 modal-product-img" style="object-fit:contain;background:#f8f9fa;padding:16px;" alt="' + p.name + '" />';
                     } else {
                         // Two images — Bootstrap carousel
                         imageHtml =

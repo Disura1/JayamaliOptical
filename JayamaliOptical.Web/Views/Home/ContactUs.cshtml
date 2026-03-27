@@ -1,4 +1,5 @@
 ﻿@using JayamaliOptical.Web.Models
+@using JayamaliOptical.Web.Services;
 @{
     ViewData["Title"] = "Contact Us";
     var s = ViewBag.Settings as SiteSettings ?? new SiteSettings();
@@ -306,7 +307,7 @@
                         var todayOpen = "";
                         var todayClose = "";
                         bool todayClosed = false;
-                        switch (DateTime.Now.DayOfWeek)
+                        switch (TimeHelper.Now.DayOfWeek)
                         {
                             case DayOfWeek.Monday: todayOpen = s.MonOpen; todayClose = s.MonClose; todayClosed = s.MonClosed; break;
                             case DayOfWeek.Tuesday: todayOpen = s.TueOpen; todayClose = s.TueClose; todayClosed = s.TueClosed; break;
@@ -458,7 +459,7 @@
                                 ("Sunday",          s.SunOpen, s.SunClose, s.SunClosed),
                                 ("Public Holidays", s.HolOpen, s.HolClose, s.HolClosed),
                                 };
-                    var todayName = DateTime.Now.DayOfWeek.ToString();
+                    var todayName = TimeHelper.Now.DayOfWeek.ToString();
                 }
                 @foreach (var (day, open, close, isClosed) in hourRows)
                 {

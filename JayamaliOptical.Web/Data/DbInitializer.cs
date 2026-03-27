@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using System.Linq;
-using System; // Added for Exception
+using System;
 
 namespace JayamaliOptical.Web.Data
 {
@@ -15,49 +15,42 @@ namespace JayamaliOptical.Web.Data
             RoleManager<IdentityRole> roleManager,
             IConfiguration configuration)
         {
-            // --- 1. SECURE ADMIN SEEDING ---
-
+            // 1. Ensure Admin role exists
             if (!await roleManager.RoleExistsAsync("Admin"))
-            {
                 await roleManager.CreateAsync(new IdentityRole("Admin"));
-            }
 
+            if (!await roleManager.RoleExistsAsync("Customer"))
+                await roleManager.CreateAsync(new IdentityRole("Customer"));
+
+            // 2. Seed admin user only if not already present
             var adminEmail = "jayamalioptical@gmail.com";
             var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
             if (adminUser == null)
             {
-                adminUser = new IdentityUser
-                {
-                    UserName = adminEmail,
-                    Email = adminEmail,
-                    EmailConfirmed = true
-                };
-
-                // FIX: Get password from Secrets/Config ONLY. No "TempAdmin@123" fallback here!
                 var adminPassword = configuration["AdminSettings:DefaultPassword"];
 
-                // SAFETY CHECK: If password is missing from your laptop's secrets, stop the app.
                 if (string.IsNullOrEmpty(adminPassword))
                 {
-                    throw new Exception("CRITICAL: AdminSettings:DefaultPassword is not set in User Secrets!");
+                    // Log warning but don't crash — admin can be created manually
+                    Console.WriteLine("WARNING: AdminSettings:DefaultPassword is not set. Admin user not created.");
                 }
-
-                var result = await userManager.CreateAsync(adminUser, adminPassword);
-
-                if (result.Succeeded)
+                else
                 {
-                    await userManager.AddToRoleAsync(adminUser, "Admin");
+                    adminUser = new IdentityUser
+                    {
+                        UserName = adminEmail,
+                        Email = adminEmail,
+                        EmailConfirmed = true
+                    };
+
+                    var result = await userManager.CreateAsync(adminUser, adminPassword);
+                    if (result.Succeeded)
+                        await userManager.AddToRoleAsync(adminUser, "Admin");
                 }
             }
 
-            // --- 2. YOUR ORIGINAL LOGIC (Remains exactly the same) ---
-
-            if (!await roleManager.RoleExistsAsync("Customer"))
-            {
-                await roleManager.CreateAsync(new IdentityRole("Customer"));
-            }
-
+            // 3. Seed categories
             if (!context.Categories.Any())
             {
                 context.Categories.AddRange(
@@ -69,6 +62,7 @@ namespace JayamaliOptical.Web.Data
                 await context.SaveChangesAsync();
             }
 
+            // 4. Seed services
             if (!context.Services.Any())
             {
                 context.Services.AddRange(

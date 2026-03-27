@@ -1,5 +1,6 @@
 ﻿using JayamaliOptical.Web.Data;
 using JayamaliOptical.Web.Models;
+using JayamaliOptical.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -246,7 +247,7 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
 
             string firstName, lastName, phoneNumber,
                    address = "", city = "", postalCode = "";
-            DateTime firstDate = DateTime.Now, lastDate = DateTime.Now;
+            DateTime firstDate = TimeHelper.Now, lastDate = TimeHelper.Now;
 
             if (orders.Any())
             {

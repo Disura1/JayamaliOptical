@@ -5,14 +5,21 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
+// ── Load config: appsettings.json → appsettings.{Environment}.json → env vars
+builder.Configuration
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables(); // SmarterASP.NET env vars override everything
 
-// Add database context
+// ── MVC + Razor Pages
+builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
+
+// ── Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ✅ Add Identity
+// ── Identity
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
@@ -27,7 +34,7 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-// Configure Identity Cookie Settings
+// ── Cookie settings
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.Name = "JayamaliOpticalAuth";
@@ -36,6 +43,8 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LogoutPath = "/Identity/Account/Logout";
     options.Cookie.HttpOnly = true;
     options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+    // Use Lax instead of Strict — Strict can break some redirect flows on shared hosts
+    options.Cookie.SameSite = SameSiteMode.Lax;
 
     options.Events.OnRedirectToLogout = context =>
     {
@@ -44,37 +53,50 @@ builder.Services.ConfigureApplicationCookie(options =>
     };
 });
 
-// Register Services
+// ── Session
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;  
-    options.Cookie.SameSite = SameSiteMode.Strict;   
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    // Don't force Always in production — SmarterASP.NET handles HTTPS at the load balancer
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
 });
 
+// ── App services
+builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
-// Bridge Identity's IEmailSender to our IEmailService
-// This fixes Forgot Password and other Identity email flows
 builder.Services.AddTransient<Microsoft.AspNetCore.Identity.UI.Services.IEmailSender,
     JayamaliOptical.Web.Services.IdentityEmailSender>();
 builder.Services.AddScoped<IPrescriptionService, PrescriptionService>();
 
+// ── Antiforgery (needed for our custom AccountController AJAX endpoint)
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "X-CSRF-TOKEN";
+});
+
+builder.Services.AddHsts(options =>
+{
+    options.MaxAge = TimeSpan.FromDays(365);
+    options.IncludeSubDomains = true;
+});
+
 var app = builder.Build();
 
-// Enable Session
+// ── Session must be before routing
 app.UseSession();
 
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
 }
 
+// Force HTTPS in all environments
+app.UseHsts();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
@@ -82,40 +104,37 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapStaticAssets();
-
 app.MapControllerRoute(
     name: "areas",
-    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}"
-);
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapRazorPages();
 
-// ✅ UPDATED: Create admin user on startup with Configuration support
+// ── Seed database on startup
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
     try
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
         var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+        var config = services.GetRequiredService<IConfiguration>();
 
-        // 1. Get the IConfiguration service
-        var configuration = services.GetRequiredService<IConfiguration>();
+        // Run pending migrations automatically on startup
+        await context.Database.MigrateAsync();
 
-        // 2. Pass the configuration into the Initialize method
-        await DbInitializer.Initialize(context, userManager, roleManager, configuration);
+        await DbInitializer.Initialize(context, userManager, roleManager, config);
+        logger.LogInformation("Database seeded successfully.");
     }
     catch (Exception ex)
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while seeding the database.");
+        logger.LogError(ex, "Database seed failed — app will continue but admin may not exist.");
     }
 }
 

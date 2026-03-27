@@ -114,7 +114,7 @@ namespace JayamaliOptical.Web.Services
                 existing.LeftEyeAdd = prescription.LeftEyeAdd;
                 existing.PupillaryDistance = prescription.PupillaryDistance;
                 existing.IsDefault = prescription.IsDefault;
-                existing.LastUsedDate = DateTime.Now;
+                existing.LastUsedDate = TimeHelper.Now;
 
                 // Handle file upload (optional - keep existing if no new file)
                 if (file != null && file.Length > 0)

@@ -182,3 +182,86 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Build a map of category name → id from server data
+    var categoryMap = {};
+    @foreach (var cat in (categories ?? new List<JayamaliOptical.Web.Models.Category>()))
+    {
+            <text>categoryMap['@cat.Name.ToLower()'] = '@cat.Id';</text>
+    }
+
+    function getCategoryName(id) {
+        for (var name in categoryMap) {
+            if (categoryMap[name] == id) return name;
+        }
+        return '';
+    }
+
+    function updatePhotoRequirements() {
+        var categoryId = document.getElementById('CategoryId')
+            ? document.getElementById('CategoryId').value
+            : '@selectedCategoryId';
+
+        var catName = getCategoryName(categoryId);
+        var isSpectacleOrSunglasses = catName === 'spectacle' || catName === 'sunglasses';
+        var isContactOrIOL = catName === 'contact lens' || catName === 'iol lens';
+
+        var photo2Group   = document.getElementById('photo2Group');
+        var photo2Input   = document.getElementById('ImageFile2');
+        var photo2Required= document.getElementById('photo2Required');
+        var productTypeRow= document.getElementById('productTypeRow');
+        var productTypeSelect = document.getElementById('ProductType');
+
+        if (isSpectacleOrSunglasses) {
+            photo2Group.style.display = 'block';
+            photo2Input.required = false; // optional second image
+            photo2Required.textContent = '(Optional)';
+            photo2Required.className = 'text-muted';
+            productTypeRow.style.display = 'block';
+            productTypeSelect.required = true;
+        } else if (categoryId && categoryId !== '') {
+            // All other categories — show second image as optional, hide product type
+            photo2Group.style.display = 'block';
+            photo2Input.required = false;
+            photo2Required.textContent = '(Optional)';
+            photo2Required.className = 'text-muted';
+            productTypeRow.style.display = 'none';
+            productTypeSelect.required = false;
+            productTypeSelect.value = '';
+        } else {
+            photo2Group.style.display = 'none';
+            photo2Input.required = false;
+            productTypeRow.style.display = 'none';
+            productTypeSelect.required = false;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var categoryId = '@selectedCategoryId';
+        if (categoryId && categoryId !== '') {
+            updatePhotoRequirements();
+        }
+
+        // Auto-check prescription
+        var categorySelect = document.getElementById('CategoryId');
+        var prescriptionCheckbox = document.getElementById('RequiresPrescription');
+
+        function updatePrescription() {
+            var id = categorySelect ? categorySelect.value : '@selectedCategoryId';
+            var name = getCategoryName(id);
+            prescriptionCheckbox.checked =
+                name === 'spectacle' || name === 'contact lens' || name === 'iol lens';
+        }
+
+        if (categorySelect) {
+            categorySelect.addEventListener('change', function () {
+                updatePhotoRequirements();
+                updatePrescription();
+            });
+            if (categorySelect.value) updatePrescription();
+        } else if ('@selectedCategoryId' !== '') {
+            updatePrescription();
+        }
+    });
+</script>

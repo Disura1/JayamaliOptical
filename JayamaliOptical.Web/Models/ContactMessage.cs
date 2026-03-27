@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using JayamaliOptical.Web.Services;
+using System.ComponentModel.DataAnnotations;
 
 namespace JayamaliOptical.Web.Models
 {
@@ -21,7 +22,7 @@ namespace JayamaliOptical.Web.Models
         [Required, StringLength(2000)]
         public string Message { get; set; } = string.Empty;
 
-        public DateTime SentAt { get; set; } = DateTime.Now;
+        public DateTime SentAt { get; set; } = TimeHelper.Now;
 
         public bool IsRead { get; set; } = false;
     }

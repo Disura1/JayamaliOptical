@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using JayamaliOptical.Web.Data;
+using JayamaliOptical.Web.Models;
+using JayamaliOptical.Web.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using JayamaliOptical.Web.Data;
-using JayamaliOptical.Web.Models;
 
 namespace JayamaliOptical.Web.Areas.Admin.Controllers
 {
@@ -75,9 +76,9 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
 
             order.Status = status;
             if (status == "Shipped" && order.ShippedDate == null)
-                order.ShippedDate = DateTime.Now;
+                order.ShippedDate = TimeHelper.Now;
             else if (status == "Delivered" && order.DeliveredDate == null)
-                order.DeliveredDate = DateTime.Now;
+                order.DeliveredDate = TimeHelper.Now;
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

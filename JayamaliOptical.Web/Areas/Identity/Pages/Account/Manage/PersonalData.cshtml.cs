@@ -1,11 +1,12 @@
 #nullable disable
-using System.Text;
-using System.Text.Json;
+using JayamaliOptical.Web.Data;
+using JayamaliOptical.Web.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using JayamaliOptical.Web.Data;
+using System.Text;
+using System.Text.Json;
 
 namespace JayamaliOptical.Web.Areas.Identity.Pages.Account.Manage
 {
@@ -94,7 +95,7 @@ namespace JayamaliOptical.Web.Areas.Identity.Pages.Account.Manage
                 WriteIndented = true
             });
 
-            var fileName = $"JayamaliOptical-PersonalData-{user.UserName}-{DateTime.Now:yyyyMMdd}.json";
+            var fileName = $"JayamaliOptical-PersonalData-{user.UserName}-{TimeHelper.Now:yyyyMMdd}.json";
             return File(Encoding.UTF8.GetBytes(json), "application/json", fileName);
         }
     }

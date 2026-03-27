@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using JayamaliOptical.Web.Services;
+using System.ComponentModel.DataAnnotations;
 
 namespace JayamaliOptical.Web.Models
 {
@@ -36,7 +37,7 @@ namespace JayamaliOptical.Web.Models
         public string PostalCode { get; set; } = string.Empty;
 
         // Metadata
-        public DateTime CreatedDate { get; set; } = DateTime.Now;
+        public DateTime CreatedDate { get; set; } = TimeHelper.Now;
         public DateTime? LastUsedDate { get; set; }
         public int UsageCount { get; set; } = 0;
 

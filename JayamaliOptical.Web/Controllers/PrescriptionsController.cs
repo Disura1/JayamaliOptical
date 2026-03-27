@@ -63,7 +63,7 @@ namespace JayamaliOptical.Web.Controllers
                     LeftEyeAdd = model.LeftEyeAdd,
                     PupillaryDistance = model.PupillaryDistance,
                     IsDefault = model.IsDefault,
-                    CreatedDate = DateTime.Now
+                    CreatedDate = TimeHelper.Now
                 };
 
                 var result = await _prescriptionService.CreatePrescriptionAsync(prescription, model.PrescriptionFile);

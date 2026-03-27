@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using JayamaliOptical.Web.Services;
+using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -52,7 +53,7 @@ namespace JayamaliOptical.Web.Models
 
         // Metadata
         public bool IsDefault { get; set; } = false;
-        public DateTime CreatedDate { get; set; } = DateTime.Now;
+        public DateTime CreatedDate { get; set; } = TimeHelper.Now;
         public DateTime? LastUsedDate { get; set; }
     }
 

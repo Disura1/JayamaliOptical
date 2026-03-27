@@ -1,4 +1,5 @@
 ﻿@model IEnumerable<JayamaliOptical.Web.Models.ServiceBooking>
+@using JayamaliOptical.Web.Services
 @{
     ViewData["Title"] = "Appointments";
     var statuses = ViewBag.Statuses as string[];
@@ -29,7 +30,7 @@
         <div class="small-box bg-info">
             <div class="inner"><h3>@ViewBag.TodayCount</h3><p>Today's Appointments</p></div>
             <div class="icon"><i class="fas fa-calendar-day"></i></div>
-            <a href="/Admin/Bookings?date=@DateTime.Today.ToString("yyyy-MM-dd")" class="small-box-footer">View <i class="fas fa-arrow-circle-right"></i></a>
+            <a href="/Admin/Bookings?date=@TimeHelper.Today.ToString("yyyy-MM-dd")" class="small-box-footer">View <i class="fas fa-arrow-circle-right"></i></a>
         </div>
     </div>
     <div class="col-md-3">
@@ -104,7 +105,7 @@
                 <tbody>
                     @foreach (var b in Model)
                     {
-                        var isToday = b.AppointmentDate.Date == DateTime.Today;
+                        var isToday = b.AppointmentDate.Date == TimeHelper.Today;
                         <tr class="@(isToday ? "table-info bg-opacity-25" : "")">
                             <td>
                                 <span class="fw-bold text-primary">@b.BookingNumber</span>
@@ -121,7 +122,7 @@
                             <td>
                                 <div class="fw-semibold">@b.AppointmentDate.ToString("dd MMM yyyy")</div>
                                 <small class="text-muted">
-                                    @DateTime.Today.Add(b.AppointmentTime).ToString("hh:mm tt")
+                                    @TimeHelper.Today.Add(b.AppointmentTime).ToString("hh:mm tt")
                                 </small>
                             </td>
                             <td>@b.PhoneNumber</td>

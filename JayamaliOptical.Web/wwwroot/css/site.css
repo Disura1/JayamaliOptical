@@ -1132,6 +1132,11 @@ html {
         transform: translateY(0);
     }
 
+/* Default Desktop Height */
+.modal-product-img {
+    height: 320px;
+}
+
 /*========================================================================
                    MOBILE RESPONSIVENESS — Full Site
    Breakpoints: 992px (tablet), 768px (large phone), 576px (small phone)
@@ -2228,6 +2233,16 @@ html {
     }
 }
 
+@media (max-width: 576px) {
+    .dev-authority {
+        font-size: 0.7rem;
+    }
+
+    .developer {
+        font-size: 0.8rem;
+    }
+}
+
 /* ── Products Page ── */
 @media (max-width: 768px) {
     .ProductsSec .btn-group {
@@ -2300,8 +2315,8 @@ html {
 /* ── Scroll to Top button — move left on mobile so it doesn't overlap ── */
 @media (max-width: 576px) {
     #scrollTopBtn {
-        bottom: 20px;
-        right: 20px;
+        bottom: 25px;
+        right: 25px;
         width: 42px;
         height: 42px;
         font-size: 1rem;
@@ -2319,6 +2334,48 @@ html {
         width: 100% !important;
         max-width: 100% !important;
         max-height: none !important;
+    }
+}
+
+/* Only affects screens smaller than 576px (Standard Mobile) */
+@media (max-width: 575.98px) {
+    #sharedProductModal .modal-dialog {
+        margin: 1rem; /* Adds space around the modal so it looks smaller */
+        max-width: calc(100% - 2rem);
+    }
+
+    /* Reduce the image height so it doesn't take up the whole screen */
+    #sharedProductModal img,
+    #sharedProductModal .carousel-item img {
+        height: 180px !important;
+    }
+
+    .modal-product-img {
+        height: 180px !important; /* Reduces the height on mobile */
+    }
+
+    /* Also limit the container height if needed */
+    #sharedProductModal .col-md-5 {
+        min-height: 180px !important;
+    }
+
+    /* Shrink the padding and font sizes for mobile density */
+    /*#sharedProductModal .modal-body {
+        padding: 0px !important;
+    }*/
+
+    #sharedProductModal h4 {
+        font-size: 1.1rem;
+    }
+
+    #sharedProductModal h3 {
+        font-size: 1.25rem !important;
+    }
+
+    /* Optional: Make the "Add to Cart" button smaller for mobile */
+    #sharedProductModal .btn-primary {
+        padding: 8px;
+        font-size: 0.9rem;
     }
 }
 

@@ -1,5 +1,6 @@
 ﻿using JayamaliOptical.Web.Data;
 using JayamaliOptical.Web.Models;
+using JayamaliOptical.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -81,7 +82,7 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
                 LogoPath = logoPath,
                 DisplayOrder = displayOrder,
                 IsActive = true,
-                CreatedDate = DateTime.Now
+                CreatedDate = TimeHelper.Now
             };
 
             _context.Brands.Add(brand);

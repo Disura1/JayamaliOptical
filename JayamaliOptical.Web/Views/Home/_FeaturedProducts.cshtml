@@ -3,18 +3,12 @@
     var products = ViewBag.FeaturedProducts as List<Product> ?? new List<Product>();
     if (!products.Any()) return;
 
-    // Split into rows of 4 for the 2-row slider
-    // Each "slide" = 1 row of up to 4 products
-    int perRow = 4;
-    var rows = new List<List<Product>>();
-    for (int i = 0; i < products.Count; i += perRow)
-        rows.Add(products.Skip(i).Take(perRow).ToList());
-
-    // Group rows into slides of 2 rows each
-    int rowsPerSlide = 2;
-    var slides = new List<List<List<Product>>>();
-    for (int i = 0; i < rows.Count; i += rowsPerSlide)
-        slides.Add(rows.Skip(i).Take(rowsPerSlide).ToList());
+    // On mobile show 2 per row, desktop 4 per row — but always max 2 rows = 8 per slide
+    // We build slides of 8 products each; CSS handles the grid columns responsively
+    int perSlide = 8;
+    var slides = new List<List<Product>>();
+    for (int i = 0; i < products.Count; i += perSlide)
+        slides.Add(products.Skip(i).Take(perSlide).ToList());
 }
 
 <section class="featured-section" id="featured-products">
@@ -27,118 +21,121 @@
             <p class="text-muted">Our most popular optical products, selected by our experts</p>
         </div>
 
-        @* Slider *@
-        <div id="featuredSlider" class="carousel slide" data-bs-ride="false">
+        <div class="featured-slider-wrapper">
 
-            <div class="carousel-inner">
+            @* Prev arrow *@
+            @if (slides.Count > 1)
+            {
+                <button class="fp-arrow fp-arrow-prev" id="fpPrev" aria-label="Previous">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+            }
+
+            @* Slides *@
+            <div id="fpTrack" class="fp-track">
                 @for (int s = 0; s < slides.Count; s++)
                 {
-                    <div class="carousel-item @(s == 0 ? "active" : "")">
-                        @foreach (var row in slides[s])
-                        {
-                            <div class="featured-grid mb-4">
-                                @foreach (var p in row)
-                                {
-                                    <div class="fp-card" onclick="openProductModal(@p.Id)" title="View @p.Name">
-
-                                        <div class="fp-star-badge">
-                                            <i class="bi bi-star-fill"></i> Featured
+                    <div class="fp-slide @(s == 0 ? "active" : "")">
+                        <div class="featured-grid">
+                            @foreach (var p in slides[s])
+                            {
+                                <div class="fp-card" onclick="openProductModal(@p.Id)"
+                                     title="View @p.Name">
+                                    <div class="fp-star-badge">
+                                        <i class="bi bi-star-fill"></i> Featured
+                                    </div>
+                                    @if (p.RequiresPrescription)
+                                    {
+                                        <div class="fp-rx-badge">
+                                            <i class="bi bi-file-earmark-medical me-1"></i>Rx
                                         </div>
-                                        @if (p.RequiresPrescription)
+                                    }
+                                    <div class="fp-img-wrap">
+                                        @if (!string.IsNullOrEmpty(p.ImageUrl1))
                                         {
-                                            <div class="fp-rx-badge">
-                                                <i class="bi bi-file-earmark-medical me-1"></i>Rx
+                                            <img src="@p.ImageUrl1" alt="@p.Name" loading="lazy" />
+                                        }
+                                        else
+                                        {
+                                            <div class="fp-no-img">
+                                                <i class="bi bi-eyeglasses"></i>
                                             </div>
                                         }
-
-                                        <div class="fp-img-wrap">
-                                            @if (!string.IsNullOrEmpty(p.ImageUrl1))
+                                        <div class="fp-overlay">
+                                            <button class="fp-overlay-btn">
+                                                <i class="bi bi-eye me-1"></i>Quick View
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="fp-body">
+                                        @if (p.Category != null)
+                                        {
+                                            <div class="fp-category">@p.Category?.Name</div>
+                                        }
+                                        <div class="fp-name">@p.Name</div>
+                                        @if (!string.IsNullOrEmpty(p.Brand))
+                                        {
+                                            <div class="fp-brand">
+                                                <i class="bi bi-tag me-1"></i>@p.Brand
+                                            </div>
+                                        }
+                                        <div class="fp-desc">@p.Description</div>
+                                        <div class="fp-footer">
+                                            @if (p.Price.HasValue)
                                             {
-                                                <img src="@p.ImageUrl1" alt="@p.Name" loading="lazy" />
+                                                <span class="fp-price">
+                                                    Rs. @p.Price.Value.ToString("0.00")
+                                                </span>
                                             }
                                             else
                                             {
-                                                <div class="fp-no-img">
-                                                    <i class="bi bi-eyeglasses"></i>
-                                                </div>
+                                                <span class="fp-price-na">Price on request</span>
                                             }
-                                            <div class="fp-overlay">
-                                                <button class="fp-overlay-btn">
-                                                    <i class="bi bi-eye me-1"></i>Quick View
+                                            <form action="/Cart/AddToCart" method="post"
+                                                  onclick="event.stopPropagation()">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="productId"
+                                                       value="@p.Id" />
+                                                <input type="hidden" name="quantity" value="1" />
+                                                <button type="submit" class="fp-cart-btn">
+                                                    <i class="bi bi-cart-plus"></i>Add
                                                 </button>
-                                            </div>
+                                            </form>
                                         </div>
-
-                                        <div class="fp-body">
-                                            @if (p.Category != null)
-                                            {
-                                                <div class="fp-category">@p.Category?.Name</div>
-                                            }
-                                            <div class="fp-name">@p.Name</div>
-                                            @if (!string.IsNullOrEmpty(p.Brand))
-                                            {
-                                                <div class="fp-brand"><i class="bi bi-tag me-1"></i>@p.Brand</div>
-                                            }
-                                            <div class="fp-desc">@p.Description</div>
-                                            <div class="fp-footer">
-                                                @if (p.Price.HasValue)
-                                                {
-                                                    <span class="fp-price">Rs. @p.Price.Value.ToString("0.00")</span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="fp-price-na">Price on request</span>
-                                                }
-                                                <form action="/Cart/AddToCart" method="post"
-                                                      onclick="event.stopPropagation()">
-                                                    @Html.AntiForgeryToken()
-                                                    <input type="hidden" name="productId" value="@p.Id" />
-                                                    <input type="hidden" name="quantity" value="1" />
-                                                    <button type="submit" class="fp-cart-btn">
-                                                        <i class="bi bi-cart-plus"></i>Add
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </div>
-
                                     </div>
-                                }
-                            </div>
-                        }
+                                </div>
+                            }
+                        </div>
                     </div>
                 }
             </div>
 
-            @* Only show controls if more than 1 slide *@
+            @* Next arrow *@
             @if (slides.Count > 1)
             {
-                @* Prev / Next arrows *@
-                <button class="carousel-control-prev featured-nav-btn" type="button"
-                        data-bs-target="#featuredSlider" data-bs-slide="prev">
-                    <span class="featured-nav-icon"><i class="bi bi-chevron-left"></i></span>
+                <button class="fp-arrow fp-arrow-next" id="fpNext" aria-label="Next">
+                    <i class="bi bi-chevron-right"></i>
                 </button>
-                <button class="carousel-control-next featured-nav-btn" type="button"
-                        data-bs-target="#featuredSlider" data-bs-slide="next">
-                    <span class="featured-nav-icon"><i class="bi bi-chevron-right"></i></span>
-                </button>
-
-                @* Dot indicators *@
-                <div class="featured-dots">
-                    @for (int d = 0; d < slides.Count; d++)
-                    {
-                        <button type="button"
-                                data-bs-target="#featuredSlider"
-                                data-bs-slide-to="@d"
-                                class="featured-dot @(d == 0 ? "active" : "")"
-                                aria-label="Slide @(d + 1)"></button>
-                    }
-                </div>
             }
-
         </div>
 
-        <div class="featured-cta">
-            <a href="/Products/Index" class="btn btn-outline-primary btn-lg rounded-pill px-5">
+        @* Dots *@
+        @if (slides.Count > 1)
+        {
+            <div class="featured-dots" id="fpDots">
+                @for (int d = 0; d < slides.Count; d++)
+                {
+                    <button type="button"
+                            class="featured-dot @(d == 0 ? "active" : "")"
+                            data-slide="@d"
+                            aria-label="Slide @(d + 1)"></button>
+                }
+            </div>
+        }
+
+        <div class="featured-cta mt-4">
+            <a href="/Products/Index"
+               class="btn btn-outline-primary btn-lg rounded-pill px-5">
                 <i class="bi bi-grid me-2"></i>View All Products
             </a>
         </div>
@@ -146,19 +143,129 @@
     </div>
 </section>
 
-@* Shared Product Modal — used by both Featured and Products page *@
-<div class="modal fade" id="sharedProductModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius:16px; overflow:hidden;">
-            <div class="modal-header border-0 pb-0 px-4 pt-4">
-                <h5 class="modal-title fw-bold" id="sharedModalTitle">Product Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-0" id="sharedModalContent">
-                <div class="text-center py-5">
-                    <div class="spinner-border text-primary"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<style>
+    /* Slider wrapper — positions arrows outside the track */
+    .featured-slider-wrapper {
+        position: relative;
+        padding: 0 52px;
+    }
+
+    /* Each slide is hidden by default */
+    .fp-slide {
+        display: none;
+    }
+
+        .fp-slide.active {
+            display: block;
+        }
+
+        /* Grid: 4 cols desktop, 2 cols mobile — max 2 rows = 8 cards per slide */
+        .fp-slide .featured-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+        }
+
+    @@media (max-width: 991px) {
+        .fp-slide .featured-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .featured-slider-wrapper {
+            padding: 0 44px;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .fp-slide .featured-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .featured-slider-wrapper {
+            padding: 0 36px;
+        }
+    }
+
+    /* Arrows — always visible with strong contrast */
+    .fp-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: 2px solid #1978bc;
+        background: white;
+        color: #1978bc;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 10;
+        box-shadow: 0 4px 14px rgba(25,120,188,0.25);
+        transition: all 0.2s;
+    }
+
+        .fp-arrow:hover {
+            background: #1978bc;
+            color: white;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+    .fp-arrow-prev {
+        left: 0;
+    }
+
+    .fp-arrow-next {
+        right: 0;
+    }
+</style>
+
+<script>
+    (function () {
+        var slides    = document.querySelectorAll('.fp-slide');
+        var dots      = document.querySelectorAll('#fpDots .featured-dot');
+        var prevBtn   = document.getElementById('fpPrev');
+        var nextBtn   = document.getElementById('fpNext');
+        var track     = document.getElementById('fpTrack');
+        var current   = 0;
+        var total     = slides.length;
+
+        if (total <= 1) return;
+
+        function goTo(n) {
+            slides[current].classList.remove('active');
+            if (dots[current]) dots[current].classList.remove('active');
+            current = (n + total) % total;
+            slides[current].classList.add('active');
+            if (dots[current]) dots[current].classList.add('active');
+        }
+
+        if (prevBtn) prevBtn.addEventListener('click', function () { goTo(current - 1); });
+        if (nextBtn) nextBtn.addEventListener('click', function () { goTo(current + 1); });
+
+        dots.forEach(function (dot) {
+            dot.addEventListener('click', function () {
+                goTo(parseInt(this.getAttribute('data-slide')));
+            });
+        });
+
+        // Touch swipe support
+        var touchStartX = 0;
+        if (track) {
+            track.addEventListener('touchstart', function (e) {
+                touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+
+            track.addEventListener('touchend', function (e) {
+                var diff = touchStartX - e.changedTouches[0].screenX;
+                if (Math.abs(diff) > 40) {
+                    goTo(diff > 0 ? current + 1 : current - 1);
+                }
+            }, { passive: true });
+        }
+    })();
+</script>

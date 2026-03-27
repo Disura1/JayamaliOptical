@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using JayamaliOptical.Web.Data;
+using JayamaliOptical.Web.Models;
+using JayamaliOptical.Web.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using JayamaliOptical.Web.Models;
-using JayamaliOptical.Web.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace JayamaliOptical.Web.Areas.Admin.Controllers
@@ -24,7 +25,7 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var today = DateTime.Today;
+            var today = TimeHelper.Today;
             var monthStart = new DateTime(today.Year, today.Month, 1);
 
             // ── Customer count — exactly mirrors CustomersController ───

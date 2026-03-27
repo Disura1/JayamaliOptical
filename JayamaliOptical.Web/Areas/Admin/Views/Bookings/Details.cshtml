@@ -1,4 +1,5 @@
 ﻿@model JayamaliOptical.Web.Models.ServiceBooking
+@using JayamaliOptical.Web.Services
 @{
     ViewData["Title"] = "Booking Details";
 }
@@ -47,7 +48,7 @@
                         <table class="table table-sm table-borderless">
                             <tr><th style="width:120px;">Service</th><td><strong>@Model.Service?.Name</strong></td></tr>
                             <tr><th>Date</th><td>@Model.AppointmentDate.ToString("dd MMMM yyyy")</td></tr>
-                            <tr><th>Time</th><td>@DateTime.Today.Add(Model.AppointmentTime).ToString("hh:mm tt")</td></tr>
+                            <tr><th>Time</th><td>@TimeHelper.Today.Add(Model.AppointmentTime).ToString("hh:mm tt")</td></tr>
                             <tr><th>Booked On</th><td>@Model.BookingDate.ToString("dd MMM yyyy, hh:mm tt")</td></tr>
                         </table>
                     </div>

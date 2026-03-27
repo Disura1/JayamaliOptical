@@ -1,4 +1,5 @@
 ﻿@model JayamaliOptical.Web.Models.DashboardViewModel
+@using JayamaliOptical.Web.Services
 @{
     ViewData["Title"] = "Dashboard";
 }
@@ -28,7 +29,7 @@
                 <small style="opacity:0.8;">@Model.UpcomingAppointments upcoming · @Model.PendingAppointments pending</small>
             </div>
             <div class="icon"><i class="fas fa-calendar-check"></i></div>
-            <a href="/Admin/Bookings?date=@DateTime.Today.ToString("yyyy-MM-dd")" class="small-box-footer" style="background:rgba(0,0,0,0.15);">
+            <a href="/Admin/Bookings?date=@TimeHelper.Today.ToString("yyyy-MM-dd")" class="small-box-footer" style="background:rgba(0,0,0,0.15);">
                 View Today <i class="fas fa-arrow-circle-right"></i>
             </a>
         </div>
@@ -211,7 +212,7 @@
                 {
                     @foreach (var b in Model.UpcomingBookings)
                     {
-                        var isToday = b.AppointmentDate.Date == DateTime.Today;
+                        var isToday = b.AppointmentDate.Date == TimeHelper.Today;
                         <div class="d-flex align-items-center px-3 py-2 border-bottom
                                             @(isToday ? "bg-success bg-opacity-10" : "")">
                             <div class="mr-3 text-center"
@@ -238,7 +239,7 @@
                                 </div>
                                 <div style="font-size:0.75rem; color:#444;">
                                     <span style="color:#000000; font-weight:600;">@b.Service?.Name</span>
-                                    <span style="color:#000000;"> · @DateTime.Today.Add(b.AppointmentTime).ToString("hh:mm tt")</span>
+                                    <span style="color:#000000;"> · @TimeHelper.Today.Add(b.AppointmentTime).ToString("hh:mm tt")</span>
                                 </div>
                             </div>
                             <a href="/Admin/Bookings/Details/@b.Id"

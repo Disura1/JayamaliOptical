@@ -1,13 +1,14 @@
 ﻿@model JayamaliOptical.Web.Models.ServiceBooking
 @using JayamaliOptical.Web.Models
 @using JayamaliOptical.Web.Data
+@using JayamaliOptical.Web.Services
 @using Microsoft.EntityFrameworkCore
 @inject ApplicationDbContext _db
 @{
     Layout = null;
     var settings = await _db.SiteSettings.FirstOrDefaultAsync() ?? new SiteSettings();
     var invoiceNumber = "INV-" + Model.BookingNumber.Replace("BKG-", "");
-    var completedDate = DateTime.Now;
+    var completedDate = TimeHelper.Now;
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -447,7 +448,7 @@
                         </div>
                         <div class="info-row">
                             <span class="info-lbl">Time</span>
-                            <span class="info-val">@DateTime.Today.Add(Model.AppointmentTime).ToString("hh:mm tt")</span>
+                            <span class="info-val">@TimeHelper.Today.Add(Model.AppointmentTime).ToString("hh:mm tt")</span>
                         </div>
                         <div class="info-row">
                             <span class="info-lbl">Status</span>

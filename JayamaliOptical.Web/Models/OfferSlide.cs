@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using JayamaliOptical.Web.Services;
+using System.ComponentModel.DataAnnotations;
 
 namespace JayamaliOptical.Web.Models
 {
@@ -17,6 +18,6 @@ namespace JayamaliOptical.Web.Models
 
         public int DisplayOrder { get; set; } = 0;
         public bool IsActive { get; set; } = true;
-        public DateTime CreatedDate { get; set; } = DateTime.Now;
+        public DateTime CreatedDate { get; set; } = TimeHelper.Now;
     }
 }

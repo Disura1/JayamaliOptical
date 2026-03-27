@@ -97,7 +97,7 @@ namespace JayamaliOptical.Web.Controllers
                 Email = email.Trim(),
                 Subject = subject?.Trim(),
                 Message = message.Trim(),
-                SentAt = DateTime.Now,
+                SentAt = TimeHelper.Now,
                 IsRead = false
             };
             _context.ContactMessages.Add(contact);
@@ -144,7 +144,7 @@ namespace JayamaliOptical.Web.Controllers
         {
             // Simple IP-based throttle — max 3 reviews per hour per IP
             var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "";
-            var oneHourAgo = DateTime.Now.AddHours(-1);
+            var oneHourAgo = TimeHelper.Now.AddHours(-1);
             var recentCount = await _context.Reviews
                 .CountAsync(r => r.SubmittedAt >= oneHourAgo);
             // You can store IP in Review model for stricter checking
@@ -170,7 +170,7 @@ namespace JayamaliOptical.Web.Controllers
                 ServiceType = serviceType?.Trim(),
                 IsApproved = false,
                 IsFeatured = false,
-                SubmittedAt = DateTime.Now
+                SubmittedAt = TimeHelper.Now,
             };
             _context.Reviews.Add(review);
             await _context.SaveChangesAsync();

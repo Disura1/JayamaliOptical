@@ -1,4 +1,5 @@
 ﻿@model JayamaliOptical.Web.Models.ServiceBooking
+@using JayamaliOptical.Web.Services
 @{
     ViewData["Title"] = "Booking Details";
 }
@@ -87,7 +88,7 @@
                                     <h6 class="mt-2 mb-1">Time</h6>
                                     @{
                                         var timeSpan = new TimeSpan(Model.AppointmentTime.Hours, Model.AppointmentTime.Minutes, 0);
-                                        var dateTime = DateTime.Today.Add(timeSpan);
+                                        var dateTime = TimeHelper.Today.Add(timeSpan);
                                         var formattedTime = dateTime.ToString("hh:mm tt");
                                     }
                                     <p class="mb-0 fw-bold">@formattedTime</p>

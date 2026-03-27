@@ -86,7 +86,7 @@ namespace JayamaliOptical.Web.Controllers
                     AppointmentDate = model.AppointmentDate.Date,
                     AppointmentTime = appointmentTime,
                     Notes = model.Notes,
-                    BookingDate = DateTime.Now,
+                    BookingDate = TimeHelper.Now,
                     Status = "Pending",
                     UserId = User.FindFirstValue(ClaimTypes.NameIdentifier)  // ← ADD THIS
                 };
@@ -163,7 +163,7 @@ namespace JayamaliOptical.Web.Controllers
         // Generate unique booking number
         private string GenerateBookingNumber()
         {
-            return "BKG-" + DateTime.Now.ToString("yyyyMMddHHmmss") + "-" + new Random().Next(1000, 9999);
+            return "BKG-" + TimeHelper.Now.ToString("yyyyMMddHHmmss") + "-" + new Random().Next(1000, 9999);
         }
     }
 }

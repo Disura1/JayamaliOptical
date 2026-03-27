@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using JayamaliOptical.Web.Services;
+using System.ComponentModel.DataAnnotations;
 
 namespace JayamaliOptical.Web.Models
 {
@@ -54,7 +55,7 @@ namespace JayamaliOptical.Web.Models
 
         public bool IsOpenNow()
         {
-            var now = DateTime.Now;
+            var now = TimeHelper.Now;
             string open = string.Empty, close = string.Empty;
             bool closed = false;
 

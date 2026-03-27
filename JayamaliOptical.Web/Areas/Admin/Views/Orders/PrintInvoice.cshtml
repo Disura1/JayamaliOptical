@@ -1,4 +1,5 @@
 ﻿@model JayamaliOptical.Web.Models.Order
+@using JayamaliOptical.Web.Services
 @{
     Layout = null;
     bool hasSavedRx = Model.Prescription != null;
@@ -196,7 +197,7 @@
 
     <div class="row mt-4 pt-3 border-top">
         <div class="col-6">
-            <p class="text-muted small mb-0">Printed: @DateTime.Now.ToString("dd MMM yyyy, hh:mm tt")</p>
+            <p class="text-muted small mb-0">Printed: @TimeHelper.Now.ToString("dd MMM yyyy, hh:mm tt")</p>
         </div>
         <div class="col-6 text-end">
             <p class="mb-0 fw-bold">Jayamali Optical — Shop Copy</p>

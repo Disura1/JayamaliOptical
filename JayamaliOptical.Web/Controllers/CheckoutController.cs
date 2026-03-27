@@ -123,7 +123,7 @@ namespace JayamaliOptical.Web.Controllers
                     if (prescription != null)
                     {
                         hasPrescription = true;
-                        prescription.LastUsedDate = DateTime.Now;
+                        prescription.LastUsedDate = TimeHelper.Now;
                         await _context.SaveChangesAsync();
                     }
                 }
@@ -164,7 +164,7 @@ namespace JayamaliOptical.Web.Controllers
                     PostalCode = model.PostalCode,
                     OrderNotes = model.OrderNotes,
                     TotalAmount = cart.TotalPrice,
-                    OrderDate = DateTime.Now,
+                    OrderDate = TimeHelper.Now,
                     Status = "Pending",
                     PaymentMethod = model.PaymentMethod,
                     PaymentStatus = model.PaymentMethod == "COD" ? "Pending" : "Awaiting",
@@ -372,7 +372,7 @@ namespace JayamaliOptical.Web.Controllers
                     profile.FirstName = model.FirstName; profile.LastName = model.LastName;
                     profile.PhoneNumber = model.PhoneNumber; profile.Address = model.Address;
                     profile.City = model.City; profile.PostalCode = model.PostalCode;
-                    profile.LastUsedDate = DateTime.Now; profile.UsageCount++;
+                    profile.LastUsedDate = TimeHelper.Now; profile.UsageCount++;
                     if (!string.IsNullOrEmpty(userId) && string.IsNullOrEmpty(profile.UserId))
                         profile.UserId = userId;
                 }
@@ -388,8 +388,8 @@ namespace JayamaliOptical.Web.Controllers
                         Address = model.Address,
                         City = model.City,
                         PostalCode = model.PostalCode,
-                        CreatedDate = DateTime.Now,
-                        LastUsedDate = DateTime.Now,
+                        CreatedDate = TimeHelper.Now,
+                        LastUsedDate = TimeHelper.Now,
                         UsageCount = 1,
                         IsDefault = true
                     });
@@ -403,7 +403,7 @@ namespace JayamaliOptical.Web.Controllers
         }
 
         private static string GenerateOrderNumber()
-            => "ORD-" + DateTime.Now.ToString("yyyyMMddHHmmss") + "-" + new Random().Next(1000, 9999);
+            => "ORD-" + TimeHelper.Now.ToString("yyyyMMddHHmmss") + "-" + new Random().Next(1000, 9999);
     }
 
     public static class StringExtensions

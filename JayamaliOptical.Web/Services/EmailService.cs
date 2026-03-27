@@ -235,7 +235,7 @@ namespace JayamaliOptical.Web.Services
                  + "<tr><td style='padding:8px 0;color:#666;'><strong>Customer</strong></td><td style='padding:8px 0;'>" + customerName + "</td></tr>"
                  + "<tr><td style='padding:8px 0;color:#666;'><strong>Email</strong></td><td style='padding:8px 0;'>" + customerEmail + "</td></tr>"
                  + "<tr><td style='padding:8px 0;color:#666;'><strong>Amount</strong></td><td style='padding:8px 0;font-weight:700;font-size:1.1rem;'>Rs. " + totalAmount.ToString("0.00") + "</td></tr>"
-                 + "<tr><td style='padding:8px 0;color:#666;'><strong>Time</strong></td><td style='padding:8px 0;'>" + DateTime.Now.ToString("dd MMM yyyy, hh:mm tt") + "</td></tr>"
+                 + "<tr><td style='padding:8px 0;color:#666;'><strong>Time</strong></td><td style='padding:8px 0;'>" + TimeHelper.Now.ToString("dd MMM yyyy, hh:mm tt") + "</td></tr>"
                  + "</table>"
                  + "<div style='margin-top:24px;text-align:center;'>"
                  + "<a href='/Admin/Orders' style='display:inline-block;background:#1978bc;color:white;padding:12px 32px;border-radius:50px;text-decoration:none;font-weight:700;'>View Order in Admin Panel</a>"
@@ -251,7 +251,7 @@ namespace JayamaliOptical.Web.Services
             string customerEmail, string serviceName,
             DateTime appointmentDate, TimeSpan appointmentTime)
         {
-            var formattedTime = DateTime.Today.Add(appointmentTime).ToString("hh:mm tt");
+            var formattedTime = TimeHelper.Today.Add(appointmentTime).ToString("hh:mm tt");
             return "<html><body style='font-family:Arial,sans-serif;color:#333;'>"
                  + "<div style='max-width:580px;margin:0 auto;border:1px solid #e0e0e0;border-radius:10px;overflow:hidden;'>"
                  + "<div style='background:linear-gradient(135deg,#28a745,#20c997);padding:22px 28px;color:white;'>"
@@ -296,7 +296,7 @@ namespace JayamaliOptical.Web.Services
 
         private static string BookingEmailBody(string customerName, string bookingNumber, string serviceName, DateTime appointmentDate, TimeSpan appointmentTime)
         {
-            var formattedTime = DateTime.Today.Add(appointmentTime).ToString("hh:mm tt");
+            var formattedTime = TimeHelper.Today.Add(appointmentTime).ToString("hh:mm tt");
             return "<html><body style='font-family:Arial,sans-serif;'>"
                  + "<h2 style='color:#28a745;'>Appointment Booked Successfully!</h2>"
                  + "<p>Dear " + customerName + ",</p>"
@@ -334,7 +334,7 @@ namespace JayamaliOptical.Web.Services
                  + escaped
                  + "</div>"
                  + "<hr style='border:none;border-top:1px solid #eee;margin:20px 0;'/>"
-                 + "<p style='color:#888;font-size:0.85rem;margin:0;'>Sent on " + DateTime.Now.ToString("dd MMM yyyy, hh:mm tt") + " via Jayamali Optical website</p>"
+                 + "<p style='color:#888;font-size:0.85rem;margin:0;'>Sent on " + TimeHelper.Now.ToString("dd MMM yyyy, hh:mm tt") + " via Jayamali Optical website</p>"
                  + "</div>"
                  + "<div style='background:#f8f9fa;padding:16px;text-align:center;'>"
                  + "<a href='mailto:" + email + "?subject=Re: " + subject + "' style='display:inline-block;background:#1978bc;color:white;padding:10px 28px;border-radius:50px;text-decoration:none;font-weight:600;'>Reply to " + name + "</a>"

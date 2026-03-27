@@ -180,93 +180,84 @@
 </div>
 
 <script>
+    // Build a map of category name → id from server data
+    var categoryMap = {};
+    @foreach (var cat in (categories ?? new List<JayamaliOptical.Web.Models.Category>()))
+    {
+            <text>categoryMap['@cat.Name.ToLower()'] = '@cat.Id';</text>
+    }
+
+    function getCategoryName(id) {
+        for (var name in categoryMap) {
+            if (categoryMap[name] == id) return name;
+        }
+        return '';
+    }
+
     function updatePhotoRequirements() {
-        var categoryId = document.getElementById('CategoryId') ? document.getElementById('CategoryId').value : '@selectedCategoryId';
-        var photo2Group = document.getElementById('photo2Group');
-        var photo2Input = document.getElementById('ImageFile2');
-        var photo2Required = document.getElementById('photo2Required');
-        var productTypeRow = document.getElementById('productTypeRow');
+        var categoryId = document.getElementById('CategoryId')
+            ? document.getElementById('CategoryId').value
+            : '@selectedCategoryId';
+
+        var catName = getCategoryName(categoryId);
+        var isSpectacleOrSunglasses = catName === 'spectacle' || catName === 'sunglasses';
+        var isContactOrIOL = catName === 'contact lens' || catName === 'iol lens';
+
+        var photo2Group   = document.getElementById('photo2Group');
+        var photo2Input   = document.getElementById('ImageFile2');
+        var photo2Required= document.getElementById('photo2Required');
+        var productTypeRow= document.getElementById('productTypeRow');
         var productTypeSelect = document.getElementById('ProductType');
 
-        // Categories: 5=Spectacle, 6=Sunglasses, 3=Contact Lens, 4=IOL Lens
-        if (categoryId == '5' || categoryId == '6') {
-            // Spectacle or Sunglasses - 2 photos required, show Product Type
-            if (photo2Group) {
-                photo2Group.style.display = 'block';
-                photo2Input.required = true;
-                photo2Required.textContent = '(Required)';
-                photo2Required.className = 'text-danger';
-            }
-
-            // Show Product Type dropdown
-            if (productTypeRow) {
-                productTypeRow.style.display = 'block';
-            }
-            if (productTypeSelect) {
-                productTypeSelect.required = true;
-            }
-        } else if (categoryId == '3' || categoryId == '4') {
-            // Contact Lens or IOL Lens - 1 photo required, hide Product Type
-            if (photo2Group) {
-                photo2Group.style.display = 'block';
-                photo2Input.required = false;
-                photo2Required.textContent = '(Optional)';
-                photo2Required.className = 'text-muted';
-            }
-
-            // Hide Product Type dropdown
-            if (productTypeRow) {
-                productTypeRow.style.display = 'none';
-            }
-            if (productTypeSelect) {
-                productTypeSelect.required = false;
-                productTypeSelect.value = '';
-            }
+        if (isSpectacleOrSunglasses) {
+            photo2Group.style.display = 'block';
+            photo2Input.required = false; // optional second image
+            photo2Required.textContent = '(Optional)';
+            photo2Required.className = 'text-muted';
+            productTypeRow.style.display = 'block';
+            productTypeSelect.required = true;
+        } else if (categoryId && categoryId !== '') {
+            // All other categories — show second image as optional, hide product type
+            photo2Group.style.display = 'block';
+            photo2Input.required = false;
+            photo2Required.textContent = '(Optional)';
+            photo2Required.className = 'text-muted';
+            productTypeRow.style.display = 'none';
+            productTypeSelect.required = false;
+            productTypeSelect.value = '';
         } else {
-            // No category selected or other category
-            if (photo2Group) {
-                photo2Group.style.display = 'none';
-                photo2Input.required = false;
-            }
-            if (productTypeRow) {
-                productTypeRow.style.display = 'none';
-            }
-            if (productTypeSelect) {
-                productTypeSelect.required = false;
-            }
+            photo2Group.style.display = 'none';
+            photo2Input.required = false;
+            productTypeRow.style.display = 'none';
+            productTypeSelect.required = false;
         }
     }
 
-    // Run on page load if category is pre-selected
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         var categoryId = '@selectedCategoryId';
         if (categoryId && categoryId !== '') {
             updatePhotoRequirements();
         }
-    });
 
-    // Auto-check "Requires Prescription" for certain categories
-    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-check prescription
         var categorySelect = document.getElementById('CategoryId');
         var prescriptionCheckbox = document.getElementById('RequiresPrescription');
 
-        if (categorySelect && prescriptionCheckbox) {
-            function updatePrescriptionCheckbox() {
-                var categoryId = categorySelect.value;
-                // Auto-check for prescription-required categories
-                if (categoryId == '5' || categoryId == '3' || categoryId == '4') {
-                    prescriptionCheckbox.checked = true;
-                } else {
-                    prescriptionCheckbox.checked = false;
-                }
-            }
+        function updatePrescription() {
+            var id = categorySelect ? categorySelect.value : '@selectedCategoryId';
+            var name = getCategoryName(id);
+            prescriptionCheckbox.checked =
+                name === 'spectacle' || name === 'contact lens' || name === 'iol lens';
+        }
 
-            categorySelect.addEventListener('change', updatePrescriptionCheckbox);
-
-            // Run on page load if category is pre-selected
-            if (categorySelect.value) {
-                updatePrescriptionCheckbox();
-            }
+        if (categorySelect) {
+            categorySelect.addEventListener('change', function () {
+                updatePhotoRequirements();
+                updatePrescription();
+            });
+            if (categorySelect.value) updatePrescription();
+        } else if ('@selectedCategoryId' !== '') {
+            updatePrescription();
         }
     });
 </script>

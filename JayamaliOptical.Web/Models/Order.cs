@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using JayamaliOptical.Web.Services;
+using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -61,7 +62,7 @@ namespace JayamaliOptical.Web.Models
         [StringLength(100)]
         public string? PaymentReference { get; set; }
 
-        public DateTime OrderDate { get; set; } = DateTime.Now;
+        public DateTime OrderDate { get; set; } = TimeHelper.Now;
         public DateTime? ShippedDate { get; set; }
         public DateTime? DeliveredDate { get; set; }
 

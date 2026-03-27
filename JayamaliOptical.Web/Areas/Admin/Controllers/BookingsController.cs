@@ -3,6 +3,7 @@ using JayamaliOptical.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using JayamaliOptical.Web.Services;
 
 namespace JayamaliOptical.Web.Areas.Admin.Controllers
 {
@@ -46,7 +47,10 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
 
             // Summary counts
             ViewBag.PendingCount = await _context.ServiceBookings.CountAsync(b => b.Status == "Pending");
-            ViewBag.TodayCount = await _context.ServiceBookings.CountAsync(b => b.AppointmentDate.Date == DateTime.Today);
+
+            var todaySriLanka = TimeHelper.Today;
+            ViewBag.TodayCount = await _context.ServiceBookings.CountAsync(b => b.AppointmentDate.Date == todaySriLanka);
+
             ViewBag.ConfirmedCount = await _context.ServiceBookings.CountAsync(b => b.Status == "Confirmed");
 
             return View(paged);
