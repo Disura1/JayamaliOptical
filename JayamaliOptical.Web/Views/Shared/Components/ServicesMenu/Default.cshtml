@@ -1,0 +1,26 @@
+﻿@model IEnumerable<JayamaliOptical.Web.Models.Service>
+
+@if (Model != null && Model.Any())
+{
+    @foreach (var service in Model)
+    {
+        <li>
+            <a class="dropdown-item service-nav-link"
+               href="#"
+               data-service-id="@service.Id"
+               data-service-name="@service.Name">
+                <i class="fas fa-eye me-2 text-primary"></i>@service.Name
+            </a>
+        </li>
+    }
+    <li><hr class="dropdown-divider"></li>
+    <li>
+        <a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="Index" asp-fragment="services">
+            <i class="fas fa-th-list me-2"></i>All Services
+        </a>
+    </li>
+}
+else
+{
+    <li><span class="dropdown-item text-muted">No services available</span></li>
+}

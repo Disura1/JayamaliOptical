@@ -1,0 +1,285 @@
+﻿@model JayamaliOptical.Web.Models.CustomerDetailViewModel
+@{
+    ViewData["Title"] = "Customer Profile";
+}
+
+<div class="row">
+    @* Left Column — Profile Card *@
+    <div class="col-md-4">
+        <div class="card card-primary card-outline">
+            <div class="card-body text-center pt-4">
+                <div class="rounded-circle d-inline-flex align-items-center justify-content-center text-white fw-bold mb-3"
+                     style="width:80px;height:80px;font-size:2rem;
+                            background:@(Model.IsRegistered ? "#0d6efd" : "#6c757d");">
+                    @(Model.FirstName.Length > 0 ? Model.FirstName[0].ToString().ToUpper() : "?")@(Model.LastName.Length > 0 ? Model.LastName[0].ToString().ToUpper() : "?")
+                </div>
+                <h4 class="mb-0">@Model.FirstName @Model.LastName</h4>
+                <p class="text-muted mb-2">@Model.Email</p>
+                @if (Model.IsRegistered)
+                {
+                    <span class="badge bg-success mb-3"><i class="fas fa-user-check mr-1"></i>Registered Account</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary mb-3"><i class="fas fa-user mr-1"></i>Guest Customer</span>
+                }
+
+                <div class="row text-center border-top pt-3 mt-2">
+                    <div class="col-3">
+                        <div class="fw-bold text-primary fs-5">@Model.Orders.Count</div>
+                        <small class="text-muted">Orders</small>
+                    </div>
+                    <div class="col-3">
+                        <div class="fw-bold text-info fs-5">@Model.Bookings.Count</div>
+                        <small class="text-muted">Bookings</small>
+                    </div>
+                    <div class="col-3">
+                        <div class="fw-bold text-success" style="font-size:0.85rem;">Rs.@Model.TotalSpent.ToString("0")</div>
+                        <small class="text-muted">Spent</small>
+                    </div>
+                    <div class="col-3">
+                        <div class="fw-bold text-warning fs-5">@Model.Prescriptions.Count</div>
+                        <small class="text-muted">Rx</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* Contact Info *@
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="fas fa-address-card mr-2"></i>Contact Info</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm table-borderless mb-0">
+                    <tr>
+                        <td class="text-muted" width="30"><i class="fas fa-envelope"></i></td>
+                        <td><small>@Model.Email</small></td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted"><i class="fas fa-phone"></i></td>
+                        <td>@Model.PhoneNumber</td>
+                    </tr>
+                    @if (!string.IsNullOrEmpty(Model.Address))
+                    {
+                        <tr>
+                            <td class="text-muted"><i class="fas fa-map-marker-alt"></i></td>
+                            <td>@Model.Address<br />@Model.City @Model.PostalCode</td>
+                        </tr>
+                    }
+                    <tr>
+                        <td class="text-muted"><i class="fas fa-calendar-plus"></i></td>
+                        <td><small>Since @Model.FirstOrderDate.ToString("dd MMM yyyy")</small></td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted"><i class="fas fa-calendar-check"></i></td>
+                        <td><small>Last seen @Model.LastOrderDate.ToString("dd MMM yyyy")</small></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        @* Saved Prescriptions *@
+        @if (Model.Prescriptions.Any())
+        {
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="card-title mb-0"><i class="fas fa-file-medical me-2"></i>Saved Prescriptions (@Model.Prescriptions.Count)</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        @foreach (var rx in Model.Prescriptions)
+                        {
+                            <li class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <div class="fw-bold">
+                                            @rx.Name
+                                            @if (rx.IsDefault)
+                                            {
+                                                <span class="badge bg-primary ms-1">Default</span>
+                                            }
+                                        </div>
+                                        <small class="text-muted">Added @rx.CreatedDate.ToString("dd MMM yyyy")</small>
+                                        @if (!string.IsNullOrEmpty(rx.RightEyeSphere))
+                                        {
+                                            <div class="text-muted" style="font-size:0.75rem;">
+                                                OD: @rx.RightEyeSphere / @rx.RightEyeCylinder &nbsp;|&nbsp;
+                                                OS: @rx.LeftEyeSphere / @rx.LeftEyeCylinder
+                                            </div>
+                                        }
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(rx.FilePath))
+                                    {
+                                        <a href="@rx.FilePath" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    }
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        }
+
+        <a href="/Admin/Customers" class="btn btn-outline-secondary w-100 mb-3">
+            <i class="fas fa-arrow-left mr-1"></i>Back to Customers
+        </a>
+    </div>
+
+    @* Right Column — Tabs for Orders & Bookings *@
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header p-0 border-bottom-0">
+                <ul class="nav nav-tabs" id="customerTabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="orders-tab" data-bs-toggle="tab" href="#orders" role="tab">
+                            <i class="fas fa-shopping-bag mr-1"></i>Orders
+                            <span class="badge bg-primary ml-1">@Model.Orders.Count</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="bookings-tab" data-bs-toggle="tab" href="#bookings" role="tab">
+                            <i class="fas fa-calendar-alt mr-1"></i>Appointments
+                            <span class="badge bg-info ml-1">@Model.Bookings.Count</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body p-0">
+                <div class="tab-content" id="customerTabContent">
+
+                    @* Orders Tab *@
+                    <div class="tab-pane fade show active" id="orders" role="tabpanel">
+                        @if (!Model.Orders.Any())
+                        {
+                            <div class="text-center py-4 text-muted">
+                                <i class="fas fa-shopping-bag fa-2x mb-2"></i>
+                                <p>No orders placed yet.</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <table class="table table-bordered table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Order #</th>
+                                        <th>Date</th>
+                                        <th>Items</th>
+                                        <th class="text-end">Amount</th>
+                                        <th class="text-center">Status</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var order in Model.Orders)
+                                    {
+                                        <tr>
+                                            <td><strong>@order.OrderNumber</strong></td>
+                                            <td><small>@order.OrderDate.ToString("dd MMM yyyy")</small></td>
+                                            <td>@order.OrderItems.Count item(s)</td>
+                                            <td class="text-end fw-bold">Rs. @order.TotalAmount.ToString("0.00")</td>
+                                            <td class="text-center">
+                                                @{
+                                                    var badge = order.Status switch
+                                                    {
+                                                                        "Pending" => "bg-warning",
+                                                                        "Confirmed" => "bg-info",
+                                                                        "Processing" => "bg-primary",
+                                                                        "Shipped" => "bg-success",
+                                                                        "Delivered" => "bg-success",
+                                                                        "Cancelled" => "bg-danger",
+                                                        _ => "bg-secondary"
+                                                    };
+                                                }
+                                                <span class="badge @badge">@order.Status</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <a href="/Admin/Orders/Details/@order.Id" class="btn btn-info btn-sm">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot class="table-light">
+                                    <tr>
+                                        <th colspan="3" class="text-end">Total Spent:</th>
+                                        <th class="text-end text-success">Rs. @Model.TotalSpent.ToString("0.00")</th>
+                                        <th colspan="2"></th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        }
+                    </div>
+
+                    @* Bookings Tab *@
+                    <div class="tab-pane fade" id="bookings" role="tabpanel">
+                        @if (!Model.Bookings.Any())
+                        {
+                            <div class="text-center py-4 text-muted">
+                                <i class="fas fa-calendar-times fa-2x mb-2"></i>
+                                <p>No appointments booked yet.</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <table class="table table-bordered table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Booking #</th>
+                                        <th>Service</th>
+                                        <th>Appointment</th>
+                                        <th>Time</th>
+                                        <th class="text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var booking in Model.Bookings)
+                                    {
+                                        <tr>
+                                            <td><strong>@booking.BookingNumber</strong></td>
+                                            <td>@(booking.Service?.Name ?? "—")</td>
+                                            <td><small>@booking.AppointmentDate.ToString("dd MMM yyyy")</small></td>
+                                            <td><small>@booking.AppointmentTime.ToString(@"hh\:mm")</small></td>
+                                            <td class="text-center">
+                                                @{
+                                                    var bbadge = booking.Status switch
+                                                    {
+                                                                        "Pending" => "bg-warning",
+                                                                        "Confirmed" => "bg-success",
+                                                                        "Completed" => "bg-primary",
+                                                                        "Cancelled" => "bg-danger",
+                                                                        "NoShow" => "bg-secondary",
+                                                        _ => "bg-light text-dark"
+                                                    };
+                                                }
+                                                <span class="badge @bbadge">@booking.Status</span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Bootstrap tab activation
+        var triggerTabList = document.querySelectorAll('#customerTabs a');
+        triggerTabList.forEach(function(triggerEl) {
+            triggerEl.addEventListener('click', function(e) {
+                e.preventDefault();
+                var tab = new bootstrap.Tab(triggerEl);
+                tab.show();
+            });
+        });
+    </script>
+}

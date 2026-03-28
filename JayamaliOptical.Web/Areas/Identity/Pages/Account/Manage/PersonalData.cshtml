@@ -1,0 +1,80 @@
+﻿@page
+@model PersonalDataModel
+@{
+    ViewData["Title"] = "Personal Data";
+}
+
+<partial name="_StatusMessage" for="StatusMessage" />
+
+<div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card-header bg-transparent border-bottom px-4 pt-4 pb-3">
+        <h5 class="fw-bold mb-0">
+            <i class="bi bi-database me-2 text-primary"></i>Personal Data
+        </h5>
+        <p class="text-muted small mb-0 mt-1">Download or delete your personal data</p>
+    </div>
+    <div class="card-body px-4 py-4">
+
+        <div class="alert alert-info d-flex gap-3 align-items-start mb-4">
+            <i class="bi bi-info-circle-fill fs-5 mt-1 flex-shrink-0"></i>
+            <div>
+                Your account contains personal data that you have given us. This page allows you
+                to download or delete that data.
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="card border rounded-3 h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div style="width:48px;height:48px;background:#e8f5e9;border-radius:12px;
+                                        display:flex;align-items:center;justify-content:center;">
+                                <i class="bi bi-download text-success fs-5"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-0">Download Your Data</h6>
+                                <small class="text-muted">Get a copy of your personal data</small>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-3">
+                            Download a JSON file containing your profile, orders, and bookings data.
+                        </p>
+                        <form method="post" asp-page-handler="DownloadData">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-success rounded-pill px-4">
+                                <i class="bi bi-download me-2"></i>Download Data
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card border border-danger border-opacity-25 rounded-3 h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div style="width:48px;height:48px;background:#ffebee;border-radius:12px;
+                                        display:flex;align-items:center;justify-content:center;">
+                                <i class="bi bi-trash text-danger fs-5"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-0">Delete Account</h6>
+                                <small class="text-muted">Permanently remove your account</small>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-3">
+                            <strong class="text-danger">Warning:</strong> Deleting your account
+                            is permanent and cannot be undone. All your data will be removed.
+                        </p>
+                        <a asp-page="DeletePersonalData"
+                           class="btn btn-outline-danger rounded-pill px-4">
+                            <i class="bi bi-trash me-2"></i>Delete Account
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

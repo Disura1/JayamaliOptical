@@ -1,0 +1,368 @@
+﻿@model JayamaliOptical.Web.Models.SiteSettings
+@{
+    ViewData["Title"] = "Site Settings";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<form action="/Admin/SiteSettings/Save" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="row">
+        @* Left Column *@
+        <div class="col-md-6">
+
+            @* Contact Info *@
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-map-marker-alt mr-2"></i>Contact Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Address <small class="text-muted">(max 200 chars)</small></label>
+                        <textarea name="Address" class="form-control" rows="2" maxlength="200">@Model.Address</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Phone 1</label>
+                        <input name="Phone1" class="form-control" maxlength="20" value="@Model.Phone1" placeholder="077 653 7611" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Phone 2</label>
+                        <input name="Phone2" class="form-control" maxlength="20" value="@Model.Phone2" placeholder="076 730 3410" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Phone 3</label>
+                        <input name="Phone3" class="form-control" maxlength="20" value="@Model.Phone3" placeholder="032 226 6965" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Email</label>
+                        <input name="Email" class="form-control" maxlength="100" value="@Model.Email" placeholder="jayamalioptical@gmail.com" />
+                    </div>
+                </div>
+            </div>
+
+            @* Opening Hours *@
+            <div class="card mb-4">
+                <div class="card-header" style="background:linear-gradient(135deg,#1978bc,#26a4e0);">
+                    <h5 class="mb-0 text-white"><i class="fas fa-clock mr-2"></i>Opening Hours</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-bordered mb-0" style="font-size:0.92rem;">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width:130px;">Day</th>
+                                <th>Open</th>
+                                <th>Close</th>
+                                <th class="text-center" style="width:90px;">Closed</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                var days = new[]
+                                {
+                                                        ("Monday",         "MonOpen", "MonClose", "MonClosed", Model.MonOpen, Model.MonClose, Model.MonClosed),
+                                                        ("Tuesday",        "TueOpen", "TueClose", "TueClosed", Model.TueOpen, Model.TueClose, Model.TueClosed),
+                                                        ("Wednesday",      "WedOpen", "WedClose", "WedClosed", Model.WedOpen, Model.WedClose, Model.WedClosed),
+                                                        ("Thursday",       "ThuOpen", "ThuClose", "ThuClosed", Model.ThuOpen, Model.ThuClose, Model.ThuClosed),
+                                                        ("Friday",         "FriOpen", "FriClose", "FriClosed", Model.FriOpen, Model.FriClose, Model.FriClosed),
+                                                        ("Saturday",       "SatOpen", "SatClose", "SatClosed", Model.SatOpen, Model.SatClose, Model.SatClosed),
+                                                        ("Sunday",         "SunOpen", "SunClose", "SunClosed", Model.SunOpen, Model.SunClose, Model.SunClosed),
+                                                        ("Public Holidays","HolOpen", "HolClose", "HolClosed", Model.HolOpen, Model.HolClose, Model.HolClosed),
+                                                        };
+                            }
+                            @foreach (var (label, openName, closeName, closedName, openVal, closeVal, isClosed) in days)
+                            {
+                                <tr id="row-@openName" class="@(isClosed ? "table-danger" : "")">
+                                    <td class="fw-semibold align-middle">@label</td>
+                                    <td>
+                                        <input type="time" name="@openName" id="@openName" value="@openVal"
+                                               class="form-control form-control-sm @(isClosed ? "opacity-50" : "")" />
+                                    </td>
+                                    <td>
+                                        <input type="time" name="@closeName" id="@closeName" value="@closeVal"
+                                               class="form-control form-control-sm @(isClosed ? "opacity-50" : "")" />
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        <div class="form-check form-switch d-flex justify-content-center mb-0">
+                                            <input class="form-check-input" type="checkbox"
+                                                   name="@closedName" value="true"
+                                                   id="chk-@closedName"
+                                                   @(isClosed ? "checked" : "")
+                                                   onchange="toggleRow(this,'@openName','@closeName')" />
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer bg-light">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Toggle <strong>Closed</strong> to mark a day as closed.
+                    </small>
+                </div>
+            </div>
+
+            @* Social Media *@
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-share-alt mr-2"></i>Social Media Links</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold"><i class="fab fa-facebook text-primary mr-1"></i>Facebook URL</label>
+                        <input name="FacebookUrl" class="form-control" maxlength="300" value="@Model.FacebookUrl" placeholder="https://facebook.com/..." />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold"><i class="fab fa-whatsapp text-success mr-1"></i>WhatsApp URL</label>
+                        <input name="WhatsAppUrl" class="form-control" maxlength="300" value="@Model.WhatsAppUrl" placeholder="https://wa.me/94..." />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold"><i class="fab fa-tiktok mr-1"></i>TikTok URL</label>
+                        <input name="TikTokUrl" class="form-control" maxlength="300" value="@Model.TikTokUrl" placeholder="https://tiktok.com/@@..." />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold"><i class="fab fa-instagram text-danger mr-1"></i>Instagram URL</label>
+                        <input name="InstagramUrl" class="form-control" maxlength="300" value="@Model.InstagramUrl" placeholder="https://instagram.com/..." />
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        @* Right Column *@
+        <div class="col-md-6">
+
+            @* Vision *@
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-eye mr-2"></i>Vision Statement <small class="opacity-75">(max 1000 chars)</small></h5>
+                </div>
+                <div class="card-body">
+                    <textarea name="Vision" class="form-control" rows="4" maxlength="1000"
+                              oninput="updateCount(this,'visionCount')">@Model.Vision</textarea>
+                    <div class="text-end text-muted small mt-1">
+                        <span id="visionCount">@(Model.Vision?.Length ?? 0)</span>/1000
+                    </div>
+                </div>
+            </div>
+
+            @* Mission *@
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-bullseye mr-2"></i>Mission Statement <small class="opacity-75">(max 2000 chars)</small></h5>
+                </div>
+                <div class="card-body">
+                    <small class="text-muted d-block mb-2">First line = intro. Next lines = bullet points starting with "-".</small>
+                    <textarea name="Mission" class="form-control" rows="7" maxlength="2000"
+                              oninput="updateCount(this,'missionCount')">@Model.Mission</textarea>
+                    <div class="text-end text-muted small mt-1">
+                        <span id="missionCount">@(Model.Mission?.Length ?? 0)</span>/2000
+                    </div>
+                </div>
+            </div>
+
+            @* History *@
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-history mr-2"></i>Company History <small class="opacity-75">(max 3000 chars)</small></h5>
+                </div>
+                <div class="card-body">
+                    <small class="text-muted d-block mb-2">Each paragraph on a new line = separate timeline item.</small>
+                    <textarea name="History" class="form-control" rows="8" maxlength="3000"
+                              oninput="updateCount(this,'historyCount')">@Model.History</textarea>
+                    <div class="text-end text-muted small mt-1">
+                        <span id="historyCount">@(Model.History?.Length ?? 0)</span>/3000
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    @* Privacy Policy *@
+    <div class="card mb-4">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0"><i class="fas fa-shield-alt mr-2"></i>Privacy Policy <small class="opacity-75">(max 5000 chars)</small></h5>
+        </div>
+        <div class="card-body">
+            <small class="text-muted d-block mb-2">
+                Section headings: <code>Information We Collect</code>, <code>How We Use Your Information</code>,
+                <code>Information Protection</code>, <code>Patient Rights</code> — each on its own line. Bullets start with "-".
+            </small>
+            <textarea name="PrivacyPolicy" class="form-control" rows="14" maxlength="5000"
+                      oninput="updateCount(this,'privacyCount')">@Model.PrivacyPolicy</textarea>
+            <div class="text-end text-muted small mt-1">
+                <span id="privacyCount">@(Model.PrivacyPolicy?.Length ?? 0)</span>/5000
+            </div>
+        </div>
+    </div>
+
+    @* ── Payment Methods ──────────────────────────────────────────────────── *@
+    <div class="card mb-4">
+        <div class="card-header text-white" style="background:linear-gradient(135deg,#1a1a2e,#16213e);">
+            <h5 class="mb-0"><i class="bi bi-wallet2 me-2"></i>Payment Methods</h5>
+        </div>
+        <div class="card-body">
+
+            @* COD toggle *@
+            <div class="d-flex justify-content-between align-items-center p-3 border rounded-3 mb-3 @(Model.CodEnabled ? "border-success bg-light" : "")">
+                <div>
+                    <strong><i class="fas fa-money-bill-wave me-2 text-success"></i>Cash on Delivery (COD)</strong>
+                    <div class="text-muted small">Allow customers to pay when their order arrives at the door</div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span id="codLabel" class="badge @(Model.CodEnabled ? "bg-success" : "bg-secondary")">
+                        @(Model.CodEnabled ? "Enabled" : "Disabled")
+                    </span>
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" role="switch"
+                               name="CodEnabled" value="true" id="codToggle"
+                               @(Model.CodEnabled ? "checked" : "")
+                               style="width:2.6rem;height:1.4rem;cursor:pointer;"
+                               onchange="togglePayBadge(this,'codLabel','bg-success')" />
+                    </div>
+                </div>
+            </div>
+
+            @* PayHere toggle *@
+            <div class="d-flex justify-content-between align-items-center p-3 border rounded-3 mb-3 @(Model.PayHereEnabled ? "border-primary bg-light" : "")">
+                <div>
+                    <strong><i class="fas fa-credit-card me-2 text-primary"></i>PayHere Online Payment</strong>
+                    <div class="text-muted small">Accept cards, bank transfers &amp; more via PayHere</div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span id="payHereLabel" class="badge @(Model.PayHereEnabled ? "bg-primary" : "bg-secondary")">
+                        @(Model.PayHereEnabled ? "Enabled" : "Disabled")
+                    </span>
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" role="switch"
+                               name="PayHereEnabled" value="true" id="payHereToggle"
+                               @(Model.PayHereEnabled ? "checked" : "")
+                               style="width:2.6rem;height:1.4rem;cursor:pointer;"
+                               onchange="togglePayBadge(this,'payHereLabel','bg-primary'); togglePayHereConfig(this)" />
+                    </div>
+                </div>
+            </div>
+
+            @* PayHere credentials — shown only when enabled *@
+            <div id="payHereConfig" style="@(Model.PayHereEnabled ? "" : "display:none;")">
+                <hr />
+                <h6 class="text-muted mb-3"><i class="fas fa-key me-1"></i>PayHere Credentials</h6>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">Merchant ID</label>
+                        <input name="PayHereMerchantId" class="form-control" maxlength="100"
+                               value="@Model.PayHereMerchantId" placeholder="From your PayHere dashboard" />
+                        <small class="text-muted">Found at payhere.lk → Settings → API Credentials</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">Merchant Secret</label>
+                        <div class="input-group">
+                            <input name="PayHereMerchantSecret" class="form-control" type="password"
+                                   id="phSecret" maxlength="200"
+                                   value="@Model.PayHereMerchantSecret" placeholder="Keep this confidential!" />
+                            <button class="btn btn-outline-secondary" type="button"
+                                    onclick="toggleSecret()">
+                                <i class="fas fa-eye" id="secretEyeIcon"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted">Never shared with customers — used for hash verification only.</small>
+                    </div>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" name="PayHereSandbox" value="true"
+                           id="sandboxCheck" @(Model.PayHereSandbox ? "checked" : "") />
+                    <label class="form-check-label" for="sandboxCheck">
+                        <strong>Sandbox / Test Mode</strong>
+                        <span class="text-muted small ms-1">(Uncheck this only when you are ready to accept real payments)</span>
+                    </label>
+                </div>
+                <div class="alert alert-warning py-2 small mt-2">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    <strong>Notify URL</strong> for PayHere dashboard:
+                    <code>@($"https://yourdomain.com/Checkout/PayHereNotify")</code> — replace with your actual domain.
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="d-flex gap-3 mb-5">
+        <button type="submit" class="btn btn-primary btn-lg px-5 mr-3">
+            <i class="fas fa-save mr-2"></i>Save All Settings
+        </button>
+        <a href="/" target="_blank" class="btn btn-outline-secondary btn-lg">
+            <i class="fas fa-globe mr-2"></i>Preview Website
+        </a>
+    </div>
+</form>
+
+
+
+@section Scripts {
+    <script>
+        function toggleRow(checkbox, openId, closeId) {
+            var row = document.getElementById('row-' + openId);
+            var o = document.getElementById(openId);
+            var c = document.getElementById(closeId);
+            if (checkbox.checked) {
+                row.classList.add('table-danger');
+                o.classList.add('opacity-50');
+                c.classList.add('opacity-50');
+            } else {
+                row.classList.remove('table-danger');
+                o.classList.remove('opacity-50');
+                c.classList.remove('opacity-50');
+            }
+        }
+
+        function updateCount(el, countId) {
+            document.getElementById(countId).textContent = el.value.length;
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('textarea[maxlength]').forEach(function (ta) {
+                var m = ta.getAttribute('oninput')?.match(/updateCount\(this,'(\w+)'\)/);
+                if (m) document.getElementById(m[1]).textContent = ta.value.length;
+            });
+        });
+
+                function togglePayBadge(checkbox, labelId, activeClass) {
+            var label = document.getElementById(labelId);
+            label.className = 'badge ' + (checkbox.checked ? activeClass : 'bg-secondary');
+            label.textContent = checkbox.checked ? 'Enabled' : 'Disabled';
+        }
+
+        function togglePayHereConfig(checkbox) {
+            document.getElementById('payHereConfig').style.display = checkbox.checked ? 'block' : 'none';
+        }
+
+        function toggleSecret() {
+            var inp  = document.getElementById('phSecret');
+            var icon = document.getElementById('secretEyeIcon');
+            if (inp.type === 'password') {
+                inp.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                inp.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+    </script>
+}

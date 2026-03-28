@@ -1,0 +1,112 @@
+﻿@model JayamaliOptical.Web.Controllers.DashboardViewModel
+@{
+    ViewData["Title"] = "My Dashboard";
+}
+
+<div class="container py-5">
+    <h2 class="mb-4"><i class="bi bi-speedometer2 me-2"></i>My Dashboard</h2>
+
+    <div class="row">
+        <!-- Orders Section -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-bag me-2"></i>My Orders</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Orders.Any())
+                    {
+                        <div class="list-group">
+                            @foreach (var order in Model.Orders)
+                            {
+                                <a asp-action="OrderDetails" asp-route-id="@order.Id" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">@order.OrderNumber</h6>
+                                        <small>@order.OrderDate.ToString("dd MMM yyyy")</small>
+                                    </div>
+                                    <p class="mb-1">Total: Rs. @order.TotalAmount.ToString("0.00")</p>
+                                    <small>
+                                        @{
+                                            var badgeClass = order.Status switch
+                                            {
+                                                                "Pending" => "bg-warning",
+                                                                "Confirmed" => "bg-info",
+                                                                "Processing" => "bg-primary",
+                                                                "Shipped" => "bg-success",
+                                                                "Delivered" => "bg-success",
+                                                                "Cancelled" => "bg-danger",
+                                                _ => "bg-secondary"
+                                            };
+                                        }
+                                        <span class="badge @badgeClass">@order.Status</span>
+                                    </small>
+                                </a>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center mb-0">No orders yet.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Bookings Section -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-calendar-check me-2"></i>My Appointments</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Bookings.Any())
+                    {
+                        <div class="list-group">
+                            @foreach (var booking in Model.Bookings)
+                            {
+                                <a asp-action="BookingDetails" asp-route-id="@booking.Id" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">@booking.Service?.Name</h6>
+                                        <small>@booking.AppointmentDate.ToString("dd MMM yyyy")</small>
+                                    </div>
+                                    <p class="mb-1">Time: @booking.AppointmentTime.ToString("hh\\:mm")</p>
+                                    <small>
+                                        @{
+                                            var badgeClass = booking.Status switch
+                                            {
+                                                                "Pending" => "bg-warning",
+                                                                "Confirmed" => "bg-info",
+                                                                "Completed" => "bg-success",
+                                                                "Cancelled" => "bg-danger",
+                                                _ => "bg-secondary"
+                                            };
+                                        }
+                                        <span class="badge @badgeClass">@booking.Status</span>
+                                    </small>
+                                </a>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center mb-0">No appointments booked.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Prescriptions Section -->
+        <div class="col-lg-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-file-earmark-medical me-2"></i>My Prescriptions</h5>
+                </div>
+                <div class="card-body">
+                    <a asp-controller="Prescriptions" asp-action="Index" class="btn btn-info">
+                        <i class="bi bi-folder me-2"></i>Manage Prescriptions
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

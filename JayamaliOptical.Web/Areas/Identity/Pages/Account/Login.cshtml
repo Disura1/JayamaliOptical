@@ -1,0 +1,247 @@
+﻿@page
+@model LoginModel
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@{
+    ViewData["Title"] = "Log In";
+    Layout = "/Views/Shared/_AuthLayout.cshtml";
+}
+
+<h4 class="auth-title">Welcome Back!</h4>
+<p class="auth-subtitle">Sign in to your Jayamali Optical account</p>
+
+<partial name="_StatusMessage" for="@TempData["StatusMessage"]" />
+
+@if (TempData["ForgotPasswordSuccess"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show rounded-3 py-2 small" role="alert">
+        <i class="bi bi-check-circle me-1"></i> @TempData["ForgotPasswordSuccess"]
+        <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["ForgotPasswordError"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show rounded-3 py-2 small" role="alert">
+        <i class="bi bi-exclamation-circle me-1"></i> @TempData["ForgotPasswordError"]
+        <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<form id="account" method="post">
+    <div asp-validation-summary="ModelOnly"
+         class="alert alert-danger rounded-3 py-2 small" role="alert"></div>
+
+    <div class="form-floating mb-3">
+        <input asp-for="Input.Email" class="form-control"
+               placeholder="name@example.com"
+               autocomplete="email" />
+        <label asp-for="Input.Email">
+            <i class="bi bi-envelope me-1"></i>Email Address
+        </label>
+        <span asp-validation-for="Input.Email" class="text-danger small"></span>
+    </div>
+
+    <div class="form-floating mb-3 position-relative">
+        <input asp-for="Input.Password" class="form-control"
+               placeholder="Password" id="loginPassword"
+               autocomplete="current-password" />
+        <label asp-for="Input.Password">
+            <i class="bi bi-lock me-1"></i>Password
+        </label>
+        <button type="button"
+                class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-2 border-0 bg-transparent text-muted"
+                onclick="togglePassword('loginPassword', this)"
+                tabindex="-1">
+            <i class="bi bi-eye"></i>
+        </button>
+        <span asp-validation-for="Input.Password" class="text-danger small"></span>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="form-check">
+            <input class="form-check-input" asp-for="Input.RememberMe" />
+            <label class="form-check-label small" asp-for="Input.RememberMe">
+                Remember me
+            </label>
+        </div>
+        <a href="#" class="small text-primary text-decoration-none"
+           data-bs-toggle="modal" data-bs-target="#forgotPasswordModal">
+            Forgot password?
+        </a>
+    </div>
+
+    <div class="d-grid mb-2">
+        <button type="submit" class="btn btn-auth btn-lg">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+        </button>
+    </div>
+</form>
+
+<div class="auth-divider">or</div>
+
+<div class="auth-footer">
+    Don't have an account?
+    <a asp-page="./Register">Create one free</a>
+</div>
+
+@* ===== FORGOT PASSWORD MODAL ===== *@
+<div class="modal fade" id="forgotPasswordModal" tabindex="-1"
+     aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content"
+             style="border-radius:20px;overflow:hidden;border:none;box-shadow:0 20px 60px rgba(25,120,188,0.18);">
+
+            <div class="modal-header border-0 pb-0"
+                 style="background:linear-gradient(135deg,#1978bc 0%,#26a4e0 100%);padding:28px 32px 20px;">
+                <div>
+                    <h5 class="modal-title text-white mb-1" id="forgotPasswordModalLabel"
+                        style="font-size:1.25rem;font-weight:800;">
+                        <i class="bi bi-key me-2"></i>Reset Password
+                    </h5>
+                    <p class="text-white mb-0" style="font-size:0.82rem;opacity:0.85;">
+                        Enter your email and we will send you a reset link
+                    </p>
+                </div>
+                <button type="button" class="btn-close btn-close-white ms-auto"
+                        data-bs-dismiss="modal" aria-label="Close"
+                        style="margin-top:-4px;"></button>
+            </div>
+
+            <div class="modal-body px-4 py-4">
+                <div id="forgotPasswordMessage"></div>
+
+                <form id="forgotPasswordForm" method="post" action="/Account/ForgotPasswordAjax">
+                    <input name="__RequestVerificationToken" type="hidden"
+                           value="@Antiforgery.GetAndStoreTokens(HttpContext).RequestToken" />
+                    <div class="form-floating mb-4">
+                        <input type="email" id="fpEmail" name="email"
+                               class="form-control"
+                               placeholder="name@example.com"
+                               autocomplete="email" required
+                               style="border-radius:10px;border:1.5px solid #e2e8f0;font-size:0.93rem;" />
+                        <label for="fpEmail" style="font-size:0.88rem;color:#888;">
+                            <i class="bi bi-envelope me-1"></i>Email Address
+                        </label>
+                        <div class="invalid-feedback" id="fpEmailError"></div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" id="fpSubmitBtn"
+                                class="btn btn-lg text-white"
+                                style="background:linear-gradient(135deg,#1978bc,#26a4e0);
+                                       border:none;border-radius:50px;font-weight:700;
+                                       font-size:1rem;padding:13px;transition:opacity .2s,transform .2s;">
+                            <span id="fpBtnText">
+                                <i class="bi bi-send me-2"></i>Send Reset Link
+                            </span>
+                            <span id="fpBtnLoading" class="d-none">
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                Sending...
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer border-0 pt-0 pb-4 justify-content-center">
+                <small class="text-muted">
+                    <i class="bi bi-arrow-left me-1"></i>
+                    Remember your password?
+                    <a href="#" data-bs-dismiss="modal"
+                       class="text-primary text-decoration-none fw-bold">Back to Login</a>
+                </small>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function togglePassword(inputId, btn) {
+            var input = document.getElementById(inputId);
+            var icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'bi bi-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'bi bi-eye';
+            }
+        }
+
+        document.getElementById('forgotPasswordForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            var emailInput = document.getElementById('fpEmail');
+            var email      = emailInput.value.trim();
+            var msgDiv     = document.getElementById('forgotPasswordMessage');
+            var btnText    = document.getElementById('fpBtnText');
+            var btnLoading = document.getElementById('fpBtnLoading');
+            var submitBtn  = document.getElementById('fpSubmitBtn');
+            var errorDiv   = document.getElementById('fpEmailError');
+
+            if (!email) {
+                emailInput.classList.add('is-invalid');
+                errorDiv.textContent = 'Please enter your email address.';
+                return;
+            }
+
+            if (email.indexOf('\u0040') === -1) {
+                emailInput.classList.add('is-invalid');
+                errorDiv.textContent = 'Please enter a valid email address.';
+                return;
+            }
+
+            emailInput.classList.remove('is-invalid');
+            btnText.classList.add('d-none');
+            btnLoading.classList.remove('d-none');
+            submitBtn.disabled = true;
+            msgDiv.innerHTML   = '';
+
+            var formData = new FormData(document.getElementById('forgotPasswordForm'));
+
+            fetch('/Account/ForgotPasswordAjax', {
+                method: 'POST',
+                body: formData
+            })
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error('Server error ' + response.status);
+                }
+                return response.json();
+            })
+            .then(function (result) {
+                if (result.success) {
+                    msgDiv.innerHTML =
+                        '<div class="alert alert-success rounded-3 py-3 small mb-3" role="alert">' +
+                        '<i class="bi bi-check-circle-fill me-2"></i>' +
+                        '<strong>Email sent!</strong> If an account with that email exists, ' +
+                        'a password reset link has been sent. Please check your inbox ' +
+                        '<strong>and spam/junk folder</strong>.' +
+                        '</div>';
+                    emailInput.value = '';
+                } else {
+                    var msg = result.message ? result.message : 'Something went wrong. Please try again.';
+                    msgDiv.innerHTML =
+                        '<div class="alert alert-danger rounded-3 py-2 small mb-3" role="alert">' +
+                        '<i class="bi bi-exclamation-circle me-2"></i>' +
+                        msg +
+                        '</div>';
+                }
+            })
+            .catch(function () {
+                msgDiv.innerHTML =
+                    '<div class="alert alert-danger rounded-3 py-2 small mb-3" role="alert">' +
+                    '<i class="bi bi-exclamation-circle me-2"></i>' +
+                    'Something went wrong. Please try again later.' +
+                    '</div>';
+            })
+            .finally(function () {
+                btnText.classList.remove('d-none');
+                btnLoading.classList.add('d-none');
+                submitBtn.disabled = false;
+            });
+        });
+    </script>
+}

@@ -1,0 +1,117 @@
+﻿@model IEnumerable<JayamaliOptical.Web.Models.Service>
+@{
+    ViewData["Title"] = "Services";
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Service Management</h3>
+                <div class="card-tools">
+                    <a href="/Admin/Services/Create" class="btn btn-success btn-sm">
+                        <i class="fas fa-plus"></i> Add New Service
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Order</th>
+                            <th>Image</th>
+                            <th>Service Name</th>
+                            <th>Price</th>
+                            <th>Duration</th>
+                            <th>Appointment</th>
+                            <th>Buttons</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.DisplayOrder</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                    {
+                                        <img src="@item.ImageUrl" alt="@item.Name" class="img-thumbnail" style="max-height: 80px; max-width: 100px;" />
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">No image</span>
+                                    }
+                                </td>
+                                <td>@item.Name</td>
+                                <td>
+                                    @if (item.Price.HasValue)
+                                    {
+                                        <span>Rs. @item.Price.Value.ToString("0.00")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.DurationMinutes.HasValue)
+                                    {
+                                        <span>@item.DurationMinutes.Value min</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.RequiresAppointment)
+                                    {
+                                        <span class="badge badge-success">Required</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-secondary">Walk-in</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.Button1Text))
+                                    {
+                                        <span class="badge @item.Button1Class">@item.Button1Text</span>
+                                
+                                        <br />
+                                    }
+                                    @if (!string.IsNullOrEmpty(item.Button2Text))
+                                    {
+                                        <span class="badge @item.Button2Class">@item.Button2Text</span>
+                                
+                                        <br />
+                                    }
+                                    @if (!string.IsNullOrEmpty(item.Button3Text))
+                                    {
+                                        <span class="badge @item.Button3Class">@item.Button3Text</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.IsActive)
+                                    {
+                                        <span class="badge badge-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger">Inactive</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a href="/Admin/Services/Edit/@item.Id" class="btn btn-primary btn-sm">Edit</a>
+                                    <a href="/Admin/Services/Delete/@item.Id" class="btn btn-danger btn-sm">Delete</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

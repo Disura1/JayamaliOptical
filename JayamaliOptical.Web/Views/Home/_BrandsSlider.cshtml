@@ -1,0 +1,174 @@
+﻿@using JayamaliOptical.Web.Models
+@{
+    var brands = ViewBag.Brands as List<Brand> ?? new List<Brand>();
+    if (!brands.Any()) return;
+    // Duplicate list so the infinite loop looks seamless
+    var doubled = brands.Concat(brands).ToList();
+}
+
+<style>
+    .brands-section {
+        background: #fff;
+        padding: 40px 0;
+        border-top: 1px solid #e8eef5;
+        border-bottom: 1px solid #e8eef5;
+        overflow: hidden;
+    }
+
+    .brands-section-header {
+        text-align: center;
+        margin-bottom: 28px;
+    }
+
+        .brands-section-header h6 {
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #aaa;
+            position: relative;
+            display: inline-block;
+        }
+
+            .brands-section-header h6::before,
+            .brands-section-header h6::after {
+                content: '';
+                position: absolute;
+                top: 50%;
+                width: 60px;
+                height: 1px;
+                background: #ddd;
+            }
+
+            .brands-section-header h6::before {
+                right: calc(100% + 12px);
+            }
+
+            .brands-section-header h6::after {
+                left: calc(100% + 12px);
+            }
+
+    /* Track wrapper — clips overflow */
+    .brands-track-wrapper {
+        position: relative;
+        overflow: hidden;
+        /* Fade edges */
+        mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+        -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+    }
+
+    /* Scrolling track */
+    .brands-track {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        width: max-content;
+        animation: brandScroll 30s linear infinite;
+    }
+
+    /* Pause only if user explicitly wants reduced motion */
+    @@media (prefers-reduced-motion: reduce) {
+        .brands-track {
+            animation-play-state: paused;
+        }
+    }
+
+    @@keyframes brandScroll {
+        0% {
+            transform: translateX(0);
+        }
+
+        100% {
+            transform: translateX(-50%);
+        }
+    }
+
+    /* Each brand item */
+    .brand-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0 36px;
+        min-width: 160px;
+        border-right: 1px solid #eee;
+        transition: transform 0.3s;
+        user-select: none;
+        pointer-events: none; /* prevent user interaction */
+    }
+
+        .brand-item:last-child {
+            border-right: none;
+        }
+
+    .brand-logo-wrap {
+        width: 90px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 8px;
+    }
+
+        .brand-logo-wrap img {
+            max-width: 90px;
+            max-height: 50px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            filter: grayscale(40%) opacity(0.75);
+            transition: filter 0.3s, transform 0.3s;
+        }
+
+    .brand-name {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        white-space: nowrap;
+    }
+
+    /* Text-only brand (no logo) */
+    .brand-text-only {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #bbb;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        white-space: nowrap;
+        padding: 0 36px;
+        border-right: 1px solid #eee;
+        min-width: 140px;
+        text-align: center;
+        pointer-events: none;
+        user-select: none;
+    }
+</style>
+
+<section class="brands-section">
+    <div class="brands-section-header">
+        <h6>Trusted Brands We Carry</h6>
+    </div>
+
+    <div class="brands-track-wrapper">
+        <div class="brands-track" id="brandsTrack">
+            @foreach (var brand in doubled)
+            {
+                @if (!string.IsNullOrEmpty(brand.LogoPath))
+                {
+                    <div class="brand-item">
+                        <div class="brand-logo-wrap">
+                            <img src="@brand.LogoPath" alt="@brand.Name" />
+                        </div>
+                        <span class="brand-name">@brand.Name</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="brand-text-only">@brand.Name</div>
+                }
+            }
+        </div>
+    </div>
+</section>

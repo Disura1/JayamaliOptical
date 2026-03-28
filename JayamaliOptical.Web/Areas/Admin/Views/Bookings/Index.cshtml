@@ -1,0 +1,183 @@
+﻿@model IEnumerable<JayamaliOptical.Web.Models.ServiceBooking>
+@using JayamaliOptical.Web.Services
+@{
+    ViewData["Title"] = "Appointments";
+    var statuses = ViewBag.Statuses as string[];
+    var currentStatus = ViewBag.StatusFilter as string ?? "All";
+    var currentDate = ViewBag.DateFilter as string ?? "";
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@* Summary Cards *@
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="small-box bg-warning">
+            <div class="inner"><h3>@ViewBag.PendingCount</h3><p>Pending</p></div>
+            <div class="icon"><i class="fas fa-clock"></i></div>
+            <a href="/Admin/Bookings?status=Pending" class="small-box-footer">View <i class="fas fa-arrow-circle-right"></i></a>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="small-box bg-info">
+            <div class="inner"><h3>@ViewBag.TodayCount</h3><p>Today's Appointments</p></div>
+            <div class="icon"><i class="fas fa-calendar-day"></i></div>
+            <a href="/Admin/Bookings?date=@TimeHelper.Today.ToString("yyyy-MM-dd")" class="small-box-footer">View <i class="fas fa-arrow-circle-right"></i></a>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="small-box bg-success">
+            <div class="inner"><h3>@ViewBag.ConfirmedCount</h3><p>Confirmed</p></div>
+            <div class="icon"><i class="fas fa-check-circle"></i></div>
+            <a href="/Admin/Bookings?status=Confirmed" class="small-box-footer">View <i class="fas fa-arrow-circle-right"></i></a>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="small-box bg-secondary">
+            <div class="inner"><h3>@ViewBag.TotalCount</h3><p>Showing</p></div>
+            <div class="icon"><i class="fas fa-list"></i></div>
+            <a href="/Admin/Bookings" class="small-box-footer">View All <i class="fas fa-arrow-circle-right"></i></a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-calendar-check me-2"></i>Appointments</h3>
+        <div class="card-tools d-flex gap-2">
+            @* Date filter *@
+            <form method="get" action="/Admin/Bookings" class="d-flex gap-2">
+                <input type="date" name="date" class="form-control form-control-sm"
+                       value="@currentDate" style="width:160px;" />
+                <input type="hidden" name="status" value="@currentStatus" />
+                <button type="submit" class="btn btn-sm btn-outline-primary">Filter Date</button>
+                @if (!string.IsNullOrEmpty(currentDate))
+                {
+                    <a href="/Admin/Bookings?status=@currentStatus" class="btn btn-sm btn-outline-secondary">Clear</a>
+                }
+            </form>
+        </div>
+    </div>
+
+    @* Status tabs *@
+    <div class="card-header pt-0 pb-0 border-top">
+        <ul class="nav nav-tabs" id="statusTabs">
+            @foreach (var s in statuses ?? Array.Empty<string>())
+            {
+                <li class="nav-item">
+                    <a class="nav-link @(currentStatus == s ? "active" : "")"
+                       href="/Admin/Bookings?status=@s&date=@currentDate">@s</a>
+                </li>
+            }
+        </ul>
+    </div>
+
+    <div class="card-body p-0">
+        @if (!Model.Any())
+        {
+            <div class="text-center py-5 text-muted">
+                <i class="fas fa-calendar-times fa-3x mb-3"></i>
+                <p>No appointments found for this filter.</p>
+            </div>
+        }
+        else
+        {
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Booking Ref.</th>
+                        <th>Customer</th>
+                        <th>Service</th>
+                        <th>Date & Time</th>
+                        <th>Phone</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var b in Model)
+                    {
+                        var isToday = b.AppointmentDate.Date == TimeHelper.Today;
+                        <tr class="@(isToday ? "table-info bg-opacity-25" : "")">
+                            <td>
+                                <span class="fw-bold text-primary">@b.BookingNumber</span>
+                                @if (isToday)
+                                {
+                                    <span class="badge bg-info ms-1" style="font-size:0.6rem;">TODAY</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="fw-semibold">@b.FirstName @b.LastName</div>
+                                <small class="text-muted">@b.Email</small>
+                            </td>
+                            <td>@b.Service?.Name</td>
+                            <td>
+                                <div class="fw-semibold">@b.AppointmentDate.ToString("dd MMM yyyy")</div>
+                                <small class="text-muted">
+                                    @TimeHelper.Today.Add(b.AppointmentTime).ToString("hh:mm tt")
+                                </small>
+                            </td>
+                            <td>@b.PhoneNumber</td>
+                            <td class="text-center">
+                                @{
+                                    var badgeClass = b.Status switch
+                                    {
+                                                        "Pending" => "bg-warning text-dark",
+                                                        "Confirmed" => "bg-success",
+                                                        "Completed" => "bg-primary",
+                                                        "Cancelled" => "bg-danger",
+                                                        "NoShow" => "bg-secondary",
+                                        _ => "bg-secondary"
+                                    };
+                                }
+                                <span class="badge @badgeClass">@b.Status</span>
+                            </td>
+                            <td class="text-center">
+                                <a href="/Admin/Bookings/Details/@b.Id"
+                                   class="btn btn-sm btn-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="/Admin/Bookings/AppointmentInvoice/@b.Id"
+                                   class="btn btn-sm btn-success" target="_blank">
+                                    <i class="fas fa-file-invoice"></i>
+                                </a>
+                                <form action="/Admin/Bookings/Delete/@b.Id" method="post"
+                                      class="d-inline"
+                                      onsubmit="return confirm('Delete this booking?')">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    @* Pagination *@
+    @if (totalPages > 1)
+    {
+        <div class="card-footer d-flex justify-content-center">
+            <ul class="pagination pagination-sm mb-0">
+                @for (int p = 1; p <= totalPages; p++)
+                {
+                    <li class="page-item @(p == currentPage ? "active" : "")">
+                        <a class="page-link"
+                           href="/Admin/Bookings?status=@currentStatus&date=@currentDate&page=@p">@p</a>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+</div>

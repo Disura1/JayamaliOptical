@@ -1,0 +1,351 @@
+﻿@using JayamaliOptical.Web.Models
+@{
+    var services = ViewBag.Services as List<JayamaliOptical.Web.Models.Service>;
+    var defaultService = ViewBag.DefaultService as JayamaliOptical.Web.Models.Service;
+}
+
+@if (services != null && services.Any())
+{
+    <section id="services" class="ServicesSec py-5">
+        <div class="container-fluid p-0">
+            <div class="ServicesSubSec d-flex flex-column align-items-center mx-md-5 p-md-5 rounded-3 shadow-lg bg-dark-subtle">
+                <h3 class="service-title py-md-3 text-center fw-bold">Our Services</h3>
+                <p class="service-subtitle text-muted text-center fs-5 mb-md-4">Comprehensive eye care services for your vision health</p>
+
+                <!-- Services Buttons -->
+                <div class="service-btns btn-group flex-wrap mb-lg-5" role="group" aria-label="Services">
+                    @foreach (var service in services)
+                    {
+                        <button type="button"
+                                class="btn btn-outline-primary service-btn @(defaultService != null && defaultService.Id == service.Id ? "active" : "")"
+                                data-service-id="@service.Id"
+                                data-service-name="@service.Name">
+                            <i class="fas fa-eye me-2"></i>@service.Name
+                        </button>
+                    }
+                </div>
+
+                <!-- Service Content Display -->
+                <div id="serviceContent" class="w-100">
+                    <div class="card d-flex flex-row align-items-center p-md-4">
+                        <!-- Service Image -->
+                        <div class="w-25 ServiceImgName">
+                            <h2 id="serviceName" class="card-title mb-3 fw-bold">
+                                @(defaultService?.Name ?? "Service")
+                            </h2>
+                            <div class="col-lg-6 mb-md-4 mb-lg-0 w-100">
+                                @if (!string.IsNullOrEmpty(defaultService?.ImageUrl))
+                                {
+                                    <img id="serviceImage" src="@defaultService.ImageUrl"
+                                        alt="@defaultService.Name"
+                                        class="img-fluid rounded-3 shadow-lg service-image" />
+                                }
+                                else
+                                {
+                                    <div id="serviceImage" class="serviceImg bg-secondary rounded-3 d-flex align-items-center justify-content-center service-placeholder" style="height: 400px;">
+                                        <i class="fas fa-concierge-bell fa-5x text-white"></i>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Service Details -->
+                        <div class="col-lg-6 w-75 service-details">
+                            <div class="">
+                                <div class="card-body p-md-4 p-sm-2">
+                                    <div id="serviceBadge">
+                                        @if (defaultService?.RequiresAppointment == true)
+                                        {
+                                            <span class="badge bg-success mb-3">
+                                                <i class="fas fa-calendar-check me-1"></i> Appointment Required
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-info mb-3">
+                                                <i class="fas fa-walking me-1"></i> Walk-in Available
+                                            </span>
+                                        }
+                                    </div>
+
+                                    <p id="serviceDescription" class="card-text text-muted mb-md-4">
+                                        @(defaultService?.Description ?? "Service description")
+                                    </p>
+
+                                    <!-- Service Info (Price & Duration) -->
+                                    <div id="serviceInfo" class="service-info mb-md-4 d-flex gap-md-4 gap-sm-1 ">
+                                        @if (defaultService?.Price.HasValue == true || defaultService?.DurationMinutes.HasValue == true)
+                                        {
+                                            @if (defaultService.Price.HasValue)
+                                            {
+                                                <div class="d-flex align-items-center w-50 mb-md-3 p-md-3 bg-light rounded">
+                                                    <div class="me-3">
+                                                        <i class="fas fa-tag fa-2x text-primary"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h6 class="mb-0 text-muted">Price</h6>
+                                                        <span class="text-value fw-bold text-primary fs-5">Rs. @defaultService.Price.Value.ToString("0.00")</span>
+                                                    </div>
+                                                </div>
+                                            }
+
+                                            @if (defaultService.DurationMinutes.HasValue)
+                                            {
+                                                <div class="d-flex align-items-center w-50 mb-md-3 p-md-3 bg-light rounded">
+                                                    <div class="me-3">
+                                                        <i class="fas fa-clock fa-2x text-info"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h6 class="mb-0 text-muted">Duration</h6>
+                                                        <span class="text-value fw-bold text-info fs-5">@defaultService.DurationMinutes.Value minutes</span>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+
+                                    <!-- Service Buttons -->
+                                    <div id="serviceButtons" class="service-buttons">
+                                        @if (!string.IsNullOrEmpty(defaultService?.Button1Text) ||
+                                                                            !string.IsNullOrEmpty(defaultService?.Button2Text) ||
+                                                                            !string.IsNullOrEmpty(defaultService?.Button3Text) ||
+                                                                            defaultService?.RequiresAppointment == true)
+                                        {
+                                            <h5 class="mb-md-3 mb-sm-1 ">Take Action</h5>
+                                            <div class="d-flex flex-wrap gap-3">
+                                                @* Booking Button (for services requiring appointment) *@
+                                                @if (defaultService?.RequiresAppointment == true)
+                                                {
+                                                    <a href="/Bookings/Create?serviceId=@defaultService.Id"
+                                                       class="ServiceBtns btn btn-success btn-md">
+                                                        <i class="fas fa-calendar-plus me-2"></i>Book Appointment
+                                                    </a>
+                                                }
+
+                                                @* Custom Button 1 *@
+                                                @if (!string.IsNullOrEmpty(defaultService?.Button1Text))
+                                                {
+                                                    <a href="@defaultService!.Button1Url"
+                                                       class="ServiceBtns btn @defaultService!.Button1Class btn-md">
+                                                        <i class="fas fa-calendar-plus me-2"></i>@defaultService.Button1Text
+                                                    </a>
+                                                }
+
+                                                @* Custom Button 2 *@
+                                                @if (!string.IsNullOrEmpty(defaultService?.Button2Text))
+                                                {
+                                                    <a href="@defaultService!.Button2Url"
+                                                       class="ServiceBtns btn @defaultService!.Button2Class btn-md">
+                                                        <i class="fas fa-phone me-2"></i>@defaultService.Button2Text
+                                                    </a>
+                                                }
+
+                                                @* Custom Button 3 *@
+                                                @if (!string.IsNullOrEmpty(defaultService?.Button3Text))
+                                                {
+                                                    <a href="@defaultService!.Button3Url"
+                                                       class="ServiceBtns btn @defaultService!.Button3Class btn-md">
+                                                        <i class="fas fa-info-circle me-2"></i>@defaultService.Button3Text
+                                                    </a>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <style>
+        .service-btn {
+            min-width: 160px;
+            max-width: 200px;
+            transition: all 0.3s ease;
+        }
+
+            .service-btn.active {
+                background-color: #0d6efd;
+                color: white;
+                border-color: #0d6efd;
+            }
+
+            .service-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            }
+
+        .service-image {
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+            .service-image:hover {
+                transform: scale(1.02);
+            }
+
+        .service-placeholder {
+            min-height: 400px;
+        }
+
+        .service-buttons .btn {
+            min-width: 180px;
+            transition: all 0.3s ease;
+        }
+
+            .service-buttons .btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            }
+
+        /* Animation for content change */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var serviceButtons = document.querySelectorAll('.service-btn');
+            var serviceContent = document.getElementById('serviceContent');
+
+            serviceButtons.forEach(function (button) {
+                button.addEventListener('click', function () {
+                    var serviceId = this.getAttribute('data-service-id');
+
+                    // Update active button immediately
+                    serviceButtons.forEach(function (btn) {
+                        btn.classList.remove('active');
+                    });
+                    this.classList.add('active');
+
+                    // Show subtle loading — don't fully hide content
+                    serviceContent.style.opacity = '0.6';
+                    serviceContent.style.pointerEvents = 'none';
+
+                    // Use absolute path to avoid routing issues on hosted environments
+                    var url = window.location.origin + '/Home/GetServiceDetails?id=' + serviceId;
+
+                    fetch(url)
+                        .then(function (response) {
+                            if (!response.ok) throw new Error('HTTP ' + response.status);
+                            return response.json();
+                        })
+                        .then(function (data) {
+                            // Update name
+                            document.getElementById('serviceName').textContent = data.name || '';
+
+                            // Update image
+                            var imageContainer = document.getElementById('serviceImage');
+                            if (data.imageUrl) {
+                                imageContainer.outerHTML =
+                                    '<img id="serviceImage" src="' + data.imageUrl + '" ' +
+                                    'alt="' + (data.name || '') + '" ' +
+                                    'class="img-fluid rounded-3 shadow service-image fade-in" />';
+                            } else {
+                                imageContainer.outerHTML =
+                                    '<div id="serviceImage" class="bg-secondary rounded-3 ' +
+                                    'd-flex align-items-center justify-content-center ' +
+                                    'service-placeholder fade-in" style="height:300px;">' +
+                                    '<i class="fas fa-concierge-bell fa-5x text-white"></i></div>';
+                            }
+
+                            // Update badge
+                            var badgeContainer = document.getElementById('serviceBadge');
+                            badgeContainer.innerHTML = data.requiresAppointment
+                                ? '<span class="badge bg-success mb-3"><i class="fas fa-calendar-check me-1"></i> Appointment Required</span>'
+                                : '<span class="badge bg-info mb-3"><i class="fas fa-walking me-1"></i> Walk-in Available</span>';
+
+                            // Update description
+                            document.getElementById('serviceDescription').textContent =
+                                data.description || '';
+
+                            // Update info boxes
+                            var infoContainer = document.getElementById('serviceInfo');
+                            var infoHtml = '';
+                            if (data.price) {
+                                infoHtml +=
+                                    '<div class="d-flex align-items-center w-50 mb-3 p-3 bg-light rounded fade-in">' +
+                                    '<div class="me-3"><i class="fas fa-tag fa-2x text-primary"></i></div>' +
+                                    '<div><h6 class="mb-0 text-muted">Price</h6>' +
+                                    '<span class="fw-bold text-primary fs-5">Rs. ' +
+                                    parseFloat(data.price).toFixed(2) + '</span></div></div>';
+                            }
+                            if (data.durationMinutes) {
+                                infoHtml +=
+                                    '<div class="d-flex align-items-center w-50 mb-3 p-3 bg-light rounded fade-in">' +
+                                    '<div class="me-3"><i class="fas fa-clock fa-2x text-info"></i></div>' +
+                                    '<div><h6 class="mb-0 text-muted">Duration</h6>' +
+                                    '<span class="fw-bold text-info fs-5">' +
+                                    data.durationMinutes + ' minutes</span></div></div>';
+                            }
+                            infoContainer.innerHTML = infoHtml;
+
+                            // Update action buttons
+                            var buttonsHtml = '';
+                            if (data.requiresAppointment || data.button1Text ||
+                                data.button2Text || data.button3Text) {
+                                buttonsHtml = '<h5 class="mb-3">Take Action</h5>' +
+                                              '<div class="d-flex flex-wrap gap-3">';
+                                if (data.requiresAppointment) {
+                                    buttonsHtml +=
+                                        '<a href="/Bookings/Create?serviceId=' + data.id + '" ' +
+                                        'class="btn btn-success btn-lg fade-in">' +
+                                        '<i class="fas fa-calendar-plus me-2"></i>Book Appointment</a>';
+                                }
+                                if (data.button1Text) {
+                                    var icon1 = (data.button1Class || '').includes('success')
+                                        ? 'calendar-plus' : 'arrow-right';
+                                    buttonsHtml +=
+                                        '<a href="' + (data.button1Url || '#') + '" ' +
+                                        'class="btn ' + (data.button1Class || 'btn-primary') +
+                                        ' btn-lg fade-in"><i class="fas fa-' + icon1 +
+                                        ' me-2"></i>' + data.button1Text + '</a>';
+                                }
+                                if (data.button2Text) {
+                                    buttonsHtml +=
+                                        '<a href="' + (data.button2Url || '#') + '" ' +
+                                        'class="btn ' + (data.button2Class || 'btn-info') +
+                                        ' btn-lg fade-in"><i class="fas fa-phone me-2"></i>' +
+                                        data.button2Text + '</a>';
+                                }
+                                if (data.button3Text) {
+                                    buttonsHtml +=
+                                        '<a href="' + (data.button3Url || '#') + '" ' +
+                                        'class="btn ' + (data.button3Class || 'btn-warning') +
+                                        ' btn-lg fade-in"><i class="fas fa-info-circle me-2"></i>' +
+                                        data.button3Text + '</a>';
+                                }
+                                buttonsHtml += '</div>';
+                            }
+                            document.getElementById('serviceButtons').innerHTML = buttonsHtml;
+                        })
+                        .catch(function (error) {
+                            console.error('Service load error:', error);
+                            // Don't show alert — just restore the UI silently
+                        })
+                        .finally(function () {
+                            // Always restore — never leave stuck
+                            serviceContent.style.opacity = '1';
+                            serviceContent.style.pointerEvents = '';
+                        });
+                });
+            });
+        });
+    </script>
+}

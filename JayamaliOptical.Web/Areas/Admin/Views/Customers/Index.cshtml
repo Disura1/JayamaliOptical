@@ -1,0 +1,235 @@
+﻿@model IEnumerable<JayamaliOptical.Web.Models.CustomerViewModel>
+@{
+    ViewData["Title"] = "Customers";
+    var search = ViewBag.Search as string ?? "";
+    var filter = ViewBag.Filter as string ?? "All";
+    var sort = ViewBag.Sort as string ?? "newest";
+    var currentPage = (int)(ViewBag.CurrentPage ?? 1);
+    var totalPages = (int)(ViewBag.TotalPages ?? 1);
+}
+
+@* Summary Cards *@
+<div class="row mb-4">
+    <div class="col-xl-2 col-md-4">
+        <div class="small-box bg-info">
+            <div class="inner"><h3>@ViewBag.TotalCustomers</h3><p>Total Customers</p></div>
+            <div class="icon"><i class="fas fa-users"></i></div>
+            <a href="/Admin/Customers?filter=All" class="small-box-footer">View All <i class="fas fa-arrow-circle-right"></i></a>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4">
+        <div class="small-box bg-success">
+            <div class="inner"><h3>@ViewBag.RegisteredCount</h3><p>Registered</p></div>
+            <div class="icon"><i class="fas fa-user-check"></i></div>
+            <a href="/Admin/Customers?filter=Registered" class="small-box-footer">View <i class="fas fa-arrow-circle-right"></i></a>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4">
+        <div class="small-box bg-secondary">
+            <div class="inner"><h3>@ViewBag.GuestCount</h3><p>Guests</p></div>
+            <div class="icon"><i class="fas fa-user-clock"></i></div>
+            <a href="/Admin/Customers?filter=Guest" class="small-box-footer">View <i class="fas fa-arrow-circle-right"></i></a>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4">
+        <div class="small-box bg-warning">
+            <div class="inner"><h3>@ViewBag.HighValueCount</h3><p>High Value</p></div>
+            <div class="icon"><i class="fas fa-star"></i></div>
+            <a href="/Admin/Customers?filter=HighValue" class="small-box-footer">View <i class="fas fa-arrow-circle-right"></i></a>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4">
+        <div class="small-box bg-primary">
+            <div class="inner"><h3>@ViewBag.BookingCount</h3><p>Have Bookings</p></div>
+            <div class="icon"><i class="fas fa-calendar-check"></i></div>
+            <a href="/Admin/Customers?filter=HasBookings" class="small-box-footer">View <i class="fas fa-arrow-circle-right"></i></a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-users mr-2"></i>Customer Management</h3>
+            </div>
+
+            <div class="card-body border-bottom pb-3">
+                <form method="get" action="/Admin/Customers" class="row g-2 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label small text-muted">Search</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" name="search" value="@search" class="form-control"
+                                   placeholder="Name, email, phone, city..." />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted">Filter By</label>
+                        <select name="filter" class="form-select">
+                            <option value="All" selected="@(filter == "All")">All Customers</option>
+                            <option value="Registered" selected="@(filter == "Registered")">Registered Only</option>
+                            <option value="Guest" selected="@(filter == "Guest")">Guests Only</option>
+                            <option value="HighValue" selected="@(filter == "HighValue")">High Value (Rs.100,000+)</option>
+                            <option value="Repeat" selected="@(filter == "Repeat")">Repeat Buyers (2+ orders)</option>
+                            <option value="HasBookings" selected="@(filter == "HasBookings")">Has Appointments</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted">Sort By</label>
+                        <select name="sort" class="form-select">
+                            <option value="newest" selected="@(sort == "newest")">Most Recent Activity</option>
+                            <option value="oldest" selected="@(sort == "oldest")">Earliest Customer</option>
+                            <option value="spent" selected="@(sort == "spent")">Highest Spent</option>
+                            <option value="orders" selected="@(sort == "orders")">Most Orders</option>
+                            <option value="bookings" selected="@(sort == "bookings")">Most Bookings</option>
+                            <option value="name" selected="@(sort == "name")">Name A–Z</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary w-100 mr-2">
+                            <i class="fas fa-filter mr-1"></i>Apply
+                        </button>
+                        <a href="/Admin/Customers" class="btn btn-outline-secondary" title="Reset">
+                            <i class="fas fa-times"></i>
+                        </a>
+                    </div>
+                    <input type="hidden" name="page" value="1" />
+                </form>
+
+                @if (!string.IsNullOrEmpty(search) || filter != "All")
+                {
+                    <div class="mt-2 d-flex gap-2 flex-wrap align-items-center">
+                        @if (!string.IsNullOrEmpty(search))
+                        {
+                            <span class="badge bg-primary rounded-pill">
+                                <i class="fas fa-search mr-1"></i>@search
+                                <a href="/Admin/Customers?filter=@filter&sort=@sort" class="text-white ms-1">×</a>
+                            </span>
+                        }
+                        @if (filter != "All")
+                        {
+                            <span class="badge bg-success rounded-pill">
+                                <i class="fas fa-tag mr-1"></i>@filter
+                                <a href="/Admin/Customers?search=@search&sort=@sort" class="text-white ms-1">×</a>
+                            </span>
+                        }
+                        <span class="text-muted small">@ViewBag.TotalCustomers result(s)</span>
+                    </div>
+                }
+            </div>
+
+            <div class="card-body p-0">
+                @if (!Model.Any())
+                {
+                    <div class="text-center py-5">
+                        <i class="fas fa-users fa-4x text-muted mb-3"></i>
+                        <h4>No customers found</h4>
+                        <p class="text-muted">Try adjusting your search or filter.</p>
+                        <a href="/Admin/Customers" class="btn btn-outline-primary">Clear Filters</a>
+                    </div>
+                }
+                else
+                {
+                    <table class="table table-hover table-bordered mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Customer</th>
+                                <th>Contact</th>
+                                <th>City</th>
+                                <th class="text-center">Type</th>
+                                <th class="text-center">Orders</th>
+                                <th class="text-center">Bookings</th>
+                                <th class="text-end">Total Spent</th>
+                                <th>Last Activity</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var customer in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold mr-2"
+                                                 style="width:38px;height:38px;min-width:38px;font-size:0.9rem;
+                                                                background:@(customer.IsRegistered ? "#0d6efd" : "#6c757d");">
+                                                @(customer.FirstName.Length > 0 ? customer.FirstName[0].ToString().ToUpper() : "?")@(customer.LastName.Length > 0 ? customer.LastName[0].ToString().ToUpper() : "?")
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">@customer.FirstName @customer.LastName</div>
+                                                <small class="text-muted">@customer.Email</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><small>@customer.PhoneNumber</small></td>
+                                    <td><small>@(string.IsNullOrEmpty(customer.City) ? "-" : customer.City)</small></td>
+                                    <td class="text-center">
+                                        @if (customer.IsRegistered)
+                                        {
+                                            <span class="badge bg-success"><i class="fas fa-user-check mr-1"></i>Registered</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary"><i class="fas fa-user mr-1"></i>Guest</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge @(customer.TotalOrders >= 3 ? "bg-warning text-dark" : "bg-light text-dark") border">
+                                            <i class="fas fa-shopping-bag mr-1"></i>@customer.TotalOrders
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge @(customer.TotalBookings > 0 ? "bg-primary" : "bg-light text-dark") border">
+                                            <i class="fas fa-calendar mr-1"></i>@customer.TotalBookings
+                                        </span>
+                                    </td>
+                                    <td class="text-end fw-bold @(customer.TotalSpent >= 100000 ? "text-success" : "")">
+                                        Rs. @customer.TotalSpent.ToString("0.00")
+                                        @if (customer.TotalSpent >= 100000)
+                                        {
+                                            <i class="fas fa-star text-warning ms-1" title="High Value Customer"></i>
+                                        }
+                                    </td>
+                                    <td><small>@customer.LastOrderDate.ToString("dd MMM yyyy")</small></td>
+                                    <td class="text-center">
+                                        <a href="/Admin/Customers/Details?email=@Uri.EscapeDataString(customer.Email)"
+                                           class="btn btn-info btn-sm" title="View Profile">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                    @if (totalPages > 1)
+                    {
+                        <div class="card-footer">
+                            <nav>
+                                <ul class="pagination justify-content-center mb-0">
+                                    <li class="page-item @(currentPage <= 1 ? "disabled" : "")">
+                                        <a class="page-link" href="/Admin/Customers?search=@search&filter=@filter&sort=@sort&page=@(currentPage - 1)">
+                                            <i class="fas fa-chevron-left"></i>
+                                        </a>
+                                    </li>
+                                    @for (int p = 1; p <= totalPages; p++)
+                                    {
+                                        <li class="page-item @(currentPage == p ? "active" : "")">
+                                            <a class="page-link" href="/Admin/Customers?search=@search&filter=@filter&sort=@sort&page=@p">@p</a>
+                                        </li>
+                                    }
+                                    <li class="page-item @(currentPage >= totalPages ? "disabled" : "")">
+                                        <a class="page-link" href="/Admin/Customers?search=@search&filter=@filter&sort=@sort&page=@(currentPage + 1)">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>

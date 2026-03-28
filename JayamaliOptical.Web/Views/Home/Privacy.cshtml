@@ -1,6 +1,204 @@
-﻿@{
+﻿@using JayamaliOptical.Web.Models
+@{
     ViewData["Title"] = "Privacy Policy";
-}
-<h1>@ViewData["Title"]</h1>
+    var settings = ViewBag.Settings as SiteSettings ?? new SiteSettings();
 
-<p>Use this page to detail your site's privacy policy.</p>
+    // Pre-process privacy policy into sections
+    var knownHeadings = new HashSet<string>
+    {
+        "Information We Collect",
+        "How We Use Your Information",
+        "Information Protection",
+        "Patient Rights"
+    };
+    var sectionIcons = new Dictionary<string, string>
+    {
+        { "Information We Collect",       "bi-collection" },
+        { "How We Use Your Information",  "bi-gear" },
+        { "Information Protection",       "bi-shield-lock" },
+        { "Patient Rights",               "bi-person-check" }
+    };
+    var sectionIds = new Dictionary<string, string>
+    {
+        { "Information We Collect",       "collect" },
+        { "How We Use Your Information",  "use" },
+        { "Information Protection",       "protect" },
+        { "Patient Rights",               "rights" }
+    };
+
+    // Parse into a list of sections
+    var sections = new List<(string Heading, string Icon, string Id, List<string> Lines)>();
+    (string Heading, string Icon, string Id, List<string> Lines)? current = null;
+    List<string> intro = new();
+
+    if (!string.IsNullOrEmpty(settings.PrivacyPolicy))
+    {
+        foreach (var rawLine in settings.PrivacyPolicy.Split('\n'))
+        {
+            var line = rawLine.Trim();
+            if (string.IsNullOrEmpty(line)) continue;
+
+            if (knownHeadings.Contains(line))
+            {
+                if (current.HasValue) sections.Add(current.Value);
+                current = (line,
+                    sectionIcons.TryGetValue(line, out var ic) ? ic : "bi-dot",
+                    sectionIds.TryGetValue(line, out var sid) ? sid : "",
+                    new List<string>());
+            }
+            else if (current.HasValue)
+            {
+                current.Value.Lines.Add(line);
+            }
+            else
+            {
+                intro.Add(line);
+            }
+        }
+        if (current.HasValue) sections.Add(current.Value);
+    }
+}
+
+<style>
+    .privacy-hero {
+        background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+        color: white;
+        padding: 60px 0 50px;
+        margin-bottom: 0;
+    }
+
+    .policy-card {
+        border-left: 4px solid #198754;
+        background: #f8fff9;
+        border-radius: 0 8px 8px 0;
+        padding: 20px 24px;
+        margin-bottom: 16px;
+    }
+
+        .policy-card h6 {
+            color: #198754;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+    .toc-link {
+        color: #198754;
+        text-decoration: none;
+        font-size: 0.95rem;
+    }
+
+        .toc-link:hover {
+            text-decoration: underline;
+        }
+
+    .last-updated {
+        background: #e8f5e9;
+        border-radius: 8px;
+        padding: 10px 16px;
+        display: inline-block;
+        font-size: 0.85rem;
+    }
+</style>
+
+<div class="privacy-hero text-center">
+    <div class="container">
+        <i class="bi bi-shield-check" style="font-size:3.5rem; opacity:0.9;"></i>
+        <h1 class="display-5 fw-bold mt-3 mb-2">Privacy Policy</h1>
+        <p class="lead mb-3" style="opacity:0.9;">Jayamali Optical &amp; Eye Care Pvt Ltd</p>
+        <span class="last-updated text-dark"><i class="bi bi-calendar3 me-2"></i>Last updated: January 2025</span>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row">
+
+        @* Sidebar TOC *@
+        <div class="col-md-3 mb-4">
+            <div class="card border-0 shadow-sm sticky-top" style="top:20px;">
+                <div class="card-body">
+                    <h6 class="fw-bold text-muted text-uppercase mb-3" style="font-size:0.75rem; letter-spacing:1px;">On This Page</h6>
+                    <ul class="list-unstyled mb-0">
+                        @foreach (var sec in sections)
+                        {
+                            <li class="mb-2">
+                                <i class="bi bi-dot text-success"></i>
+                                <a href="#@sec.Id" class="toc-link">@sec.Heading</a>
+                            </li>
+                        }
+                        <li class="mb-2"><i class="bi bi-dot text-success"></i><a href="#contact" class="toc-link">Contact Us</a></li>
+                    </ul>
+                    <hr />
+                    <a href="/Home/AboutUs" class="btn btn-outline-success btn-sm w-100">
+                        <i class="bi bi-arrow-left me-1"></i>Back to About Us
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        @* Main Content *@
+        <div class="col-md-9">
+
+            @* Intro *@
+            <div class="alert alert-success border-0 mb-4">
+                <i class="bi bi-info-circle me-2"></i>
+                @if (intro.Any())
+                {
+                    @string.Join(" ", intro)
+                }
+                else
+                {
+                    <text>At <strong>Jayamali Optical &amp; Eye Care Pvt Ltd</strong>, we value and respect the privacy of our patients.</text>
+                }
+            </div>
+
+            @* Sections *@
+            @foreach (var sec in sections)
+            {
+                <div id="@sec.Id" class="policy-card">
+                    <h6><i class="bi @sec.Icon me-2"></i>@sec.Heading</h6>
+                    @foreach (var line in sec.Lines)
+                    {
+                        if (line.StartsWith("-"))
+                        {
+                            <p class="mb-1">
+                                <i class="bi bi-check2 text-success me-2"></i>@line.TrimStart('-').Trim()
+                            </p>
+                        }
+                        else
+                        {
+                            <p class="mb-1 text-secondary" style="line-height:1.7;">@line</p>
+                        }
+                    }
+                </div>
+            }
+
+            @* Contact Section *@
+            <div id="contact" class="policy-card mt-4">
+                <h6><i class="bi bi-envelope me-2"></i>Contact Us About Privacy</h6>
+                <p class="mb-1 text-secondary">If you have questions about this Privacy Policy or wish to access your records, please contact us:</p>
+                @if (!string.IsNullOrEmpty(settings.Address))
+                {
+                    <p class="mb-1"><i class="bi bi-geo-alt text-success me-2"></i>@settings.Address</p>
+                }
+                @if (!string.IsNullOrEmpty(settings.Phone1))
+                {
+                    <p class="mb-1"><i class="bi bi-telephone text-success me-2"></i>@settings.Phone1</p>
+                }
+                @if (!string.IsNullOrEmpty(settings.Email))
+                {
+                    <p class="mb-0">
+                        <i class="bi bi-envelope text-success me-2"></i>
+                        <a href="mailto:@settings.Email" class="toc-link">@settings.Email</a>
+                    </p>
+                }
+            </div>
+
+            <div class="text-center mt-5">
+                <div class="d-inline-flex align-items-center gap-2 text-muted" style="font-size:0.85rem;">
+                    <i class="bi bi-shield-fill-check text-success fs-5"></i>
+                    Your privacy is protected under the laws of Sri Lanka.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

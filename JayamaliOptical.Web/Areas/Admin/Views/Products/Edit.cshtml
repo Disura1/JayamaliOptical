@@ -1,0 +1,267 @@
+﻿@model JayamaliOptical.Web.Models.Product
+@{
+    ViewData["Title"] = "Edit Product";
+    var categories = ViewBag.Categories as List<JayamaliOptical.Web.Models.Category>;
+    var selectedCategoryId = ViewBag.SelectedCategoryId as int?;
+}
+
+<div class="row">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Edit Product</h3>
+            </div>
+            <form action="/Admin/Products/Edit/@Model.Id" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="Id" value="@Model.Id" />
+                <input type="hidden" name="CategoryId" value="@Model.CategoryId" />
+
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Product Name</label>
+                                <input type="text" name="Name" class="form-control" value="@Model.Name" required />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Category</label>
+                                <input type="text" class="form-control" value="@(categories?.FirstOrDefault(c => c.Id == Model.CategoryId)?.Name)" readonly />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea name="Description" class="form-control" rows="3">@Model.Description</textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Price (Rs.)</label>
+                                <input type="number" name="Price" class="form-control" step="0.01" value="@Model.Price" required />
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Brand</label>
+                                <input type="text" name="Brand" class="form-control" value="@Model.Brand" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Stock Quantity</label>
+                                <input type="number" name="StockQuantity" class="form-control" value="@Model.StockQuantity" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row" id="productTypeRow" style="display: @(Model.CategoryId == 5 || Model.CategoryId == 6 ? "block" : "none");">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Product Type</label>
+                                <select name="ProductType" id="ProductType" class="form-control">
+                                    <option value="">-- Select Type --</option>
+                                    <option value="Mens" selected="@(Model.ProductType == "Mens")">Men's</option>
+                                    <option value="Ladies" selected="@(Model.ProductType == "Ladies")">Ladies</option>
+                                    <option value="Kids" selected="@(Model.ProductType == "Kids")">Kids</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Frame Type</label>
+                                <select name="FrameType" class="form-control">
+                                    <option value="">-- Select --</option>
+                                    <option value="Full Rim" selected="@(Model.FrameType == "Full Rim")">Full Rim</option>
+                                    <option value="Half Rim" selected="@(Model.FrameType == "Half Rim")">Half Rim</option>
+                                    <option value="Rimless" selected="@(Model.FrameType == "Rimless")">Rimless</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Lens Power</label>
+                                <input type="text" name="LensPower" class="form-control" value="@Model.LensPower" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>IOL Type</label>
+                                <select name="IOLType" class="form-control">
+                                    <option value="">-- Select --</option>
+                                    <option value="Monofocal" selected="@(Model.IOLType == "Monofocal")">Monofocal</option>
+                                    <option value="Multifocal" selected="@(Model.IOLType == "Multifocal")">Multifocal</option>
+                                    <option value="Toric" selected="@(Model.IOLType == "Toric")">Toric</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Photo Upload Section -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h5>Product Photos</h5>
+                            <hr />
+                        </div>
+
+                        <!-- Photo 1 -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Photo 1 (Required)</label>
+                                @if (!string.IsNullOrEmpty(Model.ImageUrl1))
+                                {
+                                    <div class="mb-2">
+                                        <img src="@Model.ImageUrl1" alt="Photo 1" class="img-thumbnail" style="max-height: 150px;" />
+                                        <div class="form-check mt-2">
+                                            <input type="checkbox" name="removePhoto1" value="true" class="form-check-input" id="removePhoto1" />
+                                            <label class="form-check-label text-danger" for="removePhoto1">Remove this photo</label>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <p class="text-warning"><i class="fas fa-exclamation-triangle"></i> No photo uploaded</p>
+                                }
+                                <input type="file" name="ImageFile1" class="form-control" accept="image/*" />
+                                <small class="text-muted">Upload new photo to replace @(string.IsNullOrEmpty(Model.ImageUrl1) ? "<strong>(Required)</strong>" : "")</small>
+                            </div>
+                        </div>
+
+                        <!-- Photo 2 -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Photo 2 (Optional)</label>
+                                @if (!string.IsNullOrEmpty(Model.ImageUrl2))
+                                {
+                                    <div class="mb-2">
+                                        <img src="@Model.ImageUrl2" alt="Photo 2" class="img-thumbnail" style="max-height: 150px;" />
+                                        <div class="form-check mt-2">
+                                            <input type="checkbox" name="removePhoto2" value="true" class="form-check-input" id="removePhoto2" />
+                                            <label class="form-check-label text-danger" for="removePhoto2">Remove this photo</label>
+                                        </div>
+                                    </div>
+                                }
+                                <input type="file" name="ImageFile2" class="form-control" accept="image/*" />
+                                <small class="text-muted">Upload new photo to replace or leave empty</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group form-check mt-3">
+                        <input type="checkbox" name="RequiresPrescription" value="true" class="form-check-input" id="RequiresPrescription" @(Model.RequiresPrescription ? "checked" : "") />
+                        <input type="hidden" name="RequiresPrescription" value="false" />
+                        <label class="form-check-label" for="RequiresPrescription">
+                            <i class="bi bi-file-earmark-medical me-2"></i>
+                            <strong>Requires Prescription</strong>
+                            <small class="text-muted d-block">Check if this product requires a valid prescription (e.g., Spectacles, Contact Lenses, IOL Lens)</small>
+                        </label>
+                    </div>
+
+                    <div class="form-group form-check mt-3">
+                        <input type="checkbox" name="IsActive" value="true" class="form-check-input" @(Model.IsActive ? "checked" : "") />
+                        <input type="hidden" name="IsActive" value="false" />
+                        <label class="form-check-label">Active</label>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <a href="/Admin/Products" class="btn btn-default">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Build a map of category name → id from server data
+    var categoryMap = {};
+    @foreach (var cat in (categories ?? new List<JayamaliOptical.Web.Models.Category>()))
+    {
+            <text>categoryMap['@cat.Name.ToLower()'] = '@cat.Id';</text>
+    }
+
+    function getCategoryName(id) {
+        for (var name in categoryMap) {
+            if (categoryMap[name] == id) return name;
+        }
+        return '';
+    }
+
+    function updatePhotoRequirements() {
+        var categoryId = document.getElementById('CategoryId')
+            ? document.getElementById('CategoryId').value
+            : '@selectedCategoryId';
+
+        var catName = getCategoryName(categoryId);
+        var isSpectacleOrSunglasses = catName === 'spectacle' || catName === 'sunglasses';
+        var isContactOrIOL = catName === 'contact lens' || catName === 'iol lens';
+
+        var photo2Group   = document.getElementById('photo2Group');
+        var photo2Input   = document.getElementById('ImageFile2');
+        var photo2Required= document.getElementById('photo2Required');
+        var productTypeRow= document.getElementById('productTypeRow');
+        var productTypeSelect = document.getElementById('ProductType');
+
+        if (isSpectacleOrSunglasses) {
+            photo2Group.style.display = 'block';
+            photo2Input.required = false; // optional second image
+            photo2Required.textContent = '(Optional)';
+            photo2Required.className = 'text-muted';
+            productTypeRow.style.display = 'block';
+            productTypeSelect.required = true;
+        } else if (categoryId && categoryId !== '') {
+            // All other categories — show second image as optional, hide product type
+            photo2Group.style.display = 'block';
+            photo2Input.required = false;
+            photo2Required.textContent = '(Optional)';
+            photo2Required.className = 'text-muted';
+            productTypeRow.style.display = 'none';
+            productTypeSelect.required = false;
+            productTypeSelect.value = '';
+        } else {
+            photo2Group.style.display = 'none';
+            photo2Input.required = false;
+            productTypeRow.style.display = 'none';
+            productTypeSelect.required = false;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var categoryId = '@selectedCategoryId';
+        if (categoryId && categoryId !== '') {
+            updatePhotoRequirements();
+        }
+
+        // Auto-check prescription
+        var categorySelect = document.getElementById('CategoryId');
+        var prescriptionCheckbox = document.getElementById('RequiresPrescription');
+
+        function updatePrescription() {
+            var id = categorySelect ? categorySelect.value : '@selectedCategoryId';
+            var name = getCategoryName(id);
+            prescriptionCheckbox.checked =
+                name === 'spectacle' || name === 'contact lens' || name === 'iol lens';
+        }
+
+        if (categorySelect) {
+            categorySelect.addEventListener('change', function () {
+                updatePhotoRequirements();
+                updatePrescription();
+            });
+            if (categorySelect.value) updatePrescription();
+        } else if ('@selectedCategoryId' !== '') {
+            updatePrescription();
+        }
+    });
+</script>

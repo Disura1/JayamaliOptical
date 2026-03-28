@@ -1,0 +1,17 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using JayamaliOptical.Web.Services
+@inject ICartService CartService
+
+@{
+    // Use the main layout from Views/Shared
+    Layout = "/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Account - " + ViewData["Title"];
+}
+
+<div class="container py-5">
+    @RenderBody()
+</div>
+
+@section Scripts {
+    @await RenderSectionAsync("Scripts", required: false)
+}

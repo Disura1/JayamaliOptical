@@ -1,0 +1,190 @@
+﻿@model IEnumerable<JayamaliOptical.Web.Models.Product>
+@{
+    ViewData["Title"] = "Products";
+    var categories = ViewBag.Categories as List<JayamaliOptical.Web.Models.Category>;
+    var categoryFilter = ViewBag.CategoryFilter as int?;
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Product Management</h3>
+                <div class="card-tools">
+                    <!-- Category Filter Dropdown -->
+                    <div class="input-group input-group-sm" style="width: 250px; display: inline-flex; margin-right: 10px;">
+                        <select id="categoryFilter" class="form-control" onchange="filterByCategory()">
+                            <option value="">All Categories</option>
+                            @foreach (var cat in (categories ?? new List<JayamaliOptical.Web.Models.Category>()))
+                            {
+                                var selected = categoryFilter == cat.Id ? "selected" : "";
+                                <option value="@cat.Id" @selected>@cat.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <a href="/Admin/Products/Create" id="addProductBtn" class="btn btn-success btn-sm" style="display: none;">
+                        <i class="fas fa-plus"></i> Add New Product
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="productTable">
+                    @if (!Model.Any())
+                    {
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> Select a category to view products or
+                            <a href="/Admin/Products/Create">add a new product</a>
+                        </div>
+                    }
+                    else
+                    {
+                        var showTypeColumn = Model.Any(p => p.CategoryId == 5 || p.CategoryId == 6);
+
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Product Name</th>
+                                    <th>Category</th>
+                                    @if (showTypeColumn)
+                                    {
+                                        <th>Type</th>
+                                    }
+                                    <th>Brand</th>
+                                    <th>Price</th>
+                                    <th>Stock</th>
+                                    <th>Photos</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>@item.Id</td>
+                                        <td>
+                                            @item.Name
+                                            @if (item.IsFeatured)
+                                            {
+                                                <span class="badge bg-warning text-dark ms-1">
+                                                    <i class="fas fa-star me-1"></i>Featured
+                                                </span>
+                                            }
+                                        </td>
+                                        <td>@item.Category?.Name</td>
+                                        @if (showTypeColumn)
+                                        {
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(item.ProductType))
+                                                {
+                                                    var typeBadge = item.ProductType switch
+                                                    {
+                                                        "Mens" => "badge badge-primary",
+                                                        "Ladies" => "badge badge-danger",
+                                                        "Kids" => "badge badge-warning",
+                                                        _ => "badge badge-secondary"
+                                                    };
+                                                    <span class="@typeBadge">@item.ProductType</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                        }
+                                        <td>@item.Brand</td>
+                                        <td>
+                                            @if (item.Price.HasValue)
+                                            {
+                                                @:Rs. @item.Price.Value.ToString("0.00")
+                                            }
+                                            else
+                                            {
+                                                @:-
+                                            }
+                                        </td>
+                                        <td>@item.StockQuantity</td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(item.ImageUrl1))
+                                            {
+                                                <i class="fas fa-check text-success"></i>
+                                                @if (!string.IsNullOrEmpty(item.ImageUrl2))
+                                                {
+                                                    <span>(2)</span>
+                                                }
+                                                else
+                                                {
+
+                                                    <span>(1)</span>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">No photos</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.IsActive)
+                                            {
+                                                <span class="badge badge-success">Active</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-danger">Inactive</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <form action="/Admin/Products/ToggleFeatured/@item.Id" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit"
+                                                        class="btn btn-sm @(item.IsFeatured ? "btn-warning" : "btn-outline-secondary")"
+                                                        title="@(item.IsFeatured ? "Remove from Featured" : "Add to Featured")">
+                                                    <i class="fas fa-star"></i>
+                                                </button>
+                                            </form>
+                                            <a href="/Admin/Products/Edit/@item.Id" class="btn btn-primary btn-sm">Edit</a>
+                                            <a href="/Admin/Products/Delete/@item.Id" class="btn btn-danger btn-sm">Delete</a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function filterByCategory() {
+        var categoryId = document.getElementById('categoryFilter').value;
+        if (categoryId) {
+            window.location.href = '/Admin/Products?categoryId=' + categoryId;
+        } else {
+            window.location.href = '/Admin/Products';
+        }
+    }
+
+    // Show add button when category is selected
+    document.addEventListener('DOMContentLoaded', function() {
+        var categoryFilter = document.getElementById('categoryFilter');
+        var addBtn = document.getElementById('addProductBtn');
+
+        if (categoryFilter.value) {
+            addBtn.style.display = 'inline-block';
+            addBtn.href = '/Admin/Products/Create?categoryId=' + categoryFilter.value;
+        }
+
+        categoryFilter.addEventListener('change', function() {
+            if (this.value) {
+                addBtn.style.display = 'inline-block';
+                addBtn.href = '/Admin/Products/Create?categoryId=' + this.value;
+            } else {
+                addBtn.style.display = 'none';
+            }
+        });
+    });
+</script>
