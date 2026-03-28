@@ -1,5 +1,4 @@
-﻿using JayamaliOptical.Web.Services;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace JayamaliOptical.Web.Models
 {
@@ -25,6 +24,6 @@ namespace JayamaliOptical.Web.Models
 
         public bool IsApproved { get; set; } = false;
         public bool IsFeatured { get; set; } = false;
-        public DateTime SubmittedAt { get; set; } = TimeHelper.Now;
+        public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
     }
 }

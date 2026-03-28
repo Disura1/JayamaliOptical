@@ -1,5 +1,4 @@
-﻿using JayamaliOptical.Web.Services;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -56,7 +55,7 @@ namespace JayamaliOptical.Web.Models
         public string Status { get; set; } = "Pending"; // Pending, Confirmed, Completed, Cancelled, NoShow
 
         // Timestamps
-        public DateTime BookingDate { get; set; } = TimeHelper.Now;
+        public DateTime BookingDate { get; set; } = DateTime.UtcNow;
 
         // Admin Notes
         [StringLength(500)]
@@ -85,7 +84,7 @@ namespace JayamaliOptical.Web.Models
         [Required(ErrorMessage = "Appointment date is required")]
         [DataType(DataType.Date)]
         [Display(Name = "Preferred Date")]
-        public DateTime AppointmentDate { get; set; } = TimeHelper.Now.AddDays(1);
+        public DateTime AppointmentDate { get; set; } = DateTime.UtcNow.AddDays(1);
 
         [Required(ErrorMessage = "Appointment time is required")]
         [Display(Name = "Preferred Time")]
