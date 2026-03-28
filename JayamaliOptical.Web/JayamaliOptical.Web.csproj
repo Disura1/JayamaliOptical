@@ -25,4 +25,13 @@
     <Folder Include="wwwroot\uploads\services\" />
   </ItemGroup>
 
+  <ItemGroup>
+  	<Content Update="wwwroot/images/**">
+  		<CopyToPublishDirectory>Never</CopyToPublishDirectory>
+  	</Content>
+  	<Content Update="wwwroot/uploads/**">
+  		<CopyToPublishDirectory>Never</CopyToPublishDirectory>
+  	</Content>
+  </ItemGroup>
+
 </Project>
