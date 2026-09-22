@@ -1,13 +1,16 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace JayamaliOptical.Web.Models
 {
+    [Index(nameof(OrderNumber), IsUnique = true)]
     public class Order
     {
         public int Id { get; set; }
 
+        [StringLength(50)]
         public string OrderNumber { get; set; } = string.Empty;
 
         public string? UserId { get; set; }

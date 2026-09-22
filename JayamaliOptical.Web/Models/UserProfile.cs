@@ -13,7 +13,7 @@ namespace JayamaliOptical.Web.Models
         // Email is the primary identifier (works for guests too)
         [Required]
         [EmailAddress]
-        [StringLength(256)]  // ← ADD THIS: Limits to 256 characters
+        [StringLength(256)]
         public string Email { get; set; } = string.Empty;
 
         // Customer Information

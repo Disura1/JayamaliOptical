@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using JayamaliOptical.Web.Data;
 using JayamaliOptical.Web.Models;
+using JayamaliOptical.Web.Services;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace JayamaliOptical.Web.Areas.Admin.Controllers
@@ -56,24 +57,34 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
             ViewBag.PreSelectedCategory = true;
             ViewBag.SelectedCategoryId = product.CategoryId;
 
-            // Debug: Log values
-            System.Diagnostics.Debug.WriteLine($"Creating product - RequiresPrescription: {product.RequiresPrescription}, CategoryId: {product.CategoryId}");
-
             // Handle photo uploads
             if (ImageFile1 != null)
             {
-                product.ImageUrl1 = await UploadFileAsync(ImageFile1);
+                if (!FileUploadValidator.IsValidImage(ImageFile1, out var error1))
+                {
+                    ModelState.AddModelError("ImageFile1", error1!);
+                }
+                else
+                {
+                    product.ImageUrl1 = await UploadFileAsync(ImageFile1);
+                }
             }
 
             if (ImageFile2 != null)
             {
-                product.ImageUrl2 = await UploadFileAsync(ImageFile2);
+                if (!FileUploadValidator.IsValidImage(ImageFile2, out var error2))
+                {
+                    ModelState.AddModelError("ImageFile2", error2!);
+                }
+                else
+                {
+                    product.ImageUrl2 = await UploadFileAsync(ImageFile2);
+                }
             }
 
             if (ModelState.IsValid)
             {
-                // For Spectacle (5) and Sunglasses (6), ProductType is required
-                if ((product.CategoryId == 5 || product.CategoryId == 6) && string.IsNullOrEmpty(product.ProductType))
+                if (await RequiresProductTypeAsync(product.CategoryId) && string.IsNullOrEmpty(product.ProductType))
                 {
                     ModelState.AddModelError("ProductType", "Product Type is required for Spectacles and Sunglasses");
                     return View(product);
@@ -85,6 +96,18 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
                     new { categoryId = product.CategoryId });
             }
             return View(product);
+        }
+
+        // Spectacles and sunglasses require a frame ProductType (rimless/full-rim/etc.) — looked up by
+        // category name rather than a hardcoded id, since seeded category ids aren't guaranteed stable.
+        internal async Task<bool> RequiresProductTypeAsync(int categoryId)
+        {
+            var categoryName = await _context.Categories
+                .Where(c => c.Id == categoryId)
+                .Select(c => c.Name)
+                .FirstOrDefaultAsync();
+
+            return categoryName == "Spectacle" || categoryName == "Sunglasses";
         }
 
         // Helper method to upload files
@@ -151,9 +174,6 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
                 return NotFound();
             }
 
-            // Debug: Log the ProductType value
-            System.Diagnostics.Debug.WriteLine($"Editing product - Type: {product.ProductType}, CategoryId: {product.CategoryId}");
-
             // Validate: At least one photo must exist after changes
             bool hasPhoto1 = !string.IsNullOrEmpty(existingProduct.ImageUrl1) && !removePhoto1;
             bool hasPhoto2 = !string.IsNullOrEmpty(existingProduct.ImageUrl2) && !removePhoto2;
@@ -166,8 +186,17 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
                 ModelState.AddModelError("ImageFile1", "At least Photo 1 is required. Please upload a new photo or keep the existing one.");
             }
 
-            // For Spectacle (5) and Sunglasses (6), ProductType is required
-            if ((product.CategoryId == 5 || product.CategoryId == 6) && string.IsNullOrEmpty(product.ProductType))
+            if (uploadingPhoto1 && !FileUploadValidator.IsValidImage(ImageFile1!, out var editError1))
+            {
+                ModelState.AddModelError("ImageFile1", editError1!);
+            }
+
+            if (uploadingPhoto2 && !FileUploadValidator.IsValidImage(ImageFile2!, out var editError2))
+            {
+                ModelState.AddModelError("ImageFile2", editError2!);
+            }
+
+            if (await RequiresProductTypeAsync(product.CategoryId) && string.IsNullOrEmpty(product.ProductType))
             {
                 ModelState.AddModelError("ProductType", "Product Type is required for Spectacles and Sunglasses");
             }
@@ -176,20 +205,17 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
             {
                 try
                 {
-                    // Update existing product properties - INCLUDE ProductType
                     existingProduct.Name = product.Name;
                     existingProduct.Description = product.Description;
                     existingProduct.Price = product.Price;
                     existingProduct.CategoryId = product.CategoryId;
-                    existingProduct.ProductType = product.ProductType;  // THIS IS IMPORTANT!
+                    existingProduct.ProductType = product.ProductType;
                     existingProduct.Brand = product.Brand;
                     existingProduct.FrameType = product.FrameType;
                     existingProduct.LensPower = product.LensPower;
                     existingProduct.IOLType = product.IOLType;
                     existingProduct.StockQuantity = product.StockQuantity;
                     existingProduct.IsActive = product.IsActive;
-
-                    // ✅ ADD THIS LINE: Update RequiresPrescription
                     existingProduct.RequiresPrescription = product.RequiresPrescription;
 
                     // Handle photo removal

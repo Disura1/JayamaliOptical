@@ -19,18 +19,33 @@ namespace JayamaliOptical.Web.Services
 
     public class PrescriptionService : IPrescriptionService
     {
+        // Keep the generated FilePath comfortably under Prescription.FilePath's [StringLength],
+        // regardless of how long the original uploaded filename is (phone-camera filenames in
+        // particular can be very long).
+        private const int MaxOriginalFileNameLength = 150;
+
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _environment;
+        private readonly ILogger<PrescriptionService> _logger;
 
-        public PrescriptionService(ApplicationDbContext context, IWebHostEnvironment environment)
+        public PrescriptionService(ApplicationDbContext context, IWebHostEnvironment environment, ILogger<PrescriptionService> logger)
         {
             _context = context;
             _environment = environment;
+            _logger = logger;
+        }
+
+        private static string TruncateFileName(string fileName)
+        {
+            var name = Path.GetFileName(fileName);
+            if (name.Length <= MaxOriginalFileNameLength) return name;
+
+            var ext = Path.GetExtension(name);
+            return name[..(MaxOriginalFileNameLength - ext.Length)] + ext;
         }
 
         public async Task<List<Prescription>> GetUserPrescriptionsAsync(string userId)
         {
-            // ✅ FIX: Return empty list if userId is null/empty
             if (string.IsNullOrEmpty(userId))
             {
                 return new List<Prescription>();
@@ -45,7 +60,6 @@ namespace JayamaliOptical.Web.Services
 
         public async Task<Prescription?> GetPrescriptionAsync(int id, string userId)
         {
-            // ✅ FIX: Return null if userId is null/empty
             if (string.IsNullOrEmpty(userId))
             {
                 return null;
@@ -65,7 +79,8 @@ namespace JayamaliOptical.Web.Services
                     var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "prescriptions");
                     Directory.CreateDirectory(uploadsFolder);
 
-                    var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
+                    var truncatedName = TruncateFileName(file.FileName);
+                    var uniqueFileName = $"{Guid.NewGuid()}_{truncatedName}";
                     var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
                     using (var stream = new FileStream(filePath, FileMode.Create))
@@ -73,7 +88,7 @@ namespace JayamaliOptical.Web.Services
                         await file.CopyToAsync(stream);
                     }
 
-                    prescription.FileName = file.FileName;
+                    prescription.FileName = truncatedName;
                     prescription.FilePath = $"/uploads/prescriptions/{uniqueFileName}";
                     prescription.FileMimeType = file.ContentType;
                 }
@@ -88,8 +103,9 @@ namespace JayamaliOptical.Web.Services
                 await _context.SaveChangesAsync();
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Failed to create prescription for user {UserId}", prescription.UserId);
                 return false;
             }
         }
@@ -132,7 +148,8 @@ namespace JayamaliOptical.Web.Services
                     var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "prescriptions");
                     Directory.CreateDirectory(uploadsFolder);
 
-                    var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
+                    var truncatedName = TruncateFileName(file.FileName);
+                    var uniqueFileName = $"{Guid.NewGuid()}_{truncatedName}";
                     var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
                     using (var stream = new FileStream(filePath, FileMode.Create))
@@ -140,7 +157,7 @@ namespace JayamaliOptical.Web.Services
                         await file.CopyToAsync(stream);
                     }
 
-                    existing.FileName = file.FileName;
+                    existing.FileName = truncatedName;
                     existing.FilePath = $"/uploads/prescriptions/{uniqueFileName}";
                     existing.FileMimeType = file.ContentType;
                 }
@@ -148,15 +165,15 @@ namespace JayamaliOptical.Web.Services
                 await _context.SaveChangesAsync();
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Failed to update prescription {PrescriptionId}", prescription.Id);
                 return false;
             }
         }
 
         public async Task<bool> DeletePrescriptionAsync(int id, string userId)
         {
-            // ✅ FIX: Return false if userId is null/empty
             if (string.IsNullOrEmpty(userId))
             {
                 return false;
@@ -184,7 +201,6 @@ namespace JayamaliOptical.Web.Services
 
         public async Task<bool> SetDefaultPrescriptionAsync(int id, string userId)
         {
-            // ✅ FIX: Return false if userId is null/empty
             if (string.IsNullOrEmpty(userId))
             {
                 return false;

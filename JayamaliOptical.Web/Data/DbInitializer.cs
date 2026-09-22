@@ -101,6 +101,24 @@ namespace JayamaliOptical.Web.Data
                 );
                 await context.SaveChangesAsync();
             }
+
+            // 5. Self-heal: an earlier migration (AddPaymentFields) defaulted CodEnabled to
+            // false for any SiteSettings row that already existed at the time, instead of
+            // the intended default of true. A store with both COD and PayHere disabled, and
+            // PayHere never actually configured, could never be an intentional admin choice
+            // (there'd be no way to check out at all) — so it's safe to correct automatically.
+            // Any row where PayHere IS configured/enabled is left untouched, since that
+            // reflects a deliberate admin decision.
+            var settings = context.SiteSettings.FirstOrDefault();
+            if (settings != null
+                && !settings.CodEnabled
+                && !settings.PayHereEnabled
+                && string.IsNullOrEmpty(settings.PayHereMerchantId))
+            {
+                settings.CodEnabled = true;
+                await context.SaveChangesAsync();
+                Console.WriteLine("NOTICE: SiteSettings had no payment method enabled (a leftover migration-default bug) — re-enabled Cash on Delivery automatically.");
+            }
         }
     }
 }

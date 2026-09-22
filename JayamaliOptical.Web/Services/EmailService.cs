@@ -223,6 +223,9 @@ namespace JayamaliOptical.Web.Services
         private static string NewOrderAlertBody(string orderNumber, string customerName,
             string customerEmail, decimal totalAmount)
         {
+            orderNumber = WebUtility.HtmlEncode(orderNumber);
+            customerName = WebUtility.HtmlEncode(customerName);
+            customerEmail = WebUtility.HtmlEncode(customerEmail);
             return "<html><body style='font-family:Arial,sans-serif;color:#333;'>"
                  + "<div style='max-width:580px;margin:0 auto;border:1px solid #e0e0e0;border-radius:10px;overflow:hidden;'>"
                  + "<div style='background:linear-gradient(135deg,#1978bc,#26a4e0);padding:22px 28px;color:white;'>"
@@ -251,6 +254,10 @@ namespace JayamaliOptical.Web.Services
             string customerEmail, string serviceName,
             DateTime appointmentDate, TimeSpan appointmentTime)
         {
+            bookingNumber = WebUtility.HtmlEncode(bookingNumber);
+            customerName = WebUtility.HtmlEncode(customerName);
+            customerEmail = WebUtility.HtmlEncode(customerEmail);
+            serviceName = WebUtility.HtmlEncode(serviceName);
             var formattedTime = TimeHelper.Today.Add(appointmentTime).ToString("hh:mm tt");
             return "<html><body style='font-family:Arial,sans-serif;color:#333;'>"
                  + "<div style='max-width:580px;margin:0 auto;border:1px solid #e0e0e0;border-radius:10px;overflow:hidden;'>"
@@ -279,6 +286,8 @@ namespace JayamaliOptical.Web.Services
 
         private static string OrderEmailBody(string customerName, string orderNumber, decimal totalAmount)
         {
+            customerName = WebUtility.HtmlEncode(customerName);
+            orderNumber = WebUtility.HtmlEncode(orderNumber);
             return "<html><body style='font-family:Arial,sans-serif;'>"
                  + "<h2 style='color:#0d6efd;'>Thank You for Your Order!</h2>"
                  + "<p>Dear " + customerName + ",</p>"
@@ -296,6 +305,9 @@ namespace JayamaliOptical.Web.Services
 
         private static string BookingEmailBody(string customerName, string bookingNumber, string serviceName, DateTime appointmentDate, TimeSpan appointmentTime)
         {
+            customerName = WebUtility.HtmlEncode(customerName);
+            bookingNumber = WebUtility.HtmlEncode(bookingNumber);
+            serviceName = WebUtility.HtmlEncode(serviceName);
             var formattedTime = TimeHelper.Today.Add(appointmentTime).ToString("hh:mm tt");
             return "<html><body style='font-family:Arial,sans-serif;'>"
                  + "<h2 style='color:#28a745;'>Appointment Booked Successfully!</h2>"
@@ -314,7 +326,11 @@ namespace JayamaliOptical.Web.Services
 
         private static string ContactEmailBody(string name, string email, string phone, string subject, string message)
         {
-            var escaped = message.Replace("\n", "<br/>");
+            name = WebUtility.HtmlEncode(name);
+            email = WebUtility.HtmlEncode(email);
+            phone = WebUtility.HtmlEncode(phone);
+            subject = WebUtility.HtmlEncode(subject);
+            var escaped = WebUtility.HtmlEncode(message).Replace("\n", "<br/>");
             return "<html><body style='font-family:Arial,sans-serif;color:#333;'>"
                  + "<div style='max-width:600px;margin:0 auto;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;'>"
                  + "<div style='background:linear-gradient(135deg,#1978bc,#26a4e0);padding:24px;color:white;'>"

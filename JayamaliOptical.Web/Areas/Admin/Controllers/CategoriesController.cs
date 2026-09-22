@@ -112,6 +112,7 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
                 return NotFound();
             }
 
+            ViewBag.ProductCount = await _context.Products.CountAsync(p => p.CategoryId == id);
             return View(category);
         }
 
@@ -121,11 +122,23 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var category = await _context.Categories.FindAsync(id);
-            if (category != null)
+            if (category == null)
             {
-                _context.Categories.Remove(category);
-                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
             }
+
+            // The Product -> Category foreign key cascades on delete, so removing a category
+            // that still has products would silently delete them too. Require the admin to
+            // reassign or remove those products first instead of losing data unexpectedly.
+            var productCount = await _context.Products.CountAsync(p => p.CategoryId == id);
+            if (productCount > 0)
+            {
+                TempData["Error"] = $"Can't delete '{category.Name}' — it still has {productCount} product(s) assigned to it. Move or delete those products first.";
+                return RedirectToAction(nameof(Delete), new { id });
+            }
+
+            _context.Categories.Remove(category);
+            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 

@@ -1,14 +1,17 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace JayamaliOptical.Web.Models
 {
+    [Index(nameof(BookingNumber), IsUnique = true)]
     public class ServiceBooking
     {
         public int Id { get; set; }
 
         // Booking Reference Number
+        [StringLength(50)]
         public string BookingNumber { get; set; } = string.Empty;
 
         // Service Information

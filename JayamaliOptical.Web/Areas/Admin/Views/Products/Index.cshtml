@@ -39,7 +39,7 @@
                     }
                     else
                     {
-                        var showTypeColumn = Model.Any(p => p.CategoryId == 5 || p.CategoryId == 6);
+                        var showTypeColumn = Model.Any(p => p.Category != null && (p.Category.Name == "Spectacle" || p.Category.Name == "Sunglasses"));
 
                         <table class="table table-bordered table-striped">
                             <thead>

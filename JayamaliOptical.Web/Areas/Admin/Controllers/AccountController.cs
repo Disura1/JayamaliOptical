@@ -11,18 +11,18 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
     public class AccountController : Controller
     {
         private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly UserManager<IdentityUser> _userManager;  // ← ADD THIS
+        private readonly UserManager<IdentityUser> _userManager;
 
         public AccountController(
             SignInManager<IdentityUser> signInManager,
-            UserManager<IdentityUser> userManager)  // ← ADD THIS
+            UserManager<IdentityUser> userManager)
         {
             _signInManager = signInManager;
-            _userManager = userManager;  // ← ADD THIS
+            _userManager = userManager;
         }
 
         [HttpGet]
-        [AllowAnonymous]  // ← ADD THIS - allows anyone to access login
+        [AllowAnonymous]
         public IActionResult Login(string? returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
@@ -31,7 +31,7 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [AllowAnonymous]  // ← ADD THIS - allows anyone to submit login
+        [AllowAnonymous]
         public async Task<IActionResult> Login(string email, string password, bool rememberMe = false, string? returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
@@ -46,7 +46,7 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
 
             if (result.Succeeded)
             {
-                // ✅ STEP 5: Check if user has Admin role
+                // Only Admin-role users may use this login form — everyone else is signed back out.
                 var user = await _userManager.FindByEmailAsync(email);
                 if (user != null && await _userManager.IsInRoleAsync(user, "Admin"))
                 {
@@ -76,7 +76,7 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
-            return RedirectToAction("Index", "Home", new { area = "" });  // ← Redirect to main home, not admin
+            return RedirectToAction("Index", "Home", new { area = "" });
         }
 
         private IActionResult RedirectToLocal(string? returnUrl)

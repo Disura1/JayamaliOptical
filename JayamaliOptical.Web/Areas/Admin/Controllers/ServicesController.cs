@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using JayamaliOptical.Web.Data;
 using JayamaliOptical.Web.Models;
+using JayamaliOptical.Web.Services;
 
 namespace JayamaliOptical.Web.Areas.Admin.Controllers
 {
@@ -33,6 +34,11 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Service service, IFormFile? ImageFile)
         {
+            if (ImageFile != null && !FileUploadValidator.IsValidImage(ImageFile, out var createError))
+            {
+                ModelState.AddModelError("ImageFile", createError!);
+            }
+
             if (ModelState.IsValid)
             {
                 // Handle image upload
@@ -68,6 +74,11 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
 
             var existingService = await _context.Services.FindAsync(id);
             if (existingService == null) return NotFound();
+
+            if (ImageFile != null && !FileUploadValidator.IsValidImage(ImageFile, out var editError))
+            {
+                ModelState.AddModelError("ImageFile", editError!);
+            }
 
             if (ModelState.IsValid)
             {

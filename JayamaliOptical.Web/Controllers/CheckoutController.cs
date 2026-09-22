@@ -12,6 +12,8 @@ namespace JayamaliOptical.Web.Controllers
 {
     public class CheckoutController : Controller
     {
+        private const string RecentOrderSessionKey = "RecentOrderId";
+
         private readonly ICartService _cartService;
         private readonly ApplicationDbContext _context;
         private readonly IEmailService _emailService;
@@ -108,6 +110,12 @@ namespace JayamaliOptical.Web.Controllers
             else if (model.PaymentMethod != "COD" && model.PaymentMethod != "PayHere")
                 ModelState.AddModelError("PaymentMethod", "Please select a valid payment method.");
 
+            if (model.UploadPrescriptionFile != null && model.UploadPrescriptionFile.Length > 0
+                && !FileUploadValidator.IsValidPrescriptionFile(model.UploadPrescriptionFile, out var uploadError))
+            {
+                ModelState.AddModelError("UploadPrescriptionFile", uploadError!);
+            }
+
             bool cartRequiresPrescription = cart.Items?.Any(i => i.RequiresPrescription) ?? false;
 
             if (cartRequiresPrescription)
@@ -180,14 +188,25 @@ namespace JayamaliOptical.Web.Controllers
                 {
                     var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "prescriptions");
                     Directory.CreateDirectory(uploadsFolder);
-                    var uniqueFileName = Guid.NewGuid().ToString() + "_" + model.UploadPrescriptionFile.FileName;
+
+                    // Cap the original filename so the stored path/name can never exceed
+                    // PrescriptionImagePath/PrescriptionFileName's column length, no matter
+                    // how long a phone-camera or manually-renamed filename is.
+                    var originalName = Path.GetFileName(model.UploadPrescriptionFile.FileName);
+                    if (originalName.Length > 150)
+                    {
+                        var nameExt = Path.GetExtension(originalName);
+                        originalName = originalName[..(150 - nameExt.Length)] + nameExt;
+                    }
+
+                    var uniqueFileName = Guid.NewGuid().ToString() + "_" + originalName;
                     var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
                     using (var fileStream = new FileStream(filePath, FileMode.Create))
                         await model.UploadPrescriptionFile.CopyToAsync(fileStream);
 
                     order.PrescriptionImagePath = "/uploads/prescriptions/" + uniqueFileName;
-                    order.PrescriptionFileName = model.UploadPrescriptionFile.FileName;
+                    order.PrescriptionFileName = originalName;
                 }
 
                 foreach (var item in cart?.Items ?? new List<CartItem>())
@@ -202,8 +221,13 @@ namespace JayamaliOptical.Web.Controllers
                 }
 
                 _context.Orders.Add(order);
-                await _context.SaveChangesAsync();
+                await SaveWithOrderNumberRetryAsync(order);
                 await SaveUserProfileAsync(model, order.UserId);
+
+                // Remember this order in the current browser session so the confirmation
+                // page can be shown to the guest who just placed it, without exposing
+                // other customers' orders to anyone who guesses an id.
+                HttpContext.Session.SetInt32(RecentOrderSessionKey, order.Id);
 
                 // ── PayHere: redirect to payment gateway ──────────────────
                 if (model.PaymentMethod == "PayHere" && settings != null)
@@ -348,6 +372,16 @@ namespace JayamaliOptical.Web.Controllers
                 .FirstOrDefaultAsync(o => o.Id == orderId);
 
             if (order == null) return NotFound();
+
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var ownedByCurrentUser = order.UserId != null && order.UserId == currentUserId;
+            var justPlacedInThisSession = HttpContext.Session.GetInt32(RecentOrderSessionKey) == order.Id;
+
+            if (!ownedByCurrentUser && !justPlacedInThisSession)
+            {
+                return NotFound();
+            }
+
             return View(order);
         }
 
@@ -402,8 +436,27 @@ namespace JayamaliOptical.Web.Controllers
             }
         }
 
-        private static string GenerateOrderNumber()
-            => "ORD-" + TimeHelper.Now.ToString("yyyyMMddHHmmss") + "-" + new Random().Next(1000, 9999);
+        private static string GenerateOrderNumber() => ReferenceNumberGenerator.Generate("ORD");
+
+        // OrderNumber has a unique DB constraint (it's the lookup key PayHere notifications use
+        // to identify an order). A collision is very unlikely with ReferenceNumberGenerator's
+        // random suffix, but if one still happens, regenerate and retry instead of failing the
+        // whole checkout with a 500.
+        private async Task SaveWithOrderNumberRetryAsync(Order order, int maxAttempts = 3)
+        {
+            for (var attempt = 1; attempt <= maxAttempts; attempt++)
+            {
+                try
+                {
+                    await _context.SaveChangesAsync();
+                    return;
+                }
+                catch (DbUpdateException) when (attempt < maxAttempts)
+                {
+                    order.OrderNumber = GenerateOrderNumber();
+                }
+            }
+        }
     }
 
     public static class StringExtensions

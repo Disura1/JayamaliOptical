@@ -3,7 +3,7 @@ using JayamaliOptical.Web.Models;
 using JayamaliOptical.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;  // ADD THIS
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 
@@ -13,13 +13,13 @@ namespace JayamaliOptical.Web.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IEmailService _emailService;
-        private readonly IConfiguration _configuration;  // ADD THIS
+        private readonly IConfiguration _configuration;
         private readonly ILogger<BookingsController> _logger;
 
         public BookingsController(
             ApplicationDbContext context,
             IEmailService emailService,
-            IConfiguration configuration,  // ADD THIS
+            IConfiguration configuration,
             ILogger<BookingsController>? logger = null)
         {
             _context = context;
@@ -88,11 +88,11 @@ namespace JayamaliOptical.Web.Controllers
                     Notes = model.Notes,
                     BookingDate = TimeHelper.Now,
                     Status = "Pending",
-                    UserId = User.FindFirstValue(ClaimTypes.NameIdentifier)  // ← ADD THIS
+                    UserId = User.FindFirstValue(ClaimTypes.NameIdentifier)
                 };
 
                 _context.ServiceBookings.Add(booking);
-                await _context.SaveChangesAsync();
+                await SaveWithBookingNumberRetryAsync(booking);
 
                 // Send customer confirmation
                 try
@@ -160,10 +160,25 @@ namespace JayamaliOptical.Web.Controllers
             };
         }
 
-        // Generate unique booking number
-        private string GenerateBookingNumber()
+        private static string GenerateBookingNumber() => ReferenceNumberGenerator.Generate("BKG");
+
+        // BookingNumber has a unique DB constraint. A collision is very unlikely with
+        // ReferenceNumberGenerator's random suffix, but if one still happens, regenerate
+        // and retry instead of failing the whole booking with a 500.
+        private async Task SaveWithBookingNumberRetryAsync(ServiceBooking booking, int maxAttempts = 3)
         {
-            return "BKG-" + TimeHelper.Now.ToString("yyyyMMddHHmmss") + "-" + new Random().Next(1000, 9999);
+            for (var attempt = 1; attempt <= maxAttempts; attempt++)
+            {
+                try
+                {
+                    await _context.SaveChangesAsync();
+                    return;
+                }
+                catch (DbUpdateException) when (attempt < maxAttempts)
+                {
+                    booking.BookingNumber = GenerateBookingNumber();
+                }
+            }
         }
     }
 }

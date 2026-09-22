@@ -40,28 +40,13 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
 
             if (logoFile != null && logoFile.Length > 0)
             {
-                // --- LAYER 1: EXTENSION VALIDATION ---
-                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp", ".svg" };
+                if (!FileUploadValidator.IsValidImage(logoFile, 2 * 1024 * 1024, out var error))
+                {
+                    TempData["Error"] = error;
+                    return RedirectToAction(nameof(Index));
+                }
+
                 var ext = Path.GetExtension(logoFile.FileName).ToLower();
-
-                // --- LAYER 2: CONTENT TYPE (MIME) VALIDATION ---
-                // We add "image/svg+xml" for SVG support
-                var allowedMimeTypes = new[] { "image/jpeg", "image/png", "image/webp", "image/svg+xml" };
-                var contentType = logoFile.ContentType.ToLower();
-
-                if (!allowedExtensions.Contains(ext) || !allowedMimeTypes.Contains(contentType))
-                {
-                    TempData["Error"] = "Invalid file type. Only real JPG, PNG, WebP, and SVG images are allowed.";
-                    return RedirectToAction(nameof(Index));
-                }
-
-                // --- LAYER 3: SIZE VALIDATION (Safety Bonus) ---
-                if (logoFile.Length > 2 * 1024 * 1024) // Limit to 2MB
-                {
-                    TempData["Error"] = "File size must be less than 2MB.";
-                    return RedirectToAction(nameof(Index));
-                }
-
                 var folder = Path.Combine(_environment.WebRootPath, "images", "Brands");
                 Directory.CreateDirectory(folder);
 

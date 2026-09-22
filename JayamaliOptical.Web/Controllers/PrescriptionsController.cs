@@ -40,6 +40,11 @@ namespace JayamaliOptical.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(PrescriptionViewModel model)
         {
+            if (model.PrescriptionFile != null && !FileUploadValidator.IsValidPrescriptionFile(model.PrescriptionFile, out var fileError))
+            {
+                ModelState.AddModelError("PrescriptionFile", fileError!);
+            }
+
             if (ModelState.IsValid)
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -120,6 +125,11 @@ namespace JayamaliOptical.Web.Controllers
         public async Task<IActionResult> Edit(int id, PrescriptionViewModel model)
         {
             if (id != model.Id) return NotFound();
+
+            if (model.PrescriptionFile != null && !FileUploadValidator.IsValidPrescriptionFile(model.PrescriptionFile, out var fileError))
+            {
+                ModelState.AddModelError("PrescriptionFile", fileError!);
+            }
 
             if (ModelState.IsValid)
             {

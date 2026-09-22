@@ -3,6 +3,8 @@
     ViewData["Title"] = "Edit Product";
     var categories = ViewBag.Categories as List<JayamaliOptical.Web.Models.Category>;
     var selectedCategoryId = ViewBag.SelectedCategoryId as int?;
+    var currentCategoryName = categories?.FirstOrDefault(c => c.Id == Model.CategoryId)?.Name;
+    var requiresProductType = currentCategoryName == "Spectacle" || currentCategoryName == "Sunglasses";
 }
 
 <div class="row">
@@ -61,7 +63,7 @@
                         </div>
                     </div>
 
-                    <div class="row" id="productTypeRow" style="display: @(Model.CategoryId == 5 || Model.CategoryId == 6 ? "block" : "none");">
+                    <div class="row" id="productTypeRow" style="display: @(requiresProductType ? "block" : "none");">
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label>Product Type</label>

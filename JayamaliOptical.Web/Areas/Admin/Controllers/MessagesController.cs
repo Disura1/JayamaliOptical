@@ -28,6 +28,7 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
             var msg = await _context.ContactMessages.FindAsync(id);

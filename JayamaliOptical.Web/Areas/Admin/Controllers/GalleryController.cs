@@ -38,27 +38,13 @@ namespace JayamaliOptical.Web.Areas.Admin.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var allowed = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+            if (!FileUploadValidator.IsValidImage(imageFile, 8 * 1024 * 1024, out var error))
+            {
+                TempData["Error"] = error;
+                return RedirectToAction(nameof(Index));
+            }
+
             var ext = Path.GetExtension(imageFile.FileName).ToLower();
-            if (!allowed.Contains(ext))
-            {
-                TempData["Error"] = "Only JPG, PNG, WebP allowed.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            var allowedMimeTypes = new[] { "image/jpeg", "image/png", "image/webp" };
-            if (!allowedMimeTypes.Contains(imageFile.ContentType.ToLower()))
-            {
-                TempData["Error"] = "Invalid file type.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            if (imageFile.Length > 8 * 1024 * 1024)
-            {
-                TempData["Error"] = "Image must be under 8MB.";
-                return RedirectToAction(nameof(Index));
-            }
-
             var folder = Path.Combine(_environment.WebRootPath, "images", "Gallery");
             Directory.CreateDirectory(folder);
             var fileName = Guid.NewGuid().ToString() + ext;

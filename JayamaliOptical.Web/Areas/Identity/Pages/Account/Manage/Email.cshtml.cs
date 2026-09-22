@@ -16,15 +16,18 @@ namespace JayamaliOptical.Web.Areas.Identity.Pages.Account.Manage
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly IEmailService _emailService;
+        private readonly ILogger<EmailModel> _logger;
 
         public EmailModel(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
-            IEmailService emailService)
+            IEmailService emailService,
+            ILogger<EmailModel> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailService = emailService;
+            _logger = logger;
         }
 
         public string Email { get; set; }
@@ -84,16 +87,25 @@ namespace JayamaliOptical.Web.Areas.Identity.Pages.Account.Manage
                 values: new { area = "Identity", userId, email = Input.NewEmail, code },
                 protocol: Request.Scheme);
 
-            await _emailService.SendEmailAsync(
-                Input.NewEmail,
-                "Confirm your email change — Jayamali Optical",
-                "<p>Please confirm your new email address by clicking the link below:</p>" +
-                $"<p><a href='{HtmlEncoder.Default.Encode(callbackUrl)}' " +
-                "style='background:#1978bc;color:white;padding:10px 24px;border-radius:50px;" +
-                "text-decoration:none;font-weight:600;'>Confirm Email Change</a></p>" +
-                "<p>If you didn't request this, please ignore this email.</p>");
+            try
+            {
+                await _emailService.SendEmailAsync(
+                    Input.NewEmail,
+                    "Confirm your email change — Jayamali Optical",
+                    "<p>Please confirm your new email address by clicking the link below:</p>" +
+                    $"<p><a href='{HtmlEncoder.Default.Encode(callbackUrl)}' " +
+                    "style='background:#1978bc;color:white;padding:10px 24px;border-radius:50px;" +
+                    "text-decoration:none;font-weight:600;'>Confirm Email Change</a></p>" +
+                    "<p>If you didn't request this, please ignore this email.</p>");
 
-            StatusMessage = "Confirmation link sent — please check your new email inbox.";
+                StatusMessage = "Confirmation link sent — please check your new email inbox.";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send email-change confirmation to {Email}", Input.NewEmail);
+                StatusMessage = "We couldn't send the confirmation email right now. Please try again later.";
+            }
+
             return RedirectToPage();
         }
 
@@ -115,15 +127,24 @@ namespace JayamaliOptical.Web.Areas.Identity.Pages.Account.Manage
                 values: new { area = "Identity", userId, code },
                 protocol: Request.Scheme);
 
-            await _emailService.SendEmailAsync(
-                email,
-                "Verify your email — Jayamali Optical",
-                "<p>Please verify your email address by clicking the link below:</p>" +
-                $"<p><a href='{HtmlEncoder.Default.Encode(callbackUrl)}' " +
-                "style='background:#1978bc;color:white;padding:10px 24px;border-radius:50px;" +
-                "text-decoration:none;font-weight:600;'>Verify Email Address</a></p>");
+            try
+            {
+                await _emailService.SendEmailAsync(
+                    email,
+                    "Verify your email — Jayamali Optical",
+                    "<p>Please verify your email address by clicking the link below:</p>" +
+                    $"<p><a href='{HtmlEncoder.Default.Encode(callbackUrl)}' " +
+                    "style='background:#1978bc;color:white;padding:10px 24px;border-radius:50px;" +
+                    "text-decoration:none;font-weight:600;'>Verify Email Address</a></p>");
 
-            StatusMessage = "Verification email sent. Please check your inbox.";
+                StatusMessage = "Verification email sent. Please check your inbox.";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send verification email to {Email}", email);
+                StatusMessage = "We couldn't send the verification email right now. Please try again later.";
+            }
+
             return RedirectToPage();
         }
     }

@@ -24,10 +24,17 @@ namespace JayamaliOptical.Web.Controllers
             return View(cart);
         }
 
+        private const int MaxAddToCartQuantity = 50;
+
         // POST: Cart/AddToCart/5
         [HttpPost]
         public async Task<IActionResult> AddToCart(int productId, int quantity = 1)
         {
+            if (quantity < 1 || quantity > MaxAddToCartQuantity)
+            {
+                return BadRequest($"Quantity must be between 1 and {MaxAddToCartQuantity}.");
+            }
+
             var product = await _context.Products.FindAsync(productId);
             if (product == null)
             {
@@ -74,6 +81,11 @@ namespace JayamaliOptical.Web.Controllers
         [HttpPost]
         public IActionResult UpdateQuantity(int productId, int quantity)
         {
+            if (quantity > MaxAddToCartQuantity)
+            {
+                quantity = MaxAddToCartQuantity;
+            }
+
             _cartService.UpdateQuantity(productId, quantity);
             return RedirectToAction(nameof(Index));
         }

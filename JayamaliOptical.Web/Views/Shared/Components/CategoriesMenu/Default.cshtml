@@ -6,7 +6,7 @@
     {
         <li>
             <a class="dropdown-item category-nav-link"
-               asp-controller="Products"
+               asp-area="" asp-controller="Products"
                asp-action="Index"
                asp-route-categoryId="@category.Id">
                 <i class="fas fa-@(category.Name == "Spectacle" ? "glasses" : category.Name == "Sunglasses" ? "sunglasses" : category.Name == "Contact Lens" ? "eye" : "lens") me-2 text-primary"></i>
@@ -16,7 +16,7 @@
     }
     <li><hr class="dropdown-divider"></li>
     <li>
-        <a class="dropdown-item" asp-controller="Products" asp-action="Index">
+        <a class="dropdown-item" asp-area="" asp-controller="Products" asp-action="Index">
             <i class="fas fa-th-list me-2"></i>All Products
         </a>
     </li>

@@ -132,7 +132,7 @@
                                 </li>
                                 <li>
                                     <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3"
-                                       asp-controller="Dashboard" asp-action="Index">
+                                       asp-area="" asp-controller="Dashboard" asp-action="Index">
                                         <span style="width:28px;height:28px;border-radius:8px;
                                                      background:#e8f0fb;display:flex;
                                                      align-items:center;justify-content:center;">
@@ -278,7 +278,7 @@
                                     </li>
                                     <li>
                                         <a class="dropdown-item"
-                                           asp-controller="Dashboard" asp-action="Index">
+                                           asp-area="" asp-controller="Dashboard" asp-action="Index">
                                             <i class="bi bi-speedometer2 me-2"></i>Dashboard
                                         </a>
                                     </li>
@@ -428,7 +428,7 @@
             <div class="ftDivOne w-75">
                 <div class=" d-flex justify-content-around h-25 border-bottom shadow-lg">
                     <ul class="list-unstyled">
-                        <li><a class="text-light text-decoration-none" asp-controller="Home" asp-action="Privacy">PRIVACY POLICY</a></li>
+                        <li><a class="text-light text-decoration-none" asp-area="" asp-controller="Home" asp-action="Privacy">PRIVACY POLICY</a></li>
                     </ul>
                     <div class="d-flex gap-4">
                         <p class="fw-bolder text-light fs-5">Get In TOUCH</p>
@@ -582,26 +582,6 @@
                         }, 500);
                     }
                 }, 1000);
-            }
-        });
-
-        // Fix relative URLs in Identity pages
-        document.addEventListener('click', function(e) {
-            var link = e.target.closest('a[href]');
-            if (link && link.href.startsWith(window.location.origin + '/Identity/')) {
-                // Check if it's a navigation link (not an Identity link)
-                if (link.href.includes('/Cart') || link.href.includes('/Dashboard') ||
-                    link.href.includes('/Products') || link.href.includes('/Services') ||
-                    link.href.includes('/Home')) {
-                    // Remove /Identity prefix
-                    var newHref = link.href.replace('/Identity', '');
-                    if (e.ctrlKey || e.metaKey) {
-                        window.open(newHref, '_blank');
-                    } else {
-                        window.location.href = newHref;
-                    }
-                    e.preventDefault();
-                }
             }
         });
     </script>
